@@ -13,6 +13,19 @@ interface Box {
 	position : Pos
 }
 
+function calculateDistance(pos1 : Pos, pos2 : Pos) {
+	return Math.sqrt(
+		(pos1.x - pos2.x)*(pos1.x - pos2.x) + (pos1.y - pos2.y)*(pos1.y - pos2.y)
+	);
+}
+
+function averagePosition(pos1 : Pos, pos2 : Pos) {
+	return {
+		x : (pos1.x + pos2.x)/2,
+		y : (pos1.y + pos2.y)/2,
+	};
+}
+
 class Layout {
 	relative : Box = {size : {width: 0, height: 0}, position : {x: 0, y: 0}};
 	offset : Box = {size : {width: 0, height: 0}, position : {x: 0, y: 0}};

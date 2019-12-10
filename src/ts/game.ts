@@ -233,6 +233,61 @@ class Rule {
 	}
 }
 
+class RuleConnector {
+	tailRuleIndex : number;
+	headRuleIndex : number = -1;
+	arrow : Arrow = new Arrow();
+	constructor(obj : {tailRuleIndex : number}) {
+		this.tailRuleIndex = obj.tailRuleIndex;
+	}
+	disable() {
+		this.arrow.layout.visible = false;
+	}
+	enable() {
+		this.arrow.layout.visible = true;
+	}
+	isEnabled() {
+		return this.arrow.layout.visible;
+	}
+	findClosestPoint(pos : Pos, rule : Rule, grid : Grid) {
+		let ret = {x : 0, y : 0};
+		let minDistance1 = -1;
+		let minDistance2 = -1;
+		let bestPos1 = {x : 0, y : 0};
+		let bestPos2 = {x : 0, y : 0};
+		for (let edgeJson of rule.boundaryEdges) {
+			let edge = JSON.parse(edgeJson);
+			let firstPos = grid.getPositionForCoordinate(edge[0], edge[1]);
+			let secondPos = grid.getPositionForCoordinate(edge[2], edge[3]);
+			let distance1 = calculateDistance(pos, firstPos);
+			let distance2 = calculateDistance(pos, secondPos);
+			let average = (distance1 + distance2)/2;
+			if (minDistance1 < 0 || average < (minDistance1 + minDistance2)/2) {
+				minDistance1 = distance1;
+				minDistance2 = distance2;
+				bestPos1 = firstPos;
+				bestPos2 = secondPos;
+			}
+		}
+
+		let testPos = averagePosition(bestPos1, bestPos2);
+		let testDistance = calculateDistance(pos, testPos);
+		let bestPos = minDistance1 < minDistance2 ? bestPos1 : bestPos2;
+		let bestDistance = Math.min(minDistance1, minDistance2);
+		let otherPos = minDistance1 < minDistance2 ? bestPos2 : bestPos1;
+
+		while (testDistance < bestDistance) {
+			let temp = testPos;
+			testPos = averagePosition(testPos, bestPos);
+			bestPos = temp;
+			bestDistance = testDistance;
+			testDistance = calculateDistance(pos, testPos);
+		}
+
+		return bestPos;
+	}
+}
+
 enum EditType {
 	NoOpt = 0,
 	CellEdit = 1,
@@ -273,6 +328,7 @@ class Board {
 	components : Component[] = [];
 	grid : Grid;
 	data : number[][][];
+
 	editTool : Tool = Tool.Pencil;
 	editModality : Modality = Modality.Real;
 	editBlockType : number = 0;
@@ -281,6 +337,9 @@ class Board {
 	movingRuleIndex : number = -1;
 	movingLastCoordinate : Pos = {x : 0, y : 0};
 	movingStartCoordinate : Pos = {x : 0, y : 0};
+
+	isAddingRuleConnector : boolean = false;
+	ruleConnector? : RuleConnector;
 
 	rules : Map<number, Rule> = new Map();
 	ruleIndex : number = 0;
@@ -877,6 +936,24 @@ class Board {
 				}
 				break;
 			}
+			case Tool.EdgeAlways: {
+				let ruleIndex = this.data[i][j][3];
+				let rule = this.rules.get(ruleIndex);
+				if (ruleIndex > -1 && rule) {
+					this.isAddingRuleConnector = true;
+					let ruleConnector = new RuleConnector({tailRuleIndex : ruleIndex});
+					ruleConnector.arrow.to.x = e.clientX;
+					ruleConnector.arrow.to.y = e.clientY;
+					ruleConnector.arrow.from = ruleConnector.findClosestPoint(
+						ruleConnector.arrow.to,
+						rule,
+						this.grid
+					);
+					this.ruleConnector = ruleConnector;
+					this.components.push(ruleConnector.arrow);
+				}
+				break;
+			}
 			default: {
 				break;
 			}
@@ -903,27 +980,58 @@ class Board {
 			} else {
 				//error, can't move rule here
 			}
+		} else if (this.isAddingRuleConnector) {
+			if (this.ruleConnector) {
+				let rule = this.rules.get(this.ruleConnector.tailRuleIndex);
+				if (rule) {
+					this.ruleConnector.arrow.to.x = e.clientX;
+					this.ruleConnector.arrow.to.y = e.clientY;
+					this.ruleConnector.arrow.from = this.ruleConnector.findClosestPoint(
+						this.ruleConnector.arrow.to,
+						rule,
+						this.grid
+					);
+				}
+			}
 		}
 	}
 
-	onMouseUp() {
-		let deltaI = this.movingLastCoordinate.x - this.movingStartCoordinate.x;
-		let deltaJ = this.movingLastCoordinate.y - this.movingStartCoordinate.y;
+	onMouseUp(i : number, j : number) {
 
-		if (deltaI != 0 || deltaJ != 0) {
-			this.edits.push(new RuleMove({
-				deltaI : -deltaI,
-				deltaJ : -deltaJ,
-				ruleIndex : this.movingRuleIndex,
-			}));
+		if (this.isMoving) {
+			let deltaI = this.movingLastCoordinate.x - this.movingStartCoordinate.x;
+			let deltaJ = this.movingLastCoordinate.y - this.movingStartCoordinate.y;
+
+			if (deltaI != 0 || deltaJ != 0) {
+				this.edits.push(new RuleMove({
+					deltaI : -deltaI,
+					deltaJ : -deltaJ,
+					ruleIndex : this.movingRuleIndex,
+				}));
+			}
+
+			this.isMoving = false;
+			this.movingRuleIndex = -1;
+			this.movingStartCoordinate.x = 0;
+			this.movingStartCoordinate.y = 0;
+			this.movingLastCoordinate.x = 0;
+			this.movingLastCoordinate.y = 0;
+		} else if (this.isAddingRuleConnector) {
+			this.isAddingRuleConnector = false;
+			if (this.ruleConnector) {
+				let ruleIndex = this.data[i][j][3];
+				let rule = this.rules.get(ruleIndex);
+				if (ruleIndex > -1 && rule) {
+					this.ruleConnector.arrow.to = this.ruleConnector.findClosestPoint(
+						this.ruleConnector.arrow.from,
+						rule,
+						this.grid
+					);
+				} else {
+					this.ruleConnector.disable();
+				}
+			}
 		}
-
-		this.isMoving = false;
-		this.movingRuleIndex = -1;
-		this.movingStartCoordinate.x = 0;
-		this.movingStartCoordinate.y = 0;
-		this.movingLastCoordinate.x = 0;
-		this.movingLastCoordinate.y = 0;
 	}
 
 	constructor (gridSize : Size) {
@@ -958,7 +1066,7 @@ class Board {
 					_this.onMouseMove(e);
 				},
 				onMouseUp(i : number, j : number, e : MouseEvent) {
-					_this.onMouseUp();
+					_this.onMouseUp(i, j);
 				},
 			}
 		);

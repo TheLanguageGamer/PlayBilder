@@ -1,4 +1,13 @@
 "use strict";
+function calculateDistance(pos1, pos2) {
+    return Math.sqrt((pos1.x - pos2.x) * (pos1.x - pos2.x) + (pos1.y - pos2.y) * (pos1.y - pos2.y));
+}
+function averagePosition(pos1, pos2) {
+    return {
+        x: (pos1.x + pos2.x) / 2,
+        y: (pos1.y + pos2.y) / 2,
+    };
+}
 class Layout {
     constructor(relX, relY, offX, offY, relWidth, relHeight, offWidth, offHeight) {
         this.relative = { size: { width: 0, height: 0 }, position: { x: 0, y: 0 } };
