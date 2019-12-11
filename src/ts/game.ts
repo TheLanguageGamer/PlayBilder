@@ -48,7 +48,9 @@ class Game {
     }
     renderRecursive(components : Component[]) {
     	for (let component of components) {
-    		component.render(this.context, this.contentProvider);
+    		if (component.layout.visible) {
+    			component.render(this.context, this.contentProvider);
+    		}
     		if (component.children) {
 	    		this.renderRecursive(component.children);
 	    	}
@@ -233,7 +235,7 @@ class Rule {
 	}
 }
 
-class RuleConnector {
+class Edge {
 	tailRuleIndex : number;
 	headRuleIndex : number = -1;
 	arrow : Arrow = new Arrow();
@@ -241,6 +243,8 @@ class RuleConnector {
 		this.tailRuleIndex = obj.tailRuleIndex;
 	}
 	disable() {
+		this.tailRuleIndex = -1;
+		this.headRuleIndex = -1;
 		this.arrow.layout.visible = false;
 	}
 	enable() {
@@ -255,10 +259,10 @@ class RuleConnector {
 		let minDistance2 = -1;
 		let bestPos1 = {x : 0, y : 0};
 		let bestPos2 = {x : 0, y : 0};
-		for (let edgeJson of rule.boundaryEdges) {
-			let edge = JSON.parse(edgeJson);
-			let firstPos = grid.getPositionForCoordinate(edge[0], edge[1]);
-			let secondPos = grid.getPositionForCoordinate(edge[2], edge[3]);
+		for (let sideJson of rule.boundaryEdges) {
+			let side = JSON.parse(sideJson);
+			let firstPos = grid.getPositionForCoordinate(side[0], side[1]);
+			let secondPos = grid.getPositionForCoordinate(side[2], side[3]);
 			let distance1 = calculateDistance(pos, firstPos);
 			let distance2 = calculateDistance(pos, secondPos);
 			let average = (distance1 + distance2)/2;
@@ -338,11 +342,12 @@ class Board {
 	movingLastCoordinate : Pos = {x : 0, y : 0};
 	movingStartCoordinate : Pos = {x : 0, y : 0};
 
-	isAddingRuleConnector : boolean = false;
-	ruleConnector? : RuleConnector;
+	isAddingEdge : boolean = false;
+	edge? : Edge;
+	edges : Edge[] = new Array();
 
 	rules : Map<number, Rule> = new Map();
-	ruleIndex : number = 0;
+	maxRuleIndex : number = 0;
 
 	edits : Edit[] = [];
 
@@ -673,8 +678,8 @@ class Board {
 			}
 			let newRulePad = adjacencies.rule;
 			if (newRulePad <= -1) {
-				newRulePad = this.ruleIndex;
-				this.ruleIndex += 1;
+				newRulePad = this.maxRuleIndex;
+				this.maxRuleIndex += 1;
 				let rule = new Rule(newRulePad);
 				this.components.push(rule.line);
 				this.rules.set(newRulePad, rule);
@@ -691,8 +696,9 @@ class Board {
 			let rule = this.rules.get(newRulePad);
 			if (rule) {
 				rule.dirtyBoundaries = true;
+				this.calculateBoundaries();
+				this.respositionEdgesForRule(rule);
 			}
-			this.calculateBoundaries();
 			return newRulePad;
 		}
 		return rulePad;
@@ -741,6 +747,11 @@ class Board {
 				rule.disable();
 			} else if (!this.isConnected(rule)) {
 				this.undo();
+			}
+			if (rule.isEnabled()) {
+				this.respositionEdgesForRule(rule);
+			} else {
+				this.disableEdgesForRule(rule);
 			}
 		}
 	}
@@ -827,6 +838,7 @@ class Board {
 		if (rule) {
 			rule.dirtyBoundaries = true;
 			this.calculateBoundaries();
+			this.respositionEdgesForRule(rule);
 		}
 	}
 
@@ -940,17 +952,17 @@ class Board {
 				let ruleIndex = this.data[i][j][3];
 				let rule = this.rules.get(ruleIndex);
 				if (ruleIndex > -1 && rule) {
-					this.isAddingRuleConnector = true;
-					let ruleConnector = new RuleConnector({tailRuleIndex : ruleIndex});
-					ruleConnector.arrow.to.x = e.clientX;
-					ruleConnector.arrow.to.y = e.clientY;
-					ruleConnector.arrow.from = ruleConnector.findClosestPoint(
-						ruleConnector.arrow.to,
+					this.isAddingEdge = true;
+					let edge = new Edge({tailRuleIndex : ruleIndex});
+					edge.arrow.to.x = e.clientX;
+					edge.arrow.to.y = e.clientY;
+					edge.arrow.from = edge.findClosestPoint(
+						edge.arrow.to,
 						rule,
 						this.grid
 					);
-					this.ruleConnector = ruleConnector;
-					this.components.push(ruleConnector.arrow);
+					this.edge = edge;
+					this.components.push(edge.arrow);
 				}
 				break;
 			}
@@ -976,24 +988,118 @@ class Board {
 				if (rule) {
 					rule.dirtyBoundaries = true;
 					this.calculateBoundaries();
+					this.respositionEdgesForRule(rule);
 				}
 			} else {
 				//error, can't move rule here
 			}
-		} else if (this.isAddingRuleConnector) {
-			if (this.ruleConnector) {
-				let rule = this.rules.get(this.ruleConnector.tailRuleIndex);
+		} else if (this.isAddingEdge) {
+			if (this.edge) {
+				let rule = this.rules.get(this.edge.tailRuleIndex);
 				if (rule) {
-					this.ruleConnector.arrow.to.x = e.clientX;
-					this.ruleConnector.arrow.to.y = e.clientY;
-					this.ruleConnector.arrow.from = this.ruleConnector.findClosestPoint(
-						this.ruleConnector.arrow.to,
+					this.edge.arrow.to.x = e.clientX;
+					this.edge.arrow.to.y = e.clientY;
+					this.edge.arrow.from = this.edge.findClosestPoint(
+						this.edge.arrow.to,
 						rule,
 						this.grid
 					);
 				}
 			}
 		}
+	}
+
+	disableEdgesForRule(rule : Rule) {
+		for (let edge of this.edges) {
+			if (edge.tailRuleIndex == rule.index
+				|| edge.headRuleIndex == rule.index) {
+				edge.disable();
+			}
+		}
+	}
+
+	respositionEdgesForRule(rule : Rule) {
+		for (let edge of this.edges) {
+			//TODO recalculate both arrow from and to if either tail or head index matches
+			if (edge.tailRuleIndex == rule.index) {
+				edge.arrow.from = edge.findClosestPoint(
+					edge.arrow.to,
+					rule,
+					this.grid
+				);
+				let other = this.rules.get(edge.headRuleIndex);
+				if (other) {
+					edge.arrow.to = edge.findClosestPoint(
+						edge.arrow.from,
+						other,
+						this.grid
+					);
+				}
+			}
+			if (edge.headRuleIndex == rule.index) {
+				edge.arrow.to = edge.findClosestPoint(
+					edge.arrow.from,
+					rule,
+					this.grid
+				);
+				let other = this.rules.get(edge.tailRuleIndex);
+				if (other) {
+					edge.arrow.from = edge.findClosestPoint(
+						edge.arrow.to,
+						other,
+						this.grid
+					);
+				}
+			}
+		}
+	}
+
+	isRuleGraphCyclic_VisitRule(rule : Rule, visited : boolean[], recStack : boolean[]) {
+		visited[rule.index] = true;
+		recStack[rule.index] = true;
+
+		for (let edge of this.edges) {
+			if (edge.headRuleIndex == rule.index) {
+				let neighbor = this.rules.get(edge.tailRuleIndex);
+				if (neighbor) {
+					if (!visited[neighbor.index]) {
+						if (this.isRuleGraphCyclic_VisitRule(neighbor, visited, recStack)) {
+							return true;
+						}
+					} else if (recStack[neighbor.index]) {
+						return true;
+					}
+				}
+			}
+		}
+
+		recStack[rule.index] = false;
+		return false;
+	}
+
+	isRuleGraphCyclic() {
+		let visited = new Array(this.maxRuleIndex).fill(false);
+		let recStack = new Array(this.maxRuleIndex).fill(false);
+		for (let element of this.rules) {
+			let rule = element[1];
+			if (rule.isEnabled() && !visited[rule.index]) {
+				if (this.isRuleGraphCyclic_VisitRule(rule, visited, recStack)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	canConnect(edge : Edge, rule : Rule) {
+		for (let other of this.edges) {
+			if (other.tailRuleIndex == edge.tailRuleIndex
+				&& other.headRuleIndex == rule.index) {
+				//error: Any two rules can only connected by a single side
+				return false;
+			}
+		}
+		return true;
 	}
 
 	onMouseUp(i : number, j : number) {
@@ -1016,19 +1122,27 @@ class Board {
 			this.movingStartCoordinate.y = 0;
 			this.movingLastCoordinate.x = 0;
 			this.movingLastCoordinate.y = 0;
-		} else if (this.isAddingRuleConnector) {
-			this.isAddingRuleConnector = false;
-			if (this.ruleConnector) {
+		} else if (this.isAddingEdge) {
+			this.isAddingEdge = false;
+			if (this.edge) {
 				let ruleIndex = this.data[i][j][3];
 				let rule = this.rules.get(ruleIndex);
-				if (ruleIndex > -1 && rule) {
-					this.ruleConnector.arrow.to = this.ruleConnector.findClosestPoint(
-						this.ruleConnector.arrow.from,
+				if (ruleIndex > -1
+					&& rule
+					&& this.canConnect(this.edge, rule)) {
+					this.edge.arrow.to = this.edge.findClosestPoint(
+						this.edge.arrow.from,
 						rule,
 						this.grid
 					);
+					this.edge.headRuleIndex = ruleIndex;
+					this.edges.push(this.edge);
+					if (this.isRuleGraphCyclic()) {
+						//error: Edge makes rules graph cyclic
+						this.edge.disable();
+					}
 				} else {
-					this.ruleConnector.disable();
+					this.edge.disable();
 				}
 			}
 		}
