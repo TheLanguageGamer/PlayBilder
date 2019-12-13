@@ -184,7 +184,23 @@ const ImagePaths = {
 		"EdgeIfNotMatched" : "images/tools/toolEdgeIfNotMatched.png",
 		"EdgeParallel" : "images/tools/toolEdgeParallel.png",
 	},
+	InputState : <Record<string, string>> {
+		"Computer" : "images/state/icons8-computer-80.png",
+		"Left" : "images/state/icons8-left-96.png",
+		"Right" : "images/state/icons8-right-96.png",
+		"Up" : "images/state/icons8-up-96.png",
+		"Down" : "images/state/icons8-down-arrow-96.png",
+	},
 };
+
+enum InputState {
+	Computer = 0,
+	Left,
+	Right,
+	Up,
+	Down,
+	__Length,
+}
 
 enum Tool {
 	Pencil = 0,
@@ -218,8 +234,11 @@ class Rule {
 	boundaryEdges : Set<string> = new Set();
 	boundaryPoints : Set<string> = new Set();
 	dirtyBoundaries : boolean = true;
+	private _reachable : boolean = false;
 	constructor(index : number) {
 		this.index = index;
+		this.line.color = Constants.Colors.Grey;
+		this.line.lineDash = [7, 3];
 	}
 	disable() {
 		this.line.points.length = 0;
@@ -232,6 +251,13 @@ class Rule {
 	}
 	isEnabled() {
 		return this.line.layout.visible;
+	}
+	isReachable() {
+		return true;
+	}
+	setReachable(value : boolean) {
+		this.line.color = value ? Constants.Colors.Black : Constants.Colors.Grey;
+		this._reachable = value;
 	}
 }
 
@@ -598,6 +624,7 @@ class Board {
 
 	canHaveRuleIndex(ruleIndex : number, i : number, j : number) {
 		return this.grid.isValidCoordinate(i, j)
+				&& this.data[i][j][0] < 0
 				&& this.doesntBlockRuleIndex(ruleIndex, i-1, j-1)
 				&& this.doesntBlockRuleIndex(ruleIndex, i-0, j-1)
 				&& this.doesntBlockRuleIndex(ruleIndex, i+1, j-1)
@@ -677,6 +704,10 @@ class Board {
 				return -1;
 			}
 			let newRulePad = adjacencies.rule;
+			if (newRulePad >= 0 && newRulePad < InputState.__Length) {
+				//error, can't extend rule for input states
+				return -1;
+			}
 			if (newRulePad <= -1) {
 				newRulePad = this.maxRuleIndex;
 				this.maxRuleIndex += 1;
@@ -692,7 +723,6 @@ class Board {
 			}));
 			this.setCell(i, j, this.data[i][j][0], this.data[i][j][1], this.data[i][j][2], newRulePad);
 			
-			this.debugRules();
 			let rule = this.rules.get(newRulePad);
 			if (rule) {
 				rule.dirtyBoundaries = true;
@@ -716,6 +746,11 @@ class Board {
 	}
 
 	erase(i : number, j : number) {
+		let ruleIndex = this.data[i][j][3];
+		if (ruleIndex >= 0 && ruleIndex < InputState.__Length) {
+			//error, can't input state rules
+			return;
+		}
 		if (this.data[i][j][0] != -1
 			|| this.data[i][j][1] != -1
 			|| this.data[i][j][2] != -1
@@ -728,7 +763,7 @@ class Board {
 			}));
 		}
 
-		let rule = this.rules.get(this.data[i][j][3]);
+		let rule = this.rules.get(ruleIndex);
 
 		//update model
 		this.data[i][j][0] = -1;
@@ -752,6 +787,7 @@ class Board {
 				this.respositionEdgesForRule(rule);
 			} else {
 				this.disableEdgesForRule(rule);
+				this.calculateReachability();
 			}
 		}
 	}
@@ -773,8 +809,10 @@ class Board {
 		let newFutureType : number = futureType;
 		let newRulePad : number = rulePad;
 
-		
-		if (editModality != Modality.Real && !this.canDrawRule(i, j)) {
+		if (rulePad >= 0 && rulePad < InputState.__Length) {
+			//error, can't change input state rules
+			return;
+		} else if (editModality != Modality.Real && !this.canDrawRule(i, j)) {
 			//error
 			return;
 		} else if (rulePad > -1 && editModality == Modality.Real) {
@@ -880,7 +918,10 @@ class Board {
 		this.data[i][j][3] = rulePad;
 
 		//set grid cell path
-		if (realType > -1) {
+		if (rulePad >= 0 && rulePad < InputState.__Length) {
+			this.grid.grid[i][j][0] = ImagePaths.InputState[InputState[rulePad]];
+			this.grid.grid[i][j][1] = "";
+		} else if (realType > -1) {
 			this.grid.grid[i][j][0] = ImagePaths.Reals[realType];
 		} else if (ideaType > -1 && futureType > -1) {
 			this.grid.grid[i][j][0] = ImagePaths.Ideas[ideaType];
@@ -1091,6 +1132,40 @@ class Board {
 		return false;
 	}
 
+	calculateReachability() {
+		let visited = new Array(this.maxRuleIndex).fill(false);
+		let shouldVisit : Rule[] = [];
+		for (let element of this.rules) {
+			let rule = element[1];
+			if (rule.index < InputState.__Length && rule.index >= 0) {
+				shouldVisit.push(rule);
+			}
+		}
+
+		while (shouldVisit.length > 0) {
+			let rule = shouldVisit.pop();
+			if (rule) {		
+				visited[rule.index] = true;
+
+				for (let edge of this.edges) {
+					if (edge.tailRuleIndex == rule.index) {
+						let neighbor = this.rules.get(edge.headRuleIndex);
+						if (neighbor && !visited[neighbor.index]) {
+							shouldVisit.push(neighbor);
+						}
+					}
+				}
+			}
+		}
+
+		for (let i = 0; i < visited.length; ++i) {
+			let rule = this.rules.get(i);
+			if (rule) {
+				rule.setReachable(visited[i]);
+			}
+		}
+	}
+
 	canConnect(edge : Edge, rule : Rule) {
 		for (let other of this.edges) {
 			if (other.tailRuleIndex == edge.tailRuleIndex
@@ -1140,6 +1215,8 @@ class Board {
 					if (this.isRuleGraphCyclic()) {
 						//error: Edge makes rules graph cyclic
 						this.edge.disable();
+					} else {
+						this.calculateReachability();
 					}
 				} else {
 					this.edge.disable();
@@ -1190,6 +1267,26 @@ class Board {
 			size: {width: window.innerWidth, height: window.innerHeight},
 		});
 	}
+
+	setupInputStates() {
+		this.rulePad(1, 1);
+		this.grid.grid[1][1][0] = ImagePaths.InputState["Computer"];
+		this.edits.pop();
+		this.rulePad(1, 3);
+		this.grid.grid[1][3][0] = ImagePaths.InputState["Left"];
+		this.edits.pop();
+		this.rulePad(1, 5);
+		this.grid.grid[1][5][0] = ImagePaths.InputState["Right"];
+		this.edits.pop();
+		this.rulePad(1, 7);
+		this.grid.grid[1][7][0] = ImagePaths.InputState["Up"];
+		this.edits.pop();
+		this.rulePad(1, 9);
+		this.grid.grid[1][9][0] = ImagePaths.InputState["Down"];
+		this.edits.pop();
+		this.calculateReachability();
+		this.debugRules();
+	}
 }
 
 class Playbilder {
@@ -1199,6 +1296,7 @@ class Playbilder {
 
 		let board = new Board(boardSize);
 		let tileSize = board.grid.computeTileSize();
+		board.grid.tileSize = tileSize;
 
 		let paletteLayout = new Layout(
 			0, 0, -20, tileSize,
@@ -1333,6 +1431,7 @@ class Playbilder {
 		this.game.doLayout();
 
 		board.components = this.game.components;
+		board.setupInputStates();
     }
 }
 

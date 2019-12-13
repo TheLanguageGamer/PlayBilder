@@ -3,6 +3,7 @@ class Grid {
     constructor(gridSize, layout, controller = {}) {
         this.tileSize = 0;
         this.downAt = { x: -1, y: -1 };
+        this.color = Constants.Colors.VeryLightGrey;
         this.layout = layout;
         this.controller = controller;
         this.gridSize = gridSize;
@@ -28,7 +29,7 @@ class Grid {
         ctx.beginPath();
         ctx.lineWidth = 1.0;
         ctx.setLineDash([]);
-        ctx.strokeStyle = "#9D9D9D";
+        ctx.strokeStyle = this.color;
         for (let i = 0; i <= this.gridSize.width; ++i) {
             ctx.moveTo(this.layout.computed.position.x + i * this.tileSize, this.layout.computed.position.y);
             ctx.lineTo(this.layout.computed.position.x + i * this.tileSize, this.layout.computed.position.y + this.gridSize.height * this.tileSize);

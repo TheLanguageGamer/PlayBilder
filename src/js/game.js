@@ -165,7 +165,23 @@ const ImagePaths = {
         "EdgeIfNotMatched": "images/tools/toolEdgeIfNotMatched.png",
         "EdgeParallel": "images/tools/toolEdgeParallel.png",
     },
+    InputState: {
+        "Computer": "images/state/icons8-computer-80.png",
+        "Left": "images/state/icons8-left-96.png",
+        "Right": "images/state/icons8-right-96.png",
+        "Up": "images/state/icons8-up-96.png",
+        "Down": "images/state/icons8-down-arrow-96.png",
+    },
 };
+var InputState;
+(function (InputState) {
+    InputState[InputState["Computer"] = 0] = "Computer";
+    InputState[InputState["Left"] = 1] = "Left";
+    InputState[InputState["Right"] = 2] = "Right";
+    InputState[InputState["Up"] = 3] = "Up";
+    InputState[InputState["Down"] = 4] = "Down";
+    InputState[InputState["__Length"] = 5] = "__Length";
+})(InputState || (InputState = {}));
 var Tool;
 (function (Tool) {
     Tool[Tool["Pencil"] = 0] = "Pencil";
@@ -198,7 +214,10 @@ class Rule {
         this.boundaryEdges = new Set();
         this.boundaryPoints = new Set();
         this.dirtyBoundaries = true;
+        this._reachable = false;
         this.index = index;
+        this.line.color = Constants.Colors.Grey;
+        this.line.lineDash = [7, 3];
     }
     disable() {
         this.line.points.length = 0;
@@ -211,6 +230,13 @@ class Rule {
     }
     isEnabled() {
         return this.line.layout.visible;
+    }
+    isReachable() {
+        return true;
+    }
+    setReachable(value) {
+        this.line.color = value ? Constants.Colors.Black : Constants.Colors.Grey;
+        this._reachable = value;
     }
 }
 class Edge {
@@ -579,6 +605,7 @@ class Board {
     }
     canHaveRuleIndex(ruleIndex, i, j) {
         return this.grid.isValidCoordinate(i, j)
+            && this.data[i][j][0] < 0
             && this.doesntBlockRuleIndex(ruleIndex, i - 1, j - 1)
             && this.doesntBlockRuleIndex(ruleIndex, i - 0, j - 1)
             && this.doesntBlockRuleIndex(ruleIndex, i + 1, j - 1)
@@ -656,6 +683,10 @@ class Board {
                 return -1;
             }
             let newRulePad = adjacencies.rule;
+            if (newRulePad >= 0 && newRulePad < InputState.__Length) {
+                //error, can't extend rule for input states
+                return -1;
+            }
             if (newRulePad <= -1) {
                 newRulePad = this.maxRuleIndex;
                 this.maxRuleIndex += 1;
@@ -670,7 +701,6 @@ class Board {
                 cellData: this.data[i][j].slice(0),
             }));
             this.setCell(i, j, this.data[i][j][0], this.data[i][j][1], this.data[i][j][2], newRulePad);
-            this.debugRules();
             let rule = this.rules.get(newRulePad);
             if (rule) {
                 rule.dirtyBoundaries = true;
@@ -692,6 +722,11 @@ class Board {
         console.log("Rules:", output);
     }
     erase(i, j) {
+        let ruleIndex = this.data[i][j][3];
+        if (ruleIndex >= 0 && ruleIndex < InputState.__Length) {
+            //error, can't input state rules
+            return;
+        }
         if (this.data[i][j][0] != -1
             || this.data[i][j][1] != -1
             || this.data[i][j][2] != -1
@@ -702,7 +737,7 @@ class Board {
                 cellData: this.data[i][j].slice(0),
             }));
         }
-        let rule = this.rules.get(this.data[i][j][3]);
+        let rule = this.rules.get(ruleIndex);
         //update model
         this.data[i][j][0] = -1;
         this.data[i][j][1] = -1;
@@ -725,6 +760,7 @@ class Board {
             }
             else {
                 this.disableEdgesForRule(rule);
+                this.calculateReachability();
             }
         }
     }
@@ -741,7 +777,11 @@ class Board {
         let newIdeaType = ideaType;
         let newFutureType = futureType;
         let newRulePad = rulePad;
-        if (editModality != Modality.Real && !this.canDrawRule(i, j)) {
+        if (rulePad >= 0 && rulePad < InputState.__Length) {
+            //error, can't change input state rules
+            return;
+        }
+        else if (editModality != Modality.Real && !this.canDrawRule(i, j)) {
             //error
             return;
         }
@@ -835,7 +875,11 @@ class Board {
         this.data[i][j][2] = futureType;
         this.data[i][j][3] = rulePad;
         //set grid cell path
-        if (realType > -1) {
+        if (rulePad >= 0 && rulePad < InputState.__Length) {
+            this.grid.grid[i][j][0] = ImagePaths.InputState[InputState[rulePad]];
+            this.grid.grid[i][j][1] = "";
+        }
+        else if (realType > -1) {
             this.grid.grid[i][j][0] = ImagePaths.Reals[realType];
         }
         else if (ideaType > -1 && futureType > -1) {
@@ -1011,6 +1055,36 @@ class Board {
         }
         return false;
     }
+    calculateReachability() {
+        let visited = new Array(this.maxRuleIndex).fill(false);
+        let shouldVisit = [];
+        for (let element of this.rules) {
+            let rule = element[1];
+            if (rule.index < InputState.__Length && rule.index >= 0) {
+                shouldVisit.push(rule);
+            }
+        }
+        while (shouldVisit.length > 0) {
+            let rule = shouldVisit.pop();
+            if (rule) {
+                visited[rule.index] = true;
+                for (let edge of this.edges) {
+                    if (edge.tailRuleIndex == rule.index) {
+                        let neighbor = this.rules.get(edge.headRuleIndex);
+                        if (neighbor && !visited[neighbor.index]) {
+                            shouldVisit.push(neighbor);
+                        }
+                    }
+                }
+            }
+        }
+        for (let i = 0; i < visited.length; ++i) {
+            let rule = this.rules.get(i);
+            if (rule) {
+                rule.setReachable(visited[i]);
+            }
+        }
+    }
     canConnect(edge, rule) {
         for (let other of this.edges) {
             if (other.tailRuleIndex == edge.tailRuleIndex
@@ -1054,6 +1128,9 @@ class Board {
                         //error: Edge makes rules graph cyclic
                         this.edge.disable();
                     }
+                    else {
+                        this.calculateReachability();
+                    }
                 }
                 else {
                     this.edge.disable();
@@ -1061,11 +1138,31 @@ class Board {
             }
         }
     }
+    setupInputStates() {
+        this.rulePad(1, 1);
+        this.grid.grid[1][1][0] = ImagePaths.InputState["Computer"];
+        this.edits.pop();
+        this.rulePad(1, 3);
+        this.grid.grid[1][3][0] = ImagePaths.InputState["Left"];
+        this.edits.pop();
+        this.rulePad(1, 5);
+        this.grid.grid[1][5][0] = ImagePaths.InputState["Right"];
+        this.edits.pop();
+        this.rulePad(1, 7);
+        this.grid.grid[1][7][0] = ImagePaths.InputState["Up"];
+        this.edits.pop();
+        this.rulePad(1, 9);
+        this.grid.grid[1][9][0] = ImagePaths.InputState["Down"];
+        this.edits.pop();
+        this.calculateReachability();
+        this.debugRules();
+    }
 }
 class Playbilder {
     constructor(container, boardSize) {
         let board = new Board(boardSize);
         let tileSize = board.grid.computeTileSize();
+        board.grid.tileSize = tileSize;
         let paletteLayout = new Layout(0, 0, -20, tileSize, 0, 0, tileSize * 3, tileSize * 12);
         let selectedRectLayout = new Layout(0, 0, 0, 0, 0, 0, tileSize, tileSize);
         let selectedRect = new Rectangle(selectedRectLayout);
@@ -1173,6 +1270,7 @@ class Playbilder {
         board.grid.children.push(toolbar);
         this.game.doLayout();
         board.components = this.game.components;
+        board.setupInputStates();
     }
 }
 var $container = document.getElementById('container');

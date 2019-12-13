@@ -13,6 +13,7 @@ class Grid implements Component {
 	controller : GridController;
 	tileSize : number = 0;
 	downAt : Pos = {x : -1, y : -1};
+	color = Constants.Colors.VeryLightGrey;
 
 	layout : Layout;
 	children? : Component[]
@@ -51,7 +52,7 @@ class Grid implements Component {
 		ctx.beginPath();
 		ctx.lineWidth = 1.0;
 		ctx.setLineDash([])
-		ctx.strokeStyle = "#9D9D9D";
+		ctx.strokeStyle = this.color;
 		for (let i = 0; i <= this.gridSize.width; ++i) {
 			ctx.moveTo(
 				this.layout.computed.position.x + i*this.tileSize,

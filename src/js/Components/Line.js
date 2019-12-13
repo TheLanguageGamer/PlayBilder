@@ -9,6 +9,8 @@ function rgbToHex(r, g, b) {
 class Line {
     constructor() {
         this.points = new Array();
+        this.lineDash = [];
+        this.color = Constants.Colors.Black;
         this.layout = new Layout(0, 0, 0, 0, 0, 0, 0, 0);
     }
     render(ctx, cp) {
@@ -17,8 +19,8 @@ class Line {
         }
         ctx.beginPath();
         ctx.lineWidth = 2.0;
-        ctx.strokeStyle = "#0C0C0C";
-        ctx.setLineDash([7, 3]);
+        ctx.strokeStyle = this.color;
+        ctx.setLineDash(this.lineDash);
         for (let i = 0; i < this.points.length; ++i) {
             let point = this.points[i];
             if (point.isMove) {

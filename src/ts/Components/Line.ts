@@ -19,6 +19,8 @@ class Line {
 	children? : Component[];
 
 	points : Segment[] = new Array();
+	lineDash : number[] = [];
+	color : string = Constants.Colors.Black;
 
 	constructor() {
 		this.layout = new Layout(0, 0, 0, 0, 0, 0, 0, 0);
@@ -30,8 +32,8 @@ class Line {
 		}
 		ctx.beginPath();
 		ctx.lineWidth = 2.0;
-		ctx.strokeStyle = "#0C0C0C";
-		ctx.setLineDash([7, 3]);
+		ctx.strokeStyle = this.color;
+		ctx.setLineDash(this.lineDash);
 		for (let i = 0; i < this.points.length; ++i) {
 			let point = this.points[i];
 			if (point.isMove) {
