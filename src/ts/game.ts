@@ -863,8 +863,10 @@ class Board {
 				this.calculateBoundaries();
 				if (rule.size == 0) {
 					rule.disable();
+					this.disableEdgesForRule(rule);
 				} else {
 					rule.enable();
+					this.respositionEdgesForRule(rule);
 				}
 			}
 		}
@@ -1383,8 +1385,9 @@ class Playbilder {
 			["EdgeIfMatched"], ["EdgeIfNotMatched"], ["EdgeParallel"],
 		];
 
+		let topbarBottomPadding = 20;
 		let toolbarLayout = new Layout(
-			0, 0, 0, -20,
+			0, 0, 0, -topbarBottomPadding,
 			0, 0, tileSize*9, tileSize*1
 		);
 		toolbarLayout.anchor = {x: 0.0, y: 1.0};
@@ -1403,6 +1406,21 @@ class Playbilder {
 		);
 		toolbar.children = [];
 		toolbar.children.push(toolRect);
+
+		let playButtonLayout = new Layout(
+			1, 0, 0, -topbarBottomPadding,
+			0, 0, tileSize, tileSize
+		);
+		playButtonLayout.anchor = {x : 1.0, y : 1.0};
+		let playButton = new Button(
+			playButtonLayout,
+			{
+				onClick(e : MouseEvent) {
+					console.log("this shit be clicked");
+				}
+			}
+		);
+		playButton.children.push();
 
 		this.game = new Game(
 			container,
@@ -1428,6 +1446,7 @@ class Playbilder {
 		board.grid.children = [];
 		board.grid.children.push(palette);
 		board.grid.children.push(toolbar);
+		board.grid.children.push(playButton);
 		this.game.doLayout();
 
 		board.components = this.game.components;
