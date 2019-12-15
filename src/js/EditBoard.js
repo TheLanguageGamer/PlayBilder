@@ -717,11 +717,7 @@ class EditBoard {
             }
         }
     }
-    setCell(i, j, realType, ideaType, futureType, rulePad, data, grid) {
-        data[i][j][0] = realType;
-        data[i][j][1] = ideaType;
-        data[i][j][2] = futureType;
-        data[i][j][3] = rulePad;
+    setGridCell(i, j, realType, ideaType, futureType, rulePad, grid) {
         //set grid cell path
         if (rulePad >= 0 && rulePad < InputState.__Length) {
             grid.grid[i][j][0] = ImagePaths.InputState[InputState[rulePad]];
@@ -746,6 +742,13 @@ class EditBoard {
             grid.grid[i][j][0] = "";
             grid.grid[i][j][1] = "";
         }
+    }
+    setCell(i, j, realType, ideaType, futureType, rulePad, data, grid) {
+        data[i][j][0] = realType;
+        data[i][j][1] = ideaType;
+        data[i][j][2] = futureType;
+        data[i][j][3] = rulePad;
+        this.setGridCell(i, j, realType, ideaType, futureType, rulePad, grid);
     }
     swapCells(i1, j1, i2, j2, data, grid) {
         let temp0 = data[i1][j1][0];

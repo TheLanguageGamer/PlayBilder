@@ -1,35 +1,126 @@
 "use strict";
 class PlayRule {
-    constructor(editRule) {
+    constructor(editRule, data, gridSize, isStartSymbol) {
         this.children = [];
+        this.isStartSymbol = false;
         this.index = editRule.index;
+        this.isStartSymbol = isStartSymbol;
+        this.box = this.getEditRuleBoundingBox(this.index, data, gridSize);
+        console.log("BoundingBox:", this.box);
+        this.data = new Array();
+        for (let i = 0; i < this.box.size.width; ++i) {
+            this.data.push(new Array());
+            for (let j = 0; j < this.box.size.height; ++j) {
+                this.data[i].push([
+                    -1,
+                    data[this.box.position.x + i][this.box.position.y + j][1],
+                    data[this.box.position.x + i][this.box.position.y + j][2],
+                    -1,
+                ]);
+            }
+        }
+    }
+    getEditRuleBoundingBox(index, data, gridSize) {
+        let minPosition = { x: gridSize.width, y: gridSize.height };
+        let maxPosition = { x: -1, y: -1 };
+        for (let i = 0; i < gridSize.width; ++i) {
+            for (let j = 0; j < gridSize.height; ++j) {
+                let otherIndex = data[i][j][3];
+                if (otherIndex == index) {
+                    minPosition.x = Math.min(minPosition.x, i);
+                    minPosition.y = Math.min(minPosition.y, j);
+                    maxPosition.x = Math.max(maxPosition.x, i);
+                    maxPosition.y = Math.max(maxPosition.y, j);
+                }
+            }
+        }
+        return {
+            position: {
+                x: minPosition.x,
+                y: minPosition.y,
+            },
+            size: {
+                width: maxPosition.x - minPosition.x + 1,
+                height: maxPosition.y - minPosition.y + 1,
+            },
+        };
+    }
+    apply(boardData, gridSize, startI, startJ) {
+        for (let i = 0; i < this.box.size.width; ++i) {
+            for (let j = 0; j < this.box.size.height; ++j) {
+                let boardI = startI + i;
+                let boardJ = startJ + j;
+                let futureIdeaType = this.data[i][j][2];
+                boardData[boardI][boardJ][0] = futureIdeaType;
+            }
+        }
+    }
+    match(boardData, gridSize, startI, startJ) {
+        if (startI + this.box.size.width > gridSize.width
+            || startJ + this.box.size.height > gridSize.height) {
+            return false;
+        }
+        let matched = true;
+        for (let i = 0; i < this.box.size.width && matched; ++i) {
+            for (let j = 0; j < this.box.size.height && matched; ++j) {
+                let boardI = startI + i;
+                let boardJ = startJ + j;
+                let ruleIdeaType = this.data[i][j][1];
+                let boardRealType = boardData[boardI][boardJ][0];
+                matched = matched && ruleIdeaType == boardRealType;
+            }
+        }
+        return matched;
+    }
+    process(boardData, gridSize) {
+        if (!this.isStartSymbol) {
+            for (let i = 0; i < gridSize.width; ++i) {
+                for (let j = 0; j < gridSize.height; ++j) {
+                    if (this.match(boardData, gridSize, i, j)) {
+                        this.apply(boardData, gridSize, i, j);
+                    }
+                }
+            }
+        }
+        for (let child of this.children) {
+            child.process(boardData, gridSize);
+        }
     }
 }
 class PlayTree {
-    constructor(rootEditRule, edges, editRules) {
-        this.root = new PlayRule(rootEditRule);
-        this.addChildren(this.root, edges, editRules);
+    constructor(rootEditRule, edges, editRules, data, gridSize) {
+        this.root = new PlayRule(rootEditRule, data, gridSize, true);
+        this.addChildren(this.root, edges, editRules, data, gridSize);
     }
-    addChildren(parent, edges, editRules) {
+    addChildren(parent, edges, editRules, data, gridSize) {
         for (let edge of edges) {
             if (edge.tailRuleIndex == parent.index) {
                 let childEditRule = editRules.get(edge.headRuleIndex);
                 if (childEditRule) {
-                    let childPlayRule = new PlayRule(childEditRule);
+                    let childPlayRule = new PlayRule(childEditRule, data, gridSize, false);
                     parent.children.push(childPlayRule);
-                    this.addChildren(childPlayRule, edges, editRules);
+                    this.addChildren(childPlayRule, edges, editRules, data, gridSize);
                 }
             }
         }
     }
 }
 class PlayBoard {
-    constructor(edges, editRules) {
+    constructor(edges, editRules, data, gridSize) {
+        this.lastTimeStep = 0;
+        this.gameStepInterval = 1000;
         let computerEditRule = editRules.get(InputState.Computer);
         //asser computerEditRule is not undefined
-        this.gameStepPlayTree = new PlayTree(computerEditRule, edges, editRules);
+        this.gameStepPlayTree = new PlayTree(computerEditRule, edges, editRules, data, gridSize);
     }
-    onUpdate(timeMS) {
+    onUpdate(timeMS, boardData, gridSize) {
+        let delta = timeMS - this.lastTimeStep;
+        if (delta >= this.gameStepInterval) {
+            this.lastTimeStep = timeMS;
+            this.gameStepPlayTree.root.process(boardData, gridSize);
+            return true;
+        }
+        return false;
     }
 }
 var BoardState;
@@ -42,7 +133,6 @@ class Board {
     constructor(gridSize) {
         this.state = BoardState.Edit;
         this.editBoard = new EditBoard();
-        this.playBoard = new PlayBoard(this.editBoard.edges, this.editBoard.rules);
         this.data = new Array();
         for (let i = 0; i < gridSize.width; ++i) {
             this.data.push(new Array());
@@ -91,15 +181,25 @@ class Board {
             this.state = BoardState.Edit;
         }
         else {
+            this.playBoard = new PlayBoard(this.editBoard.edges, this.editBoard.rules, this.data, this.grid.gridSize);
             this.state = BoardState.Play;
         }
     }
     isEditing() {
         return this.state == BoardState.Edit;
     }
+    applyDataToGrid() {
+        for (let i = 0; i < this.grid.gridSize.width; ++i) {
+            for (let j = 0; j < this.grid.gridSize.height; ++j) {
+                this.editBoard.setGridCell(i, j, this.data[i][j][0], this.data[i][j][1], this.data[i][j][2], this.data[i][j][3], this.grid);
+            }
+        }
+    }
     onUpdate(timeMS) {
-        if (this.state == BoardState.Play) {
-            this.playBoard.onUpdate(timeMS);
+        if (this.state == BoardState.Play && this.playBoard) {
+            if (this.playBoard.onUpdate(timeMS, this.data, this.grid.gridSize)) {
+                this.applyDataToGrid();
+            }
         }
     }
     debugRules() {

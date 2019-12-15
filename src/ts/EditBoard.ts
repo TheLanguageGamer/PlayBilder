@@ -803,20 +803,14 @@ class EditBoard {
 		}
 	}
 
-	setCell(
+	setGridCell(
 		i : number,
 		j : number,
 		realType : number,
 		ideaType : number,
 		futureType : number,
 		rulePad : number,
-		data : number[][][],
-		grid : Grid) {
-
-		data[i][j][0] = realType;
-		data[i][j][1] = ideaType;
-		data[i][j][2] = futureType;
-		data[i][j][3] = rulePad;
+		grid : Grid ) {
 
 		//set grid cell path
 		if (rulePad >= 0 && rulePad < InputState.__Length) {
@@ -837,6 +831,24 @@ class EditBoard {
 			grid.grid[i][j][0] = "";
 			grid.grid[i][j][1] = "";
 		}
+	}
+
+	setCell(
+		i : number,
+		j : number,
+		realType : number,
+		ideaType : number,
+		futureType : number,
+		rulePad : number,
+		data : number[][][],
+		grid : Grid) {
+
+		data[i][j][0] = realType;
+		data[i][j][1] = ideaType;
+		data[i][j][2] = futureType;
+		data[i][j][3] = rulePad;
+
+		this.setGridCell(i, j, realType, ideaType, futureType, rulePad, grid);
 	}
 
 	swapCells(i1 : number, j1 : number, i2 : number, j2 : number,
