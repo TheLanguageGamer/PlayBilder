@@ -1,5 +1,5 @@
 interface ButtonController {	
-	onClick : (e : MouseEvent) => void;
+	onClick : (e : MouseEvent) => boolean;
 }
 
 class Button implements Component {
@@ -7,6 +7,7 @@ class Button implements Component {
 	layout : Layout;
 	children : Component[];
 	controller : ButtonController;
+	onClick : (e : MouseEvent) => boolean;
 
 	background : Rectangle;
 	foreground : Rectangle;
@@ -16,6 +17,7 @@ class Button implements Component {
 		controller : ButtonController) {
 		this.layout = layout;
 		this.controller = controller;
+		this.onClick = this.controller.onClick;
 
 		this.background = new Rectangle(
 			new Layout(0, 0, 0, 0, 1, 1, 0, 0));

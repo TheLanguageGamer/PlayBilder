@@ -55,5 +55,11 @@ class Layout {
             + offset.position.y;
         this.computed.position = { x: newX, y: newY };
     }
+    containsPosition(x, y) {
+        return x >= this.computed.position.x
+            && y >= this.computed.position.y
+            && x <= this.computed.position.x + this.computed.size.width
+            && y <= this.computed.position.y + this.computed.size.height;
+    }
 }
 //# sourceMappingURL=Layout.js.map

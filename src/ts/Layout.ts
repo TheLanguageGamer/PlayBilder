@@ -65,6 +65,12 @@ class Layout {
 
 		this.computed.position = {x : newX, y : newY};
 	}
+	containsPosition(x : number, y : number) {
+		return x >= this.computed.position.x
+			&& y >= this.computed.position.y
+			&& x <= this.computed.position.x + this.computed.size.width
+			&& y <= this.computed.position.y + this.computed.size.height;
+	}
 	constructor(
 		relX : number, relY : number,
 		offX : number, offY : number,
