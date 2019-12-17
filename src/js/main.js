@@ -77,9 +77,6 @@ class PlayRule {
                 let boardJ = startJ + j;
                 let ruleIdeaType = this.data[i][j][1];
                 let boardRealType = boardData[boardI][boardJ][0];
-                if (ruleIdeaType == -2) {
-                    console.log("-2");
-                }
                 matched = matched && (ruleIdeaType == -2 || ruleIdeaType == boardRealType);
             }
         }
@@ -202,6 +199,60 @@ class Board {
             size: { width: window.innerWidth, height: window.innerHeight },
         });
     }
+    dataToB64(data, gridSize) {
+        let stuffSize = gridSize.width * gridSize.height * 4;
+        let stuff = [];
+        for (let index = 0; index < stuffSize; ++index) {
+            let k = Math.floor(index / (gridSize.width * gridSize.height));
+            let indexOffset = index - k * gridSize.width * gridSize.height;
+            let i = indexOffset % gridSize.width;
+            let j = Math.floor(indexOffset / gridSize.width);
+            stuff.push(data[i][j][k]);
+        }
+        let bytes = new Uint8Array(stuff);
+        var binary = '';
+        var len = bytes.byteLength;
+        for (var i = 0; i < len; i++) {
+            binary += String.fromCharCode(bytes[i]);
+        }
+        let bytesB64 = window.btoa(binary);
+        return bytesB64;
+    }
+    b64ToData(bytesB64, data, gridSize) {
+        let binary = window.atob(bytesB64);
+        let bytes = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; ++i) {
+            bytes[i] = binary.charCodeAt(i);
+        }
+        //assert - binary.length == gridSize.width*gridSize.height*4
+        for (let index = 0; index < binary.length; ++index) {
+            let k = Math.floor(index / (gridSize.width * gridSize.height));
+            let indexOffset = index - k * gridSize.width * gridSize.height;
+            let i = indexOffset % gridSize.width;
+            let j = Math.floor(indexOffset / gridSize.width);
+            let byte = bytes[index];
+            data[i][j][k] = byte == 255 ? -1 : byte;
+        }
+        console.log(bytesB64);
+        console.log("\n\n\n");
+        console.log(binary);
+        console.log("\n\n\n");
+        console.log(bytes);
+        console.log("\n\n\n");
+        console.log(data);
+        console.log("\n\n\n");
+    }
+    asURL() {
+        let bytesB64 = this.dataToB64(this.data, this.grid.gridSize);
+        this.b64ToData(bytesB64, this.data, this.grid.gridSize);
+        let ret = "?";
+        ret += "w=" + this.grid.gridSize.width;
+        ret += "&";
+        ret += "h=" + this.grid.gridSize.height;
+        ret += "&";
+        ret += "data=" + bytesB64;
+        return ret;
+    }
     copyData(from, to) {
         for (let i = 0; i < this.grid.gridSize.width; ++i) {
             for (let j = 0; j < this.grid.gridSize.height; ++j) {
@@ -274,7 +325,7 @@ class Board {
     }
 }
 class Playbilder {
-    constructor(container, boardSize) {
+    constructor(container, boardSize, b64Data) {
         let board = new Board(boardSize);
         let tileSize = board.grid.computeTileSize();
         board.grid.tileSize = tileSize;
@@ -359,10 +410,13 @@ class Playbilder {
         });
         toolbar.children = [];
         toolbar.children.push(toolRect);
-        let playButtonLayout = new Layout(1, 0, 0, -topbarBottomPadding, 0, 0, tileSize, tileSize);
+        let _this = this;
+        let playButtonLayout = new Layout(1, 0, tileSize, tileSize - topbarBottomPadding, 0, 0, tileSize, tileSize);
         playButtonLayout.anchor = { x: 1.0, y: 1.0 };
         let playButton = new Button(playButtonLayout, {
             onClick(e) {
+                let url = board.asURL();
+                console.log(url);
                 board.toggleState();
                 return true;
             }
@@ -402,9 +456,28 @@ class Playbilder {
         this.game.doLayout();
         board.editBoard.components = this.game.components;
         board.setupInputStates();
+        if (b64Data) {
+            board.b64ToData(b64Data, board.data, board.grid.gridSize);
+            board.applyDataToGrid();
+        }
     }
 }
-var $container = document.getElementById('container');
-var $playBilder = new Playbilder($container, { width: 20, height: 20 });
+function getUrlVars() {
+    let vars = new Map();
+    let parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function (m, key, value) {
+        vars.set(key, value);
+        return "";
+    });
+    return vars;
+}
+let getParams = getUrlVars();
+let wParam = getParams.get("w");
+let hParam = getParams.get("h");
+let b64Data = getParams.get("data");
+let width = wParam ? parseInt(wParam) : 20;
+let height = hParam ? parseInt(hParam) : 20;
+console.log("width:", width, "height:", height);
+let $container = document.getElementById('container');
+let $playBilder = new Playbilder($container, { width: width, height: height }, b64Data);
 $playBilder.game.start();
 //# sourceMappingURL=main.js.map
