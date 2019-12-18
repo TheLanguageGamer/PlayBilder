@@ -269,12 +269,21 @@ class Board {
 		let bytesB64 = this.dataToB64(this.data, this.grid.gridSize);
 		this.b64ToData(bytesB64, this.data, this.grid.gridSize);
 
+		let edgesStr = "";
+		for (let edge of this.editBoard.edges) {
+			if (edge.headRuleIndex >= 0 && edge.tailRuleIndex >= 0) {
+				edgesStr += edge.tailRuleIndex + "," + edge.headRuleIndex + ",";
+			}
+		}
+
 		let ret = "?";
 		ret += "w=" + this.grid.gridSize.width;
 		ret += "&";
 		ret += "h=" + this.grid.gridSize.height;
 		ret += "&";
 		ret += "data=" + bytesB64;
+		ret += "&";
+		ret += "edges=" + edgesStr;
 		return ret;
 	}
 
@@ -292,7 +301,7 @@ class Board {
 	toggleState() {
 		if (this.state == BoardState.Play) {
 			this.copyData(this.saved, this.data);
-			this.applyDataToGrid();
+			this.applyRealDataToGrid();
 			this.state = BoardState.Edit;
 		} else {
 			this.copyData(this.data, this.saved);
@@ -310,7 +319,7 @@ class Board {
 		return this.state == BoardState.Edit;
 	}
 
-	applyDataToGrid() {
+	applyRealDataToGrid() {
 		for (let i = 0; i < this.grid.gridSize.width; ++i) {
 			for (let j = 0; j < this.grid.gridSize.height; ++j) {
 				this.editBoard.setGridCell(
@@ -335,7 +344,7 @@ class Board {
 				this.buffer,
 				this.grid.gridSize)) {
 				this.copyData(this.buffer, this.data);
-				this.applyDataToGrid();
+				this.applyRealDataToGrid();
 			}
 		}
 	}
@@ -438,12 +447,53 @@ class Board {
 		this.editBoard.calculateReachability();
 		this.debugRules();
 	}
+
+	loadB64Data(b64Data : string) {
+
+		this.b64ToData(b64Data, this.data, this.grid.gridSize);
+		this.applyRealDataToGrid();
+		for (let i = 0; i < this.grid.gridSize.width; ++i) {
+			for (let j = 0; j < this.grid.gridSize.height; ++j) {
+
+				let ruleIndex = this.data[i][j][3];
+				if (ruleIndex < 0) {
+					continue;
+				}
+				this.editBoard.maxRuleIndex = Math.max(ruleIndex, this.editBoard.maxRuleIndex);
+				let rule = this.editBoard.rules.get(ruleIndex);
+				if (!rule) {
+					let newRule = new EditRule(ruleIndex);
+					this.editBoard.components.push(newRule.line);
+					this.editBoard.rules.set(ruleIndex, newRule);
+					newRule.dirtyBoundaries = true;
+					this.editBoard.calculateBoundaries(this.data, this.grid);
+					this.editBoard.respositionEdgesForRule(newRule, this.grid);
+				}
+			}
+		}
+		this.editBoard.calculateReachability();
+	}
+
+	loadEdgesString(edgesString : string) {
+		let edgesParts = edgesString.split(",");
+		for (let i = 0; i < edgesParts.length; i += 2) {
+			console.log("edge", edgesParts[i], "to", edgesParts[i+1]);
+			let tailPart = edgesParts[i];
+			let headPart = edgesParts[i+1];
+			if (tailPart && headPart) {
+				
+			}
+		}
+	}
 }
 
 class Playbilder {
 	game : Game;
 
-	constructor (container : HTMLElement, boardSize : Size, b64Data? : string) {
+	constructor (
+		container : HTMLElement,
+		boardSize : Size, b64Data? : string,
+		edgesString? : string) {
 
 		let board = new Board(boardSize);
 		let tileSize = board.grid.computeTileSize();
@@ -609,8 +659,10 @@ class Playbilder {
 		board.editBoard.components = this.game.components;
 		board.setupInputStates();
 		if (b64Data) {
-			board.b64ToData(b64Data, board.data, board.grid.gridSize);
-			board.applyDataToGrid();
+			board.loadB64Data(b64Data);
+			if (edgesString) {
+				board.loadEdgesString(edgesString);
+			}
 		}
     }
 }
@@ -631,6 +683,7 @@ let getParams = getUrlVars();
 let wParam = getParams.get("w");
 let hParam = getParams.get("h");
 let b64Data = getParams.get("data");
+let edgesString = getParams.get("edges");
 let width = wParam ? parseInt(wParam) : 20;
 let height = hParam ? parseInt(hParam) : 20;
 
@@ -640,6 +693,7 @@ let $container = document.getElementById('container')!;
 let $playBilder = new Playbilder(
 	$container,
 	{width: width, height: height},
-	b64Data
+	b64Data,
+	edgesString
 );
 $playBilder.game.start();
