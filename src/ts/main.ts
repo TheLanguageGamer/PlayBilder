@@ -1,12 +1,82 @@
 
 class PlayRule {
 	children : PlayRule[] = [];
+	rotations : PlayRule[] = [];
 	index : number;
 	isStartSymbol : boolean = false;
-	box : Box;
-	data : number[][][];
+	size : Size = {width : 0, height : 0};
+	data : number[][][] = new Array();
 
-	getEditRuleBoundingBox(index : number, data : number[][][], gridSize : Size) {
+	apply(
+		boardData : number[][][],
+		boardBuffer : number[][][],
+		gridSize : Size,
+		startI : number,
+		startJ : number) {
+		for (let i = 0; i < this.size.width; ++i) {
+			for (let j = 0; j < this.size.height; ++j) {
+				let boardI = startI + i;
+				let boardJ = startJ + j;
+				let currentType = this.data[i][j][1];
+				let nextType = this.data[i][j][2];
+				if (nextType == -2) {
+					continue;
+				}
+				boardBuffer[boardI][boardJ][0] = nextType;
+				if (currentType != nextType) {
+					boardData[boardI][boardJ][0] = -2;
+				}
+			}
+		}
+	}
+
+	match(boardData : number[][][], boardBuffer : number[][][], gridSize : Size, startI : number, startJ : number) {
+		if (startI + this.size.width > gridSize.width
+			|| startJ + this.size.height > gridSize.height) {
+			return false;
+		}
+
+		let matched = true;
+		for (let i = 0; i < this.size.width && matched; ++i) {
+			for (let j = 0; j < this.size.height && matched; ++j) {
+				let boardI = startI + i;
+				let boardJ = startJ + j;
+				let ruleIdeaType = this.data[i][j][1];
+				let boardRealType = boardData[boardI][boardJ][0];
+				matched = matched && (ruleIdeaType == -2 || ruleIdeaType == boardRealType);
+			}
+		}
+
+		return matched;
+	}
+
+	process(boardData : number[][][], boardBuffer : number[][][], gridSize : Size) {
+
+		if (!this.isStartSymbol) {
+			for (let i = 0; i < gridSize.width; ++i) {
+				for (let j = 0; j < gridSize.height; ++j) {
+					if (this.match(boardData, boardBuffer, gridSize, i, j)) {
+						this.apply(boardData, boardBuffer, gridSize, i, j);
+					}
+				}
+			}
+		}
+
+		for (let rotation of this.rotations) {
+			rotation.process(boardData, boardBuffer, gridSize);
+		}
+
+		for (let child of this.children) {
+			child.process(boardData, boardBuffer, gridSize);
+		}
+	}
+
+	constructor(index : number, isStartSymbol : boolean) {
+		this.index = index;
+		this.isStartSymbol = isStartSymbol;
+	}
+
+	static getEditRuleBoundingBox(index : number, data : number[][][], gridSize : Size) {
 		let minPosition = {x : gridSize.width, y : gridSize.height};
 		let maxPosition = {x : -1, y : -1};
 
@@ -33,85 +103,25 @@ class PlayRule {
 		};
 	}
 
-	apply(
-		boardData : number[][][],
-		boardBuffer : number[][][],
-		gridSize : Size,
-		startI : number,
-		startJ : number) {
-		for (let i = 0; i < this.box.size.width; ++i) {
-			for (let j = 0; j < this.box.size.height; ++j) {
-				let boardI = startI + i;
-				let boardJ = startJ + j;
-				let currentType = this.data[i][j][1];
-				let nextType = this.data[i][j][2];
-				if (nextType == -2) {
-					continue;
-				}
-				boardBuffer[boardI][boardJ][0] = nextType;
-				if (currentType != nextType) {
-					boardData[boardI][boardJ][0] = -2;
-				}
-			}
-		}
-	}
-
-	match(boardData : number[][][], boardBuffer : number[][][], gridSize : Size, startI : number, startJ : number) {
-		if (startI + this.box.size.width > gridSize.width
-			|| startJ + this.box.size.height > gridSize.height) {
-			return false;
-		}
-
-		let matched = true;
-		for (let i = 0; i < this.box.size.width && matched; ++i) {
-			for (let j = 0; j < this.box.size.height && matched; ++j) {
-				let boardI = startI + i;
-				let boardJ = startJ + j;
-				let ruleIdeaType = this.data[i][j][1];
-				let boardRealType = boardData[boardI][boardJ][0];
-				matched = matched && (ruleIdeaType == -2 || ruleIdeaType == boardRealType);
-			}
-		}
-
-		return matched;
-	}
-
-	process(boardData : number[][][], boardBuffer : number[][][], gridSize : Size) {
-
-		if (!this.isStartSymbol) {
-			for (let i = 0; i < gridSize.width; ++i) {
-				for (let j = 0; j < gridSize.height; ++j) {
-					if (this.match(boardData, boardBuffer, gridSize, i, j)) {
-						this.apply(boardData, boardBuffer, gridSize, i, j);
-					}
-				}
-			}
-		}
-
-		for (let child of this.children) {
-			child.process(boardData, boardBuffer, gridSize);
-		}
-	}
-
-	constructor(
+	static fromBoardData(
 		editRule : EditRule,
 		data : number[][][],
 		gridSize : Size,
 		isStartSymbol : boolean) {
 
-		this.index = editRule.index;
-		this.isStartSymbol = isStartSymbol;
-		this.box = this.getEditRuleBoundingBox(this.index, data, gridSize);
-		console.log("BoundingBox:", this.box);
+		let playRule = new PlayRule(editRule.index, isStartSymbol);
 
-		this.data = new Array();
-		for (let i = 0; i < this.box.size.width; ++i) {
-			this.data.push(new Array());
-			for (let j = 0; j < this.box.size.height; ++j) {
-				let tuple = data[this.box.position.x + i][this.box.position.y + j];
+		let box = this.getEditRuleBoundingBox(playRule.index, data, gridSize);
+		playRule.size = box.size;
+		console.log("BoundingBox:", box);
+
+		for (let i = 0; i < box.size.width; ++i) {
+			playRule.data.push(new Array());
+			for (let j = 0; j < box.size.height; ++j) {
+				let tuple = data[box.position.x + i][box.position.y + j];
 				let ideaType = tuple[3] >= 0 ? tuple[1] : -2;
 				let futureType = tuple[3] >= 0 ? tuple[2] : -2;
-				this.data[i].push(
+				playRule.data[i].push(
 					[
 						-1,
 						ideaType,
@@ -121,6 +131,33 @@ class PlayRule {
 				);
 			}
 		}
+
+		let playRule90 = this.createRotation(playRule);
+		let playRule180 = this.createRotation(playRule90);
+		let playRule270 = this.createRotation(playRule180);
+		playRule.rotations = [playRule90, playRule180, playRule270];
+
+		return playRule;
+	}
+
+	static createRotation(other : PlayRule) {
+		let playRule = new PlayRule(other.index, other.isStartSymbol);
+		playRule.size = {
+			width : other.size.height,
+			height : other.size.width
+		};
+		for (let j = 0; j < other.size.height; ++j) {
+			playRule.data.push(new Array());
+			for (let i = 0; i < other.size.width; ++i) {
+				playRule.data[j].push([-1, -1, -1, -1]);
+			}
+		}
+		for (let j = 0; j < other.size.height; ++j) {
+			for (let i = 0; i < other.size.width; ++i) {
+				playRule.data[j][other.size.width-i-1] = other.data[i][j].slice(0);
+			}
+		}
+		return playRule;
 	}
 }
 
@@ -139,7 +176,8 @@ class PlayTree {
 			if (edge.tailRuleIndex == parent.index) {
 				let childEditRule = editRules.get(edge.headRuleIndex);
 				if (childEditRule) {
-					let childPlayRule = new PlayRule(childEditRule, data, gridSize, false);
+					//let childPlayRule = new PlayRule(childEditRule, data, gridSize, false);
+					let childPlayRule = PlayRule.fromBoardData(childEditRule, data, gridSize, false);
 					parent.children.push(childPlayRule)
 					this.addChildren(childPlayRule, edges, editRules, data, gridSize);
 				}
@@ -154,7 +192,8 @@ class PlayTree {
 		data : number[][][],
 		gridSize : Size) {
 
-		this.root = new PlayRule(rootEditRule, data, gridSize, true);
+		//this.root = new PlayRule(rootEditRule, data, gridSize, true);
+		this.root = PlayRule.fromBoardData(rootEditRule, data, gridSize, true);
 		this.addChildren(this.root, edges, editRules, data, gridSize);
 	}
 }
@@ -481,7 +520,19 @@ class Board {
 			let tailPart = edgesParts[i];
 			let headPart = edgesParts[i+1];
 			if (tailPart && headPart) {
-				
+				let tailRuleIndex = parseInt(tailPart);
+				let headRuleIndex = parseInt(headPart);	
+				let edge = new Edge({tailRuleIndex : tailRuleIndex});
+				edge.headRuleIndex = headRuleIndex;
+				this.editBoard.components.push(edge.arrow);
+				this.editBoard.edges.push(edge);
+			}
+		}
+		this.editBoard.calculateReachability();
+		for (let element of this.editBoard.rules) {
+			let rule = element[1];
+			if (rule.isEnabled()) {
+				this.editBoard.respositionEdgesForRule(rule, this.grid);
 			}
 		}
 	}
