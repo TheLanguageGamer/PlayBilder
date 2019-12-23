@@ -65,6 +65,14 @@ class Layout {
 
 		this.computed.position = {x : newX, y : newY};
 	}
+    doLayoutRecursive(parent : Box, components? : Component[]) {
+    	this.doLayout(parent);
+    	if (components) {
+	    	for (let component of components) {
+	    		component.layout.doLayoutRecursive(this.computed, component.children);
+	    	}
+	    }
+    }
 	containsPosition(x : number, y : number) {
 		return x >= this.computed.position.x
 			&& y >= this.computed.position.y

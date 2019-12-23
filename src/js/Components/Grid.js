@@ -68,8 +68,8 @@ class Grid {
         if (!this.controller.onClick) {
             return false;
         }
-        const x = this.getCoordinateForXPosition(e.clientX);
-        const y = this.getCoordinateForYPosition(e.clientY);
+        const x = this.getCoordinateForXPosition(e.offsetX);
+        const y = this.getCoordinateForYPosition(e.offsetY);
         if (x < 0
             || y < 0
             || x >= this.gridSize.width
@@ -83,8 +83,8 @@ class Grid {
         if (!this.controller.onMouseDown && !this.controller.onSelect) {
             return false;
         }
-        const x = this.getCoordinateForXPosition(e.clientX);
-        const y = this.getCoordinateForYPosition(e.clientY);
+        const x = this.getCoordinateForXPosition(e.offsetX);
+        const y = this.getCoordinateForYPosition(e.offsetY);
         if (x < 0
             || y < 0
             || x >= this.gridSize.width
@@ -106,8 +106,8 @@ class Grid {
             || this.downAt.x == -1) {
             return false;
         }
-        const x = this.getCoordinateForXPosition(e.clientX);
-        const y = this.getCoordinateForYPosition(e.clientY);
+        const x = this.getCoordinateForXPosition(e.offsetX);
+        const y = this.getCoordinateForYPosition(e.offsetY);
         if (x < 0
             || y < 0
             || x >= this.gridSize.width
@@ -131,8 +131,8 @@ class Grid {
         if (!this.controller.onMouseUp) {
             return false;
         }
-        const x = this.getCoordinateForXPosition(e.clientX);
-        const y = this.getCoordinateForYPosition(e.clientY);
+        const x = this.getCoordinateForXPosition(e.offsetX);
+        const y = this.getCoordinateForYPosition(e.offsetY);
         if (x < 0
             || y < 0
             || x >= this.gridSize.width

@@ -5,7 +5,7 @@ var Constants = {
         VeryDarkGrey: "#333333",
         DarkGrey: "#666666",
         Grey: "#888888",
-        LightGrey: "BBBBBB",
+        LightGrey: "#BBBBBB",
         VeryLightGrey: "#DDDDDD",
         White: "#FFFFFF",
     }

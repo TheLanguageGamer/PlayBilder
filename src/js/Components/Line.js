@@ -10,6 +10,8 @@ class Line {
     constructor() {
         this.points = new Array();
         this.lineDash = [];
+        this.lineDashOffset = 0;
+        this.lineDashSpeed = 0;
         this.color = Constants.Colors.Black;
         this.layout = new Layout(0, 0, 0, 0, 0, 0, 0, 0);
     }
@@ -21,6 +23,8 @@ class Line {
         ctx.lineWidth = 2.0;
         ctx.strokeStyle = this.color;
         ctx.setLineDash(this.lineDash);
+        this.lineDashOffset += this.lineDashSpeed;
+        ctx.lineDashOffset = this.lineDashOffset;
         for (let i = 0; i < this.points.length; ++i) {
             let point = this.points[i];
             if (point.isMove) {

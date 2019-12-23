@@ -119,8 +119,8 @@ class PlayRule {
 			playRule.data.push(new Array());
 			for (let j = 0; j < box.size.height; ++j) {
 				let tuple = data[box.position.x + i][box.position.y + j];
-				let ideaType = tuple[3] >= 0 ? tuple[1] : -2;
-				let futureType = tuple[3] >= 0 ? tuple[2] : -2;
+				let ideaType = tuple[3] == playRule.index ? tuple[1] : -2;
+				let futureType = tuple[3] == playRule.index ? tuple[2] : -2;
 				playRule.data[i].push(
 					[
 						-1,
@@ -132,10 +132,12 @@ class PlayRule {
 			}
 		}
 
-		let playRule90 = this.createRotation(playRule);
-		let playRule180 = this.createRotation(playRule90);
-		let playRule270 = this.createRotation(playRule180);
-		playRule.rotations = [playRule90, playRule180, playRule270];
+		if (editRule.includeRotations) {
+			let playRule90 = this.createRotation(playRule);
+			let playRule180 = this.createRotation(playRule90);
+			let playRule270 = this.createRotation(playRule180);
+			playRule.rotations = [playRule90, playRule180, playRule270];
+		}
 
 		return playRule;
 	}
@@ -201,6 +203,10 @@ class PlayTree {
 class PlayBoard {
 
 	gameStepPlayTree : PlayTree;
+	leftPlayTree : PlayTree;
+	rightPlayTree : PlayTree;
+	upPlayTree : PlayTree;
+	downPlayTree : PlayTree;
 	lastTimeStep : DOMHighResTimeStamp = 0;
 	gameStepInterval : DOMHighResTimeStamp = 250;
 
@@ -219,6 +225,62 @@ class PlayBoard {
 		return false;
 	}
 
+	onKeyDown(
+		e : KeyboardEvent,
+		boardData : number[][][],
+		boardBuffer : number[][][],
+		gridSize : Size) {
+	    if (e.keyCode == 38 || e.key == 'w') {
+	        this.onUp(boardData, boardBuffer, gridSize);
+	        return true;
+	    }
+	    else if (e.keyCode == 40 || e.key == 's') {
+	    	this.onDown(boardData, boardBuffer, gridSize);
+	        return true;
+	    }
+	    else if (e.keyCode == 37 || e.key == 'a') {
+	    	this.onLeft(boardData, boardBuffer, gridSize);
+	        return true;
+	    }
+	    else if (e.keyCode == 39 || e.key == 'd') {
+	    	this.onRight(boardData, boardBuffer, gridSize);
+	        return true;
+	    }
+	    return false;
+	}
+
+	onRight(
+		boardData : number[][][],
+		boardBuffer : number[][][],
+		gridSize : Size) {
+		console.log("onRight");
+		this.rightPlayTree.root.process(boardData, boardBuffer, gridSize);
+	}
+
+	onLeft(
+		boardData : number[][][],
+		boardBuffer : number[][][],
+		gridSize : Size) {
+		console.log("onLeft");
+		this.leftPlayTree.root.process(boardData, boardBuffer, gridSize);
+	}
+
+	onUp(
+		boardData : number[][][],
+		boardBuffer : number[][][],
+		gridSize : Size) {
+		console.log("onUp");
+		this.upPlayTree.root.process(boardData, boardBuffer, gridSize);
+	}
+
+	onDown(
+		boardData : number[][][],
+		boardBuffer : number[][][],
+		gridSize : Size) {
+		console.log("onDown");
+		this.downPlayTree.root.process(boardData, boardBuffer, gridSize);
+	}
+
 	constructor(
 		edges : Edge[],
 		editRules : Map<number, EditRule>,
@@ -229,6 +291,46 @@ class PlayBoard {
 		//asser computerEditRule is not undefined
 		this.gameStepPlayTree = new PlayTree(
 			computerEditRule,
+			edges,
+			editRules,
+			data,
+			gridSize
+		);
+
+		let leftEditRule = editRules.get(InputState.Left) as EditRule;
+		//asser leftEditRule is not undefined
+		this.leftPlayTree = new PlayTree(
+			leftEditRule,
+			edges,
+			editRules,
+			data,
+			gridSize
+		);
+
+		let rightEditRule = editRules.get(InputState.Right) as EditRule;
+		//asser rightEditRule is not undefined
+		this.rightPlayTree = new PlayTree(
+			rightEditRule,
+			edges,
+			editRules,
+			data,
+			gridSize
+		);
+
+		let upEditRule = editRules.get(InputState.Up) as EditRule;
+		//asser upEditRule is not undefined
+		this.upPlayTree = new PlayTree(
+			upEditRule,
+			edges,
+			editRules,
+			data,
+			gridSize
+		);
+
+		let downEditRule = editRules.get(InputState.Down) as EditRule;
+		//asser downEditRule is not undefined
+		this.downPlayTree = new PlayTree(
+			downEditRule,
 			edges,
 			editRules,
 			data,
@@ -344,6 +446,7 @@ class Board {
 			this.state = BoardState.Edit;
 		} else {
 			this.copyData(this.data, this.saved);
+			this.editBoard.unselectSelectedRule();
 			this.playBoard = new PlayBoard(
 				this.editBoard.edges,
 				this.editBoard.rules,
@@ -376,12 +479,26 @@ class Board {
 
 	onUpdate(timeMS : DOMHighResTimeStamp) {
 		if (this.state == BoardState.Play && this.playBoard) {
-				this.copyData(this.data, this.buffer);
+			this.copyData(this.data, this.buffer);
 			if (this.playBoard.onUpdate(
 				timeMS,
 				this.data,
 				this.buffer,
 				this.grid.gridSize)) {
+				this.copyData(this.buffer, this.data);
+				this.applyRealDataToGrid();
+			}
+		}
+	}
+
+	onKeyDown(e : KeyboardEvent) {
+		if (this.state == BoardState.Play && this.playBoard) {
+			this.copyData(this.data, this.buffer);
+			if (this.playBoard.onKeyDown(
+					e,
+					this.data,
+					this.buffer,
+					this.grid.gridSize)) {
 				this.copyData(this.buffer, this.data);
 				this.applyRealDataToGrid();
 			}
@@ -484,6 +601,7 @@ class Board {
 		this.grid.grid[1][9][0] = ImagePaths.InputState["Down"];
 		this.editBoard.edits.pop();
 		this.editBoard.calculateReachability();
+		this.editBoard.unselectSelectedRule();
 		this.debugRules();
 	}
 
@@ -498,7 +616,7 @@ class Board {
 				if (ruleIndex < 0) {
 					continue;
 				}
-				this.editBoard.maxRuleIndex = Math.max(ruleIndex, this.editBoard.maxRuleIndex);
+				this.editBoard.maxRuleIndex = Math.max(ruleIndex+1, this.editBoard.maxRuleIndex);
 				let rule = this.editBoard.rules.get(ruleIndex);
 				if (!rule) {
 					let newRule = new EditRule(ruleIndex);
@@ -563,6 +681,9 @@ class Playbilder {
 		let toolRect = new Rectangle(toolRectLayout);
 		let toolCoord = {i : 0, j : 0};
 		function setToolFromToolbar(i : number, j : number) {
+			if (i != board.editBoard.editTool) {
+				board.editBoard.unselectSelectedRule();
+			}
 			board.editBoard.editTool = i;
 			toolRect.layout.offset.position.x = i*tileSize;
 			toolRect.layout.offset.position.y = j*tileSize;
@@ -656,9 +777,8 @@ class Playbilder {
 		);
 		toolbar.children = [];
 		toolbar.children.push(toolRect);
-		let _this = this;
 		let playButtonLayout = new Layout(
-			1, 0, tileSize, tileSize-topbarBottomPadding,
+			1, 0, 0, -topbarBottomPadding,
 			0, 0, tileSize, tileSize
 		);
 		playButtonLayout.anchor = {x : 1.0, y : 1.0};
@@ -669,31 +789,38 @@ class Playbilder {
 					let url = board.asURL();
 					console.log(url);
 					board.toggleState();
+					if (board.state == BoardState.Play) {
+
+					}
 					return true;
 				}
 			},
 		);
-		playButton.children.push();
+		playButton.togglePaths = [ImagePaths.Icons["Play"], ImagePaths.Icons["Pause"]];
 
 		this.game = new Game(
 			container,
 			{
 		    	onKeyDown(e : KeyboardEvent) {
 		    		console.log("onKeyDown", e.key, e.ctrlKey, e.metaKey);
-		    		let asNumber = parseInt(e.key);
-		    		if (!isNaN(asNumber)) {
-		    			setSelectedFromPalette(selectedCoord.i, asNumber);
-		    		} else if (e.key == "b") {
-		    			setSelectedFromPalette(0, selectedCoord.j);
-		    		} else if (e.key == "i") {
-		    			setSelectedFromPalette(1, selectedCoord.j);
-		    		} else if (e.key == "f") {
-		    			setSelectedFromPalette(2, selectedCoord.j);
-		    		} else if((e.ctrlKey || e.metaKey) && e.key == "z") {
-		    			if (board.state == BoardState.Edit) {
-			    			board.editBoard.undo(board.data, board.grid);
+		    		if (board.state == BoardState.Edit) {
+			    		let asNumber = parseInt(e.key);
+			    		if (!isNaN(asNumber)) {
+			    			setSelectedFromPalette(selectedCoord.i, asNumber);
+			    		} else if (e.key == "b") {
+			    			setSelectedFromPalette(0, selectedCoord.j);
+			    		} else if (e.key == "i") {
+			    			setSelectedFromPalette(1, selectedCoord.j);
+			    		} else if (e.key == "f") {
+			    			setSelectedFromPalette(2, selectedCoord.j);
+			    		} else if((e.ctrlKey || e.metaKey) && e.key == "z") {
+			    			if (board.state == BoardState.Edit) {
+				    			board.editBoard.undo(board.data, board.grid);
+				    		}
 			    		}
-		    		}
+			    	} else {
+			    		board.onKeyDown(e);
+			    	}
 		    	},
 		    	onUpdate(timeMS : DOMHighResTimeStamp) {
 		    		board.onUpdate(timeMS);
@@ -705,6 +832,7 @@ class Playbilder {
 		board.grid.children.push(palette);
 		board.grid.children.push(toolbar);
 		board.grid.children.push(playButton);
+		board.grid.children.push(board.editBoard.ruleOptions.rootComponent);
 		this.game.doLayout();
 
 		board.editBoard.components = this.game.components;

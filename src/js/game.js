@@ -35,21 +35,34 @@ class Game {
         for (let component of components) {
             if (component.layout.visible) {
                 component.render(this.context, this.contentProvider);
-            }
-            if (component.children) {
-                this.renderRecursive(component.children);
+                if (component.children) {
+                    this.renderRecursive(component.children);
+                }
             }
         }
     }
     clickRecursive(components, e) {
         for (let component of components) {
             if (component.onClick
-                && component.layout.containsPosition(e.clientX, e.clientY)
+                && component.layout.containsPosition(e.offsetX, e.offsetY)
                 && component.onClick(e)) {
                 break;
             }
             if (component.children) {
                 this.clickRecursive(component.children, e);
+            }
+        }
+    }
+    mouseDownRecursive(components, e) {
+        for (let component of components) {
+            if (component.onMouseDown
+                && component.layout.containsPosition(e.offsetX, e.offsetY)
+                && component.onMouseDown(e)) {
+                this.mouseDownComponent = component;
+                break;
+            }
+            if (component.children) {
+                this.mouseDownRecursive(component.children, e);
             }
         }
     }
@@ -79,11 +92,7 @@ class Game {
             if (_this._stopped) {
                 return;
             }
-            for (var component of _this.components) {
-                if (component.onMouseDown) {
-                    component.onMouseDown(e);
-                }
-            }
+            _this.mouseDownRecursive(_this.components, e);
         });
         window.addEventListener('mouseup', function (e) {
             if (_this._stopped) {
@@ -98,6 +107,12 @@ class Game {
         window.addEventListener('mousemove', function (e) {
             if (_this._stopped) {
                 return;
+            }
+            if (_this.mouseDownComponent
+                && _this.mouseDownComponent.onMouseOut
+                && !_this.mouseDownComponent.layout.containsPosition(e.offsetX, e.offsetY)) {
+                _this.mouseDownComponent.onMouseOut(e);
+                _this.mouseDownComponent = undefined;
             }
             for (var component of _this.components) {
                 if (component.onMouseMove) {

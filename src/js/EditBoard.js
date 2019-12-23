@@ -60,6 +60,11 @@ const ImagePaths = {
         "Up": "images/state/icons8-up-96.png",
         "Down": "images/state/icons8-down-arrow-96.png",
     },
+    Icons: {
+        "Play": "images/icons/icons8-play-100.png",
+        "Pause": "images/icons/icons8-pause-100.png",
+        "Checkmark": "images/icons/icons8-checkmark-104.png",
+    },
 };
 var InputState;
 (function (InputState) {
@@ -102,6 +107,7 @@ class EditRule {
         this.boundaryEdges = new Set();
         this.boundaryPoints = new Set();
         this.dirtyBoundaries = true;
+        this.includeRotations = false;
         this._reachable = false;
         this.index = index;
         this.line.color = Constants.Colors.Grey;
@@ -208,9 +214,43 @@ class RuleMove extends Edit {
         this.ruleIndex = obj.ruleIndex;
     }
 }
+class RuleOptionsGUI {
+    constructor() {
+        let ruleOptionsLayout = new Layout(1, 0, 10, 0, 0, 0, 100, 200);
+        let ruleOptions = new Rectangle(ruleOptionsLayout);
+        ruleOptions.lineWidth = 1;
+        let rotationsCheckboxLayout = new Layout(0, 0, 5, 5, 0, 0, 12, 12);
+        let _this = this;
+        this.rotationsCheckbox = new Checkbox(rotationsCheckboxLayout, {
+            onValueChanged(value) {
+                if (_this.rule) {
+                    _this.rule.includeRotations = value;
+                }
+            }
+        });
+        ruleOptions.children = [];
+        ruleOptions.children.push(this.rotationsCheckbox);
+        let rotationsLabelLayout = new Layout(0, 0, 22, 22, 0, 0, 0, 0);
+        let rotationsLabel = new TextBox(rotationsLabelLayout, "Include Rotations");
+        rotationsLabel.setFontSize(12);
+        rotationsLabel.fileStyle = Constants.Colors.Black;
+        ruleOptions.children.push(rotationsLabel);
+        this.rootComponent = ruleOptions;
+        this.hide();
+    }
+    hide() {
+        this.rootComponent.layout.visible = false;
+    }
+    show(rule) {
+        this.rule = rule;
+        this.rootComponent.layout.visible = true;
+        this.rotationsCheckbox.value = this.rule.includeRotations;
+    }
+}
 class EditBoard {
     constructor() {
         this.components = [];
+        this.ruleOptions = new RuleOptionsGUI();
         this.editTool = Tool.Pencil;
         this.editModality = Modality.Real;
         this.editBlockType = 0;
@@ -561,6 +601,7 @@ class EditBoard {
                 rule.dirtyBoundaries = true;
                 this.calculateBoundaries(data, grid);
                 this.respositionEdgesForRule(rule, grid);
+                this.selectRuleIndex(newRuleIndex);
             }
             return newRuleIndex;
         }
@@ -637,17 +678,21 @@ class EditBoard {
         }
         else if (editModality == Modality.Real && realType == editBlockType) {
             //erase
+            this.unselectSelectedRule();
             newRealType = -1;
         }
         else if (editModality == Modality.Idea && ideaType == editBlockType) {
             //erase
+            this.unselectSelectedRule();
             newIdeaType = -1;
         }
         else if (editModality == Modality.Future && futureType == editBlockType) {
             //erase
+            this.unselectSelectedRule();
             newFutureType = -1;
         }
         else if (editModality == Modality.Real) {
+            this.unselectSelectedRule();
             newRealType = editBlockType;
         }
         else if (editModality == Modality.Idea) {
@@ -777,6 +822,23 @@ class EditBoard {
             }
         }
     }
+    selectRuleIndex(ruleIndex) {
+        this.unselectSelectedRule();
+        let rule = this.rules.get(ruleIndex);
+        if (rule) {
+            this.ruleOptions.show(rule);
+            rule.line.lineDashSpeed = -0.333;
+            this.selectedRule = rule;
+        }
+        //else, panic!
+    }
+    unselectSelectedRule() {
+        if (this.selectedRule) {
+            this.ruleOptions.hide();
+            this.selectedRule.line.lineDashSpeed = 0;
+        }
+        //else, panic!
+    }
     onMouseDown(i, j, e, data, grid) {
         switch (this.editTool) {
             case Tool.Move: {
@@ -788,6 +850,10 @@ class EditBoard {
                     this.movingStartCoordinate.y = j;
                     this.movingLastCoordinate.x = i;
                     this.movingLastCoordinate.y = j;
+                    this.selectRuleIndex(ruleIndex);
+                }
+                else {
+                    this.unselectSelectedRule();
                 }
                 break;
             }
@@ -797,8 +863,8 @@ class EditBoard {
                 if (ruleIndex > -1 && rule) {
                     this.isAddingEdge = true;
                     let edge = new Edge({ tailRuleIndex: ruleIndex });
-                    edge.arrow.to.x = e.clientX;
-                    edge.arrow.to.y = e.clientY;
+                    edge.arrow.to.x = e.offsetX;
+                    edge.arrow.to.y = e.offsetY;
                     edge.arrow.from = edge.findClosestPoint(edge.arrow.to, rule, grid);
                     this.edge = edge;
                     this.components.push(edge.arrow);
@@ -812,8 +878,8 @@ class EditBoard {
     }
     onMouseMove(e, data, grid) {
         if (this.isMoving) {
-            let currentI = grid.getCoordinateForXPosition(e.clientX);
-            let currentJ = grid.getCoordinateForYPosition(e.clientY);
+            let currentI = grid.getCoordinateForXPosition(e.offsetX);
+            let currentJ = grid.getCoordinateForYPosition(e.offsetY);
             let deltaI = currentI - this.movingLastCoordinate.x;
             let deltaJ = currentJ - this.movingLastCoordinate.y;
             if (deltaI == 0 && deltaJ == 0) {
@@ -838,8 +904,8 @@ class EditBoard {
             if (this.edge) {
                 let rule = this.rules.get(this.edge.tailRuleIndex);
                 if (rule) {
-                    this.edge.arrow.to.x = e.clientX;
-                    this.edge.arrow.to.y = e.clientY;
+                    this.edge.arrow.to.x = e.offsetX;
+                    this.edge.arrow.to.y = e.offsetY;
                     this.edge.arrow.from = this.edge.findClosestPoint(this.edge.arrow.to, rule, grid);
                 }
             }

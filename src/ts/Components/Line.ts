@@ -20,6 +20,8 @@ class Line {
 
 	points : Segment[] = new Array();
 	lineDash : number[] = [];
+	lineDashOffset : number = 0;
+	lineDashSpeed : number = 0;
 	color : string = Constants.Colors.Black;
 
 	constructor() {
@@ -34,6 +36,8 @@ class Line {
 		ctx.lineWidth = 2.0;
 		ctx.strokeStyle = this.color;
 		ctx.setLineDash(this.lineDash);
+		this.lineDashOffset += this.lineDashSpeed;
+		ctx.lineDashOffset = this.lineDashOffset;
 		for (let i = 0; i < this.points.length; ++i) {
 			let point = this.points[i];
 			if (point.isMove) {

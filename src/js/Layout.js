@@ -55,6 +55,14 @@ class Layout {
             + offset.position.y;
         this.computed.position = { x: newX, y: newY };
     }
+    doLayoutRecursive(parent, components) {
+        this.doLayout(parent);
+        if (components) {
+            for (let component of components) {
+                component.layout.doLayoutRecursive(this.computed, component.children);
+            }
+        }
+    }
     containsPosition(x, y) {
         return x >= this.computed.position.x
             && y >= this.computed.position.y

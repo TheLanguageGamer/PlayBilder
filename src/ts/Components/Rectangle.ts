@@ -5,6 +5,7 @@ class Rectangle {
 
 	strokeColor? : string = Constants.Colors.Black;
 	fillColor? : string;
+	lineWidth : number = 2;
 
 	constructor(layout : Layout) {
 		this.layout = layout;
@@ -15,7 +16,7 @@ class Rectangle {
 			return;
 		}
 		ctx.beginPath();
-		ctx.lineWidth = 2.0;
+		ctx.lineWidth = this.lineWidth;
 		if (this.strokeColor) {
 			ctx.strokeStyle = this.strokeColor;
 		}

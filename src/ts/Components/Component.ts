@@ -4,6 +4,7 @@ interface Component {
 	onMouseDown? : (e : MouseEvent) => boolean;
 	onMouseUp? : (e : MouseEvent) => boolean;
 	onMouseMove? : (e : MouseEvent) => boolean;
+	onMouseOut? : (e : MouseEvent) => void;
 
 	layout : Layout
 	children? : Component[]
