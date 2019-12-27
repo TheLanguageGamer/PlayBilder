@@ -7,8 +7,10 @@ class Game {
         this.viewport = document.createElement("canvas");
         this.context = this.viewport.getContext('2d');
         container.insertBefore(this.viewport, container.firstChild);
+        let info = document.getElementById("info");
+        let topPadding = info ? info.clientHeight + 5 : 5;
         this.viewport.width = window.innerWidth;
-        this.viewport.height = window.innerHeight;
+        this.viewport.height = window.innerHeight - topPadding;
         this.contentProvider = new ContentProvider();
     }
     doLayoutRecursive(components, parent) {

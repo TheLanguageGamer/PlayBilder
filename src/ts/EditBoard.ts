@@ -136,12 +136,51 @@ class EditRule {
 	}
 }
 
+enum EdgeType {
+	None = 0,
+	Always = 1,
+	IfMatched = 2,
+	IfNotMatched = 3,
+	Parallel = 4,
+}
+
 class Edge {
+	type : EdgeType = EdgeType.Always;
 	tailRuleIndex : number;
 	headRuleIndex : number = -1;
 	arrow : Arrow = new Arrow();
-	constructor(obj : {tailRuleIndex : number}) {
+	constructor(obj : {tailRuleIndex : number, fromTool : Tool}) {
 		this.tailRuleIndex = obj.tailRuleIndex;
+		if (obj.fromTool == Tool.EdgeAlways) {
+			this.setEdgeType(EdgeType.Always);
+		} else if (obj.fromTool == Tool.EdgeIfMatched) {
+			this.setEdgeType(EdgeType.IfMatched);
+		} else if (obj.fromTool == Tool.EdgeIfNotMatched) {
+			this.setEdgeType(EdgeType.IfNotMatched);
+		} else if (obj.fromTool == Tool.EdgeParallel) {
+			this.setEdgeType(EdgeType.Parallel);
+		}
+	}
+	setEdgeType(type : EdgeType) {
+		this.type = type;
+		switch (type) {
+			case EdgeType.Always: {
+				this.arrow.color = Constants.Colors.Black;
+				break;
+			}
+			case EdgeType.IfMatched: {
+				this.arrow.color = Constants.Colors.Green.NCS;
+				break;
+			}
+			case EdgeType.IfNotMatched: {
+				this.arrow.color = Constants.Colors.Red.NCS;
+				break;
+			}
+			case EdgeType.Parallel: {
+				this.arrow.color = Constants.Colors.Blue.NCS;
+				break;
+			}
+		}
 	}
 	disable() {
 		this.tailRuleIndex = -1;
@@ -285,6 +324,7 @@ class EditBoard {
 	editBlockType : number = 0;
 
 	selectedRule? : EditRule;
+	selectedEdge? : Edge;
 
 	isMoving : boolean = false;
 	movingRuleIndex : number = -1;
@@ -684,6 +724,9 @@ class EditBoard {
 			}
 			return newRuleIndex;
 		}
+		if (ruleIndex > -1) {
+			this.selectRuleIndex(ruleIndex);
+		}
 		return ruleIndex;
 	}
 
@@ -763,18 +806,16 @@ class EditBoard {
 			return;
 		} else if (editModality == Modality.Real && realType == editBlockType) {
 			//erase
-			this.unselectSelectedRule();
+			this.unselectSelectedObject();
 			newRealType = -1;
 		} else if (editModality == Modality.Idea && ideaType == editBlockType) {
 			//erase
-			this.unselectSelectedRule();
 			newIdeaType = -1;
 		} else if (editModality == Modality.Future && futureType == editBlockType) {
 			//erase
-			this.unselectSelectedRule();
 			newFutureType = -1;
 		} else if (editModality == Modality.Real) {
-			this.unselectSelectedRule();
+			this.unselectSelectedObject();
 			newRealType = editBlockType;
 		} else if (editModality == Modality.Idea) {
 			newIdeaType = editBlockType;
@@ -950,7 +991,7 @@ class EditBoard {
 	}
 
 	selectRuleIndex(ruleIndex : number) {
-		this.unselectSelectedRule();
+		this.unselectSelectedObject();
 		let rule = this.rules.get(ruleIndex);
 		if (rule) {
 			this.ruleOptions.show(rule);
@@ -960,12 +1001,40 @@ class EditBoard {
 		//else, panic!
 	}
 
-	unselectSelectedRule() {
+	unselectSelectedObject() {
 		if (this.selectedRule) {
 			this.ruleOptions.hide();
 			this.selectedRule.line.lineDashSpeed = 0;
+			this.selectedRule = undefined;
 		}
-		//else, panic!
+		if (this.selectedEdge) {
+			this.selectedEdge.arrow.lineWidth = 3;
+			this.selectedEdge.arrow.headMargin = 6;
+			this.selectedEdge = undefined;
+		}
+	}
+
+	selectEdge(edge : Edge) {
+		edge.arrow.lineWidth = 5;
+		edge.arrow.headMargin = 10;
+		this.selectedEdge = edge;
+	}
+
+	findEdgeToSelect(e : MouseEvent) : undefined | Edge {
+		let returnEdge = undefined;
+		let minDistance = 6;
+		for (let edge of this.edges) {
+			let distance = minimumDistanceToLineSegment(
+				{x : e.offsetX, y : e.offsetY},
+				edge.arrow.from,
+				edge.arrow.to
+			);
+			if (distance < minDistance) {
+				minDistance = distance;
+				returnEdge = edge;
+			}
+		}
+		return returnEdge;
 	}
 
 	onMouseDown(i : number, j : number, e : MouseEvent,
@@ -982,16 +1051,22 @@ class EditBoard {
 					this.movingLastCoordinate.y = j;
 					this.selectRuleIndex(ruleIndex);
 				} else {
-					this.unselectSelectedRule();
+					this.unselectSelectedObject();
 				}
 				break;
 			}
-			case Tool.EdgeAlways: {
+			case Tool.EdgeAlways:
+			case Tool.EdgeIfMatched:
+			case Tool.EdgeIfNotMatched:
+			case Tool.EdgeParallel: {
 				let ruleIndex = data[i][j][3];
 				let rule = this.rules.get(ruleIndex);
 				if (ruleIndex > -1 && rule) {
 					this.isAddingEdge = true;
-					let edge = new Edge({tailRuleIndex : ruleIndex});
+					let edge = new Edge({
+						tailRuleIndex : ruleIndex,
+						fromTool : this.editTool,
+					});
 					edge.arrow.to.x = e.offsetX;
 					edge.arrow.to.y = e.offsetY;
 					edge.arrow.from = edge.findClosestPoint(
@@ -1001,6 +1076,17 @@ class EditBoard {
 					);
 					this.edge = edge;
 					this.components.push(edge.arrow);
+				}
+				break;
+			}
+			case Tool.Select: {
+				this.unselectSelectedObject();
+				let edge = this.findEdgeToSelect(e);
+				let ruleIndex = data[i][j][3];
+				if (edge) {
+					this.selectEdge(edge);
+				} else if (ruleIndex > -1) {
+					this.selectRuleIndex(ruleIndex);
 				}
 				break;
 			}
@@ -1164,8 +1250,7 @@ class EditBoard {
 	}
 
 	canConnect(edge : Edge, rule : EditRule) {
-		if (edge.tailRuleIndex < InputState.__Length
-			&& rule.index < InputState.__Length) {
+		if (rule.index < InputState.__Length) {
 			//error, can't connect input states
 			return false;
 		}

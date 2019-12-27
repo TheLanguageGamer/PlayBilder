@@ -1,6 +1,6 @@
 "use strict";
 class PlayRule {
-    constructor(index, isStartSymbol) {
+    constructor(index, isStartSymbol, incomingEdgeType) {
         this.children = [];
         this.rotations = [];
         this.isStartSymbol = false;
@@ -8,6 +8,7 @@ class PlayRule {
         this.data = new Array();
         this.index = index;
         this.isStartSymbol = isStartSymbol;
+        this.incomingEdgeType = incomingEdgeType;
     }
     apply(boardData, boardBuffer, gridSize, startI, startJ) {
         for (let i = 0; i < this.size.width; ++i) {
@@ -44,11 +45,13 @@ class PlayRule {
         return matched;
     }
     process(boardData, boardBuffer, gridSize) {
+        let didMatch = false;
         if (!this.isStartSymbol) {
             for (let i = 0; i < gridSize.width; ++i) {
                 for (let j = 0; j < gridSize.height; ++j) {
                     if (this.match(boardData, boardBuffer, gridSize, i, j)) {
                         this.apply(boardData, boardBuffer, gridSize, i, j);
+                        didMatch = true;
                     }
                 }
             }
@@ -57,7 +60,11 @@ class PlayRule {
             rotation.process(boardData, boardBuffer, gridSize);
         }
         for (let child of this.children) {
-            child.process(boardData, boardBuffer, gridSize);
+            if ((child.incomingEdgeType == EdgeType.IfMatched && didMatch)
+                || (child.incomingEdgeType == EdgeType.IfNotMatched && !didMatch)
+                || (child.incomingEdgeType == EdgeType.Always)) {
+                child.process(boardData, boardBuffer, gridSize);
+            }
         }
     }
     static getEditRuleBoundingBox(index, data, gridSize) {
@@ -85,8 +92,8 @@ class PlayRule {
             },
         };
     }
-    static fromBoardData(editRule, data, gridSize, isStartSymbol) {
-        let playRule = new PlayRule(editRule.index, isStartSymbol);
+    static fromBoardData(editRule, data, gridSize, isStartSymbol, incomingEdgeType) {
+        let playRule = new PlayRule(editRule.index, isStartSymbol, incomingEdgeType);
         let box = this.getEditRuleBoundingBox(playRule.index, data, gridSize);
         playRule.size = box.size;
         console.log("BoundingBox:", box);
@@ -113,7 +120,7 @@ class PlayRule {
         return playRule;
     }
     static createRotation(other) {
-        let playRule = new PlayRule(other.index, other.isStartSymbol);
+        let playRule = new PlayRule(other.index, other.isStartSymbol, other.incomingEdgeType);
         playRule.size = {
             width: other.size.height,
             height: other.size.width
@@ -135,7 +142,7 @@ class PlayRule {
 class PlayTree {
     constructor(rootEditRule, edges, editRules, data, gridSize) {
         //this.root = new PlayRule(rootEditRule, data, gridSize, true);
-        this.root = PlayRule.fromBoardData(rootEditRule, data, gridSize, true);
+        this.root = PlayRule.fromBoardData(rootEditRule, data, gridSize, true, EdgeType.None);
         this.addChildren(this.root, edges, editRules, data, gridSize);
     }
     addChildren(parent, edges, editRules, data, gridSize) {
@@ -144,7 +151,7 @@ class PlayTree {
                 let childEditRule = editRules.get(edge.headRuleIndex);
                 if (childEditRule) {
                     //let childPlayRule = new PlayRule(childEditRule, data, gridSize, false);
-                    let childPlayRule = PlayRule.fromBoardData(childEditRule, data, gridSize, false);
+                    let childPlayRule = PlayRule.fromBoardData(childEditRule, data, gridSize, false, edge.type);
                     parent.children.push(childPlayRule);
                     this.addChildren(childPlayRule, edges, editRules, data, gridSize);
                 }
@@ -363,7 +370,7 @@ class Board {
         }
         else {
             this.copyData(this.data, this.saved);
-            this.editBoard.unselectSelectedRule();
+            this.editBoard.unselectSelectedObject();
             this.playBoard = new PlayBoard(this.editBoard.edges, this.editBoard.rules, this.data, this.grid.gridSize);
             this.state = BoardState.Play;
         }
@@ -423,7 +430,7 @@ class Board {
         this.grid.grid[1][9][0] = ImagePaths.InputState["Down"];
         this.editBoard.edits.pop();
         this.editBoard.calculateReachability();
-        this.editBoard.unselectSelectedRule();
+        this.editBoard.unselectSelectedObject();
         this.debugRules();
     }
     loadB64Data(b64Data) {
@@ -458,7 +465,10 @@ class Board {
             if (tailPart && headPart) {
                 let tailRuleIndex = parseInt(tailPart);
                 let headRuleIndex = parseInt(headPart);
-                let edge = new Edge({ tailRuleIndex: tailRuleIndex });
+                let edge = new Edge({
+                    tailRuleIndex: tailRuleIndex,
+                    fromTool: Tool.EdgeAlways,
+                });
                 edge.headRuleIndex = headRuleIndex;
                 this.editBoard.components.push(edge.arrow);
                 this.editBoard.edges.push(edge);
@@ -487,7 +497,7 @@ class Playbilder {
         let toolCoord = { i: 0, j: 0 };
         function setToolFromToolbar(i, j) {
             if (i != board.editBoard.editTool) {
-                board.editBoard.unselectSelectedRule();
+                board.editBoard.unselectSelectedObject();
             }
             board.editBoard.editTool = i;
             toolRect.layout.offset.position.x = i * tileSize;

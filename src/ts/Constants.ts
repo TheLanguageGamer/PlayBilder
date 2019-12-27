@@ -7,5 +7,17 @@ var Constants = {
 		LightGrey : "#BBBBBB",
 		VeryLightGrey : "#DDDDDD",
 		White : "#FFFFFF",
+		Blue : {
+			NCS : "#0087BD",
+		},
+		Green : {
+			NCS : "#009F6B",
+		},
+		Yellow : {
+			NCS : "#FFD300",
+		},
+		Red : {
+			NCS : "#C40233",
+		},
 	}
 }

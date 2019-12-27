@@ -4,8 +4,9 @@ class Arrow {
 
 	from : Pos = {x : 0, y : 0};
 	to : Pos = {x : 0, y : 0};
-	lineWidth : number = 4;
-    headMargin : number = 8;
+	lineWidth : number = 3;
+    headMargin : number = 6;
+    color : string = Constants.Colors.Black;
 
 	constructor() {
 		this.layout = new Layout(0, 0, 0, 0, 0, 0, 0, 0);
@@ -25,9 +26,9 @@ class Arrow {
             y : this.to.y-this.headMargin*Math.sin(angle),
         };
 
-        ctx.strokeStyle = "#131313";
+        ctx.strokeStyle = this.color;
         ctx.lineWidth = this.lineWidth;
-        ctx.fillStyle = "#131313";
+        ctx.fillStyle = this.color;
         ctx.setLineDash([]);
 
         ctx.beginPath();

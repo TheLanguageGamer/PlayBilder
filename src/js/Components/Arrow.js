@@ -3,8 +3,9 @@ class Arrow {
     constructor() {
         this.from = { x: 0, y: 0 };
         this.to = { x: 0, y: 0 };
-        this.lineWidth = 4;
-        this.headMargin = 8;
+        this.lineWidth = 3;
+        this.headMargin = 6;
+        this.color = Constants.Colors.Black;
         this.layout = new Layout(0, 0, 0, 0, 0, 0, 0, 0);
     }
     render(ctx, cp) {
@@ -14,9 +15,9 @@ class Arrow {
             x: this.to.x - this.headMargin * Math.cos(angle),
             y: this.to.y - this.headMargin * Math.sin(angle),
         };
-        ctx.strokeStyle = "#131313";
+        ctx.strokeStyle = this.color;
         ctx.lineWidth = this.lineWidth;
-        ctx.fillStyle = "#131313";
+        ctx.fillStyle = this.color;
         ctx.setLineDash([]);
         ctx.beginPath();
         ctx.arc(this.from.x, this.from.y, this.lineWidth * 0.5, 0, 2 * Math.PI);

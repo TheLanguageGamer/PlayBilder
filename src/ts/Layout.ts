@@ -26,6 +26,34 @@ function averagePosition(pos1 : Pos, pos2 : Pos) {
 	};
 }
 
+function dotProduct(pos1 : Pos, pos2 : Pos) {
+	return pos1.x*pos2.x + pos1.y*pos2.y;
+}
+
+function minimumDistanceToLineSegment(p : Pos, l1 : Pos, l2 : Pos) {
+	let length = calculateDistance(l1, l2);
+	if (length < 0.1) {
+		return calculateDistance(p, l1);
+	}
+	let dp = dotProduct(
+		{
+			x : p.x - l1.x,
+			y : p.y - l1.y,
+		},
+		{
+			x : l2.x - l1.x,
+			y : l2.y - l1.y,
+		}
+	);
+	let t = dp / (length*length);
+	t = Math.max(0, Math.min(1, t));
+	let projection = {
+		x : l1.x + t * (l2.x - l1.x),
+		y : l1.y + t * (l2.y - l1.y),
+	};
+	return calculateDistance(p, projection);
+}
+
 class Layout {
 	relative : Box = {size : {width: 0, height: 0}, position : {x: 0, y: 0}};
 	offset : Box = {size : {width: 0, height: 0}, position : {x: 0, y: 0}};
