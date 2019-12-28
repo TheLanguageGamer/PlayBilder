@@ -72,7 +72,7 @@ class PlayRule {
 			if ((child.incomingEdgeType == EdgeType.IfMatched && didMatch)
 				|| (child.incomingEdgeType == EdgeType.IfNotMatched && !didMatch)
 				|| (child.incomingEdgeType == EdgeType.Always)) {
-				
+
 				child.process(boardData, boardBuffer, gridSize);
 			}
 		}
@@ -184,7 +184,7 @@ class PlayTree {
 		gridSize : Size) {
 
 		for (let edge of edges) {
-			if (edge.tailRuleIndex == parent.index) {
+			if (edge.isEnabled() && edge.tailRuleIndex == parent.index) {
 				let childEditRule = editRules.get(edge.headRuleIndex);
 				if (childEditRule) {
 					//let childPlayRule = new PlayRule(childEditRule, data, gridSize, false);
@@ -223,7 +223,7 @@ class PlayBoard {
 	upPlayTree : PlayTree;
 	downPlayTree : PlayTree;
 	lastTimeStep : DOMHighResTimeStamp = 0;
-	gameStepInterval : DOMHighResTimeStamp = 250;
+	gameStepInterval : DOMHighResTimeStamp = 500;
 
 	onUpdate(
 		timeMS : DOMHighResTimeStamp,
@@ -517,6 +517,8 @@ class Board {
 				this.copyData(this.buffer, this.data);
 				this.applyRealDataToGrid();
 			}
+		} else if (this.state == BoardState.Edit) {
+			this.editBoard.onKeyDown(e);
 		}
 	}
 
@@ -836,9 +838,8 @@ class Playbilder {
 				    			board.editBoard.undo(board.data, board.grid);
 				    		}
 			    		}
-			    	} else {
-			    		board.onKeyDown(e);
 			    	}
+			    	board.onKeyDown(e);
 		    	},
 		    	onUpdate(timeMS : DOMHighResTimeStamp) {
 		    		board.onUpdate(timeMS);

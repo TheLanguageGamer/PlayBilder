@@ -1142,5 +1142,15 @@ class EditBoard {
             }
         }
     }
+    onKeyDown(e) {
+        if (e.keyCode == 46 || e.keyCode == 8) {
+            if (this.selectedEdge) {
+                let edge = this.selectedEdge;
+                this.unselectSelectedObject();
+                edge.disable();
+                this.calculateReachability();
+            }
+        }
+    }
 }
 //# sourceMappingURL=EditBoard.js.map

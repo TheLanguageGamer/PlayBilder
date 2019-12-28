@@ -147,7 +147,7 @@ class PlayTree {
     }
     addChildren(parent, edges, editRules, data, gridSize) {
         for (let edge of edges) {
-            if (edge.tailRuleIndex == parent.index) {
+            if (edge.isEnabled() && edge.tailRuleIndex == parent.index) {
                 let childEditRule = editRules.get(edge.headRuleIndex);
                 if (childEditRule) {
                     //let childPlayRule = new PlayRule(childEditRule, data, gridSize, false);
@@ -162,7 +162,7 @@ class PlayTree {
 class PlayBoard {
     constructor(edges, editRules, data, gridSize) {
         this.lastTimeStep = 0;
-        this.gameStepInterval = 250;
+        this.gameStepInterval = 500;
         let computerEditRule = editRules.get(InputState.Computer);
         //asser computerEditRule is not undefined
         this.gameStepPlayTree = new PlayTree(computerEditRule, edges, editRules, data, gridSize);
@@ -402,6 +402,9 @@ class Board {
                 this.applyRealDataToGrid();
             }
         }
+        else if (this.state == BoardState.Edit) {
+            this.editBoard.onKeyDown(e);
+        }
     }
     debugRules() {
         let output = "";
@@ -608,9 +611,7 @@ class Playbilder {
                         }
                     }
                 }
-                else {
-                    board.onKeyDown(e);
-                }
+                board.onKeyDown(e);
             },
             onUpdate(timeMS) {
                 board.onUpdate(timeMS);
