@@ -1,3 +1,10 @@
+function shuffle(a : []) {
+    for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+}
 
 class PlayRule {
 	children : PlayRule[] = [];
@@ -425,12 +432,44 @@ class Board {
 		let bytesB64 = this.dataToB64(this.data, this.grid.gridSize);
 		this.b64ToData(bytesB64, this.data, this.grid.gridSize);
 
-		let edgesStr = "";
+		let alwaysStr = "";
+		let matchesStr = "";
+		let notMatchesStr = "";
+		let parallelStr = "";
 		for (let edge of this.editBoard.edges) {
 			if (edge.headRuleIndex >= 0 && edge.tailRuleIndex >= 0) {
-				edgesStr += edge.tailRuleIndex + "," + edge.headRuleIndex + ",";
+				switch (edge.type) {
+					case EdgeType.Always: {
+						alwaysStr += edge.tailRuleIndex + "," + edge.headRuleIndex + ",";
+						break;
+					}
+					case EdgeType.IfMatched: {
+						matchesStr += edge.tailRuleIndex + "," + edge.headRuleIndex + ",";
+						break;
+					}
+					case EdgeType.IfNotMatched: {
+						notMatchesStr += edge.tailRuleIndex + "," + edge.headRuleIndex + ",";
+						break;
+					}
+					case EdgeType.Parallel: {
+						parallelStr += edge.tailRuleIndex + "," + edge.headRuleIndex + ",";
+						break;
+					}
+				}
 			}
 		}
+
+		let rotations : number[] = [];
+		for (let element of this.editBoard.rules) {
+			let rule = element[1];
+			while (rule.index >= rotations.length) {
+				rotations.push(0);
+			}
+			if (rule.includeRotations) {
+				rotations[rule.index] = 1;
+			}
+		}
+		let rotationsStr = rotations.join(",");
 
 		let ret = "?";
 		ret += "w=" + this.grid.gridSize.width;
@@ -439,7 +478,15 @@ class Board {
 		ret += "&";
 		ret += "data=" + bytesB64;
 		ret += "&";
-		ret += "edges=" + edgesStr;
+		ret += "always=" + alwaysStr;
+		ret += "&";
+		ret += "matches=" + matchesStr;
+		ret += "&";
+		ret += "notMatches=" + notMatchesStr;
+		ret += "&";
+		ret += "parallel=" + parallelStr;
+		ret += "&";
+		ret += "rotations=" + rotationsStr;
 		return ret;
 	}
 
@@ -648,7 +695,7 @@ class Board {
 		this.editBoard.calculateReachability();
 	}
 
-	loadEdgesString(edgesString : string) {
+	loadEdgesString(edgesString : string, type : Tool) {
 		let edgesParts = edgesString.split(",");
 		for (let i = 0; i < edgesParts.length; i += 2) {
 			console.log("edge", edgesParts[i], "to", edgesParts[i+1]);
@@ -659,18 +706,11 @@ class Board {
 				let headRuleIndex = parseInt(headPart);	
 				let edge = new Edge({
 					tailRuleIndex : tailRuleIndex,
-					fromTool : Tool.EdgeAlways,
+					fromTool : type,
 				});
 				edge.headRuleIndex = headRuleIndex;
 				this.editBoard.components.push(edge.arrow);
 				this.editBoard.edges.push(edge);
-			}
-		}
-		this.editBoard.calculateReachability();
-		for (let element of this.editBoard.rules) {
-			let rule = element[1];
-			if (rule.isEnabled()) {
-				this.editBoard.respositionEdgesForRule(rule, this.grid);
 			}
 		}
 	}
@@ -679,10 +719,59 @@ class Board {
 class Playbilder {
 	game : Game;
 
+	loadStateFromGetParams(getParams : Map<string, string>, board : Board) {
+
+		let b64Data = getParams.get("data");
+		let alwaysString = getParams.get("always");
+		let matchesString = getParams.get("matches");
+		let notMatchesString = getParams.get("notMatches");
+		let parallelString = getParams.get("parallel");
+		let rotationsStr = getParams.get("rotations");
+		
+		if (b64Data) {
+			board.loadB64Data(b64Data);
+			if (alwaysString) {
+				board.loadEdgesString(alwaysString, Tool.EdgeAlways);
+			}
+			if (matchesString) {
+				board.loadEdgesString(matchesString, Tool.EdgeIfMatched);
+			}
+			if (notMatchesString) {
+				board.loadEdgesString(notMatchesString, Tool.EdgeIfNotMatched);
+			}
+			if (parallelString) {
+				board.loadEdgesString(parallelString, Tool.EdgeParallel);
+			}
+			board.editBoard.calculateReachability();
+			for (let element of board.editBoard.rules) {
+				let rule = element[1];
+				if (rule.isEnabled()) {
+					board.editBoard.respositionEdgesForRule(rule, board.grid);
+				}
+			}
+		} else {
+			board.setupInputStates();
+		}
+
+		if (rotationsStr) {
+			let rotationsParts : string[] = rotationsStr.split(",");
+			for (let i = 0; i < rotationsParts.length; ++i) {
+				let rotationPart = rotationsParts[i];
+				let rotation = parseInt(rotationPart);
+				if (rotation == 1) {
+					let rule = board.editBoard.rules.get(i);
+					if (rule) {
+						rule.includeRotations = true;
+					}
+				}
+			}
+		}
+	}
+
 	constructor (
 		container : HTMLElement,
-		boardSize : Size, b64Data? : string,
-		edgesString? : string) {
+		boardSize : Size,
+		getParams : Map<string, string>) {
 
 		let board = new Board(boardSize);
 		let tileSize = board.grid.computeTileSize();
@@ -855,13 +944,7 @@ class Playbilder {
 		this.game.doLayout();
 
 		board.editBoard.components = this.game.components;
-		board.setupInputStates();
-		if (b64Data) {
-			board.loadB64Data(b64Data);
-			if (edgesString) {
-				board.loadEdgesString(edgesString);
-			}
-		}
+		this.loadStateFromGetParams(getParams, board);
     }
 }
 
@@ -880,8 +963,6 @@ function getUrlVars() {
 let getParams = getUrlVars();
 let wParam = getParams.get("w");
 let hParam = getParams.get("h");
-let b64Data = getParams.get("data");
-let edgesString = getParams.get("edges");
 let width = wParam ? parseInt(wParam) : 20;
 let height = hParam ? parseInt(hParam) : 20;
 
@@ -891,7 +972,6 @@ let $container = document.getElementById('container')!;
 let $playBilder = new Playbilder(
 	$container,
 	{width: width, height: height},
-	b64Data,
-	edgesString
+	getParams
 );
 $playBilder.game.start();
