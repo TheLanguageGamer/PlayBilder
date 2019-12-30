@@ -1,4 +1,4 @@
-function shuffle(a : []) {
+function shuffle(a : any[]) {
     for (let i = a.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [a[i], a[j]] = [a[j], a[i]];
@@ -75,10 +75,13 @@ class PlayRule {
 			rotation.process(boardData, boardBuffer, gridSize);
 		}
 
+		shuffle(this.children);
+
 		for (let child of this.children) {
 			if ((child.incomingEdgeType == EdgeType.IfMatched && didMatch)
 				|| (child.incomingEdgeType == EdgeType.IfNotMatched && !didMatch)
-				|| (child.incomingEdgeType == EdgeType.Always)) {
+				|| (child.incomingEdgeType == EdgeType.Always)
+				|| (child.incomingEdgeType == EdgeType.Parallel)) {
 
 				child.process(boardData, boardBuffer, gridSize);
 			}

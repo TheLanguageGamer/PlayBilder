@@ -66,10 +66,12 @@ class PlayRule {
         for (let rotation of this.rotations) {
             rotation.process(boardData, boardBuffer, gridSize);
         }
+        shuffle(this.children);
         for (let child of this.children) {
             if ((child.incomingEdgeType == EdgeType.IfMatched && didMatch)
                 || (child.incomingEdgeType == EdgeType.IfNotMatched && !didMatch)
-                || (child.incomingEdgeType == EdgeType.Always)) {
+                || (child.incomingEdgeType == EdgeType.Always)
+                || (child.incomingEdgeType == EdgeType.Parallel)) {
                 child.process(boardData, boardBuffer, gridSize);
             }
         }
