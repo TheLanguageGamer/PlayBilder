@@ -38,6 +38,13 @@ class Grid implements Component {
 			}
 		}
 	}
+	// doPopulate(cp : ContentProvider) {
+	// 	let tileSize = this.computeTileSize();
+	// 	for (let i = 0; i < this.gridSize.width; ++i) {
+	// 		for (let j = 0; j < this.gridSize.height; ++j) {
+	// 		}
+	// 	}
+	// }
 	computeTileSize() {
 		return Math.floor(Math.min(
 			this.layout.computed.size.width / this.gridSize.width,
@@ -77,12 +84,11 @@ class Grid implements Component {
 			for (let i = 0; i < this.gridSize.width; ++i) {
 				for (let path of this.grid[i][j]) {
 					if (path && path.length > 0) {
-						ctx.drawImage(
-							cp.getImage(path),
+						cp.blitImage(
+							ctx,
+							cp.createImageBlit(path, {width : this.tileSize, height : this.tileSize}),
 							this.layout.computed.position.x + i*this.tileSize,
-							this.layout.computed.position.y + j*this.tileSize,
-							this.tileSize,
-							this.tileSize
+							this.layout.computed.position.y + j*this.tileSize
 						);
 					}
 				}

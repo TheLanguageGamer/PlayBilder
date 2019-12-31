@@ -948,6 +948,9 @@ class Playbilder {
 
 		board.editBoard.components = this.game.components;
 		this.loadStateFromGetParams(getParams, board);
+		
+
+        this.game.contentProvider.createImageBlit(ImagePaths.Reals[0], {width : tileSize, height : tileSize});
     }
 }
 

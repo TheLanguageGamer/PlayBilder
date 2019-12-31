@@ -667,6 +667,7 @@ class Playbilder {
         this.game.doLayout();
         board.editBoard.components = this.game.components;
         this.loadStateFromGetParams(getParams, board);
+        this.game.contentProvider.createImageBlit(ImagePaths.Reals[0], { width: tileSize, height: tileSize });
     }
     loadStateFromGetParams(getParams, board) {
         let b64Data = getParams.get("data");
