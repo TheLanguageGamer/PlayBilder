@@ -105,8 +105,64 @@ class Grid implements Component {
 	}
 	getPositionForCoordinate(i : number, j : number) {
 		return {
-			x : i * this.tileSize + this.layout.computed.position.x,
-			y : j * this.tileSize + this.layout.computed.position.y,
+			x : i * this.tileSize,
+			y : j * this.tileSize,
+		};
+	}
+	coordinateBoxContainsPosition(box : Box, x : number, y : number) {
+		let i = this.getCoordinateForXPosition(x);
+		let j = this.getCoordinateForYPosition(y);
+		return i >= box.position.x
+			&& j >= box.position.y
+			&& i < box.position.x + box.size.width
+			&& j < box.position.y + box.size.height;
+	}
+	setLayoutToBox(layout : Layout, box : Box) {
+		let ul = this.getPositionForCoordinate(box.position.x, box.position.y);
+		let lr = this.getPositionForCoordinate(
+			box.position.x + box.size.width,
+			box.position.y + box.size.height
+		);
+		layout.setUpperLeft(ul.x, ul.y);
+		layout.setLowerRight(lr.x, lr.y);
+	}
+	clipRectangleToCoordinates(layout : Layout) {
+		let ulX = layout.getUpperLeftX();
+		let ulY = layout.getUpperLeftY();
+		let lrX = layout.getLowerRightX();
+		let lrY = layout.getLowerRightY();
+
+		let ulI = this.getCoordinateForXPosition(ulX);
+		let ulJ = this.getCoordinateForYPosition(ulY);
+		let lrI = this.getCoordinateForXPosition(lrX);
+		let lrJ = this.getCoordinateForYPosition(lrY);
+
+		if (lrX > ulX) {
+			ulI += 1;
+		} else {
+			lrI += 1;
+		}
+
+		if (lrY > ulY) {
+			ulJ += 1;
+		} else {
+			lrJ += 1;
+		}
+
+		let newUL = this.getPositionForCoordinate(ulI, ulJ);
+		let newUR = this.getPositionForCoordinate(lrI, lrJ);
+		layout.setUpperLeft(newUL.x, newUL.y);
+		layout.setLowerRight(newUR.x, newUR.y);
+
+		return {
+			position : {
+				x : Math.min(ulI, lrI),
+				y : Math.min(ulJ, lrJ),
+			},
+			size : {
+				width : Math.abs(ulI - lrI),
+				height : Math.abs(ulJ - lrJ),
+			},
 		};
 	}
 	isValidCoordinate(i : number, j : number) {

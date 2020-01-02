@@ -13,6 +13,13 @@ interface Box {
 	position : Pos
 }
 
+function boxContainsPoint(box : Box, x : number, y : number) {
+	return x >= box.position.x
+		&& y >= box.position.y
+		&& x < box.position.x + box.size.width
+		&& y < box.position.y + box.size.height;
+}
+
 function calculateDistance(pos1 : Pos, pos2 : Pos) {
 	return Math.sqrt(
 		(pos1.x - pos2.x)*(pos1.x - pos2.x) + (pos1.y - pos2.y)*(pos1.y - pos2.y)
@@ -106,6 +113,26 @@ class Layout {
 			&& y >= this.computed.position.y
 			&& x <= this.computed.position.x + this.computed.size.width
 			&& y <= this.computed.position.y + this.computed.size.height;
+	}
+	setUpperLeft(x : number, y : number) {
+		this.offset.position.x = x;
+		this.offset.position.y = y;
+	}
+	setLowerRight(x : number, y : number) {
+		this.offset.size.width = 1 + x - this.offset.position.x;
+		this.offset.size.height = 1 + y - this.offset.position.y;
+	}
+	getUpperLeftX() {
+		return this.computed.position.x;
+	}
+	getUpperLeftY() {
+		return this.computed.position.y;
+	}
+	getLowerRightX() {
+		return this.computed.position.x + this.computed.size.width;
+	}
+	getLowerRightY() {
+		return this.computed.position.y + this.computed.size.height;
 	}
 	constructor(
 		relX : number, relY : number,

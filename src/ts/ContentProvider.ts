@@ -61,7 +61,7 @@ class ContentProvider {
     	this.viewport.height = 512;
     	this.context.clearRect(0, 0, 512, 512);
 
-		let container = document.getElementById('debug')!;
-		container.insertBefore(this.viewport, container.firstChild);
+		// let container = document.getElementById('debug')!;
+		// container.insertBefore(this.viewport, container.firstChild);
 	}
 }

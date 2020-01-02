@@ -6,6 +6,12 @@ function shuffle(a) {
     }
     return a;
 }
+var Rotate;
+(function (Rotate) {
+    Rotate[Rotate["Rotate_90"] = 0] = "Rotate_90";
+    Rotate[Rotate["Rotate_180"] = 1] = "Rotate_180";
+    Rotate[Rotate["Rotate_270"] = 2] = "Rotate_270";
+})(Rotate || (Rotate = {}));
 class PlayRule {
     constructor(index, isStartSymbol, incomingEdgeType) {
         this.children = [];
@@ -121,14 +127,79 @@ class PlayRule {
             }
         }
         if (editRule.includeRotations) {
-            let playRule90 = this.createRotation(playRule);
-            let playRule180 = this.createRotation(playRule90);
-            let playRule270 = this.createRotation(playRule180);
+            let playRule90 = this.createRotation270(playRule);
+            let playRule180 = this.createRotation270(playRule90);
+            let playRule270 = this.createRotation270(playRule180);
             playRule.rotations = [playRule90, playRule180, playRule270];
         }
         return playRule;
     }
-    static createRotation(other) {
+    /*
+    
+    1, 2, 3
+    4, 5, 6
+    7, 8, 9
+    
+    Swap columns and rows:
+    1, 4, 7
+    2, 5, 8
+    3, 6, 9
+    
+    Vertical reflection:
+    3, 6, 9
+    2, 5, 8
+    1, 4, 7
+    
+    Horizontal reflection:
+    7, 4, 1
+    8, 5, 2
+    9, 6, 3
+    
+    180 degree rotation, don't swap column and rows, reflect both horizontal and vertical:
+    9, 8, 7
+    6, 5, 4
+    3, 2, 1
+    
+    */
+    static createRotation90(other) {
+        let playRule = new PlayRule(other.index, other.isStartSymbol, other.incomingEdgeType);
+        playRule.size = {
+            width: other.size.height,
+            height: other.size.width
+        };
+        for (let j = 0; j < other.size.height; ++j) {
+            playRule.data.push(new Array());
+            for (let i = 0; i < other.size.width; ++i) {
+                playRule.data[j].push([-1, -1, -1, -1]);
+            }
+        }
+        for (let j = 0; j < other.size.height; ++j) {
+            for (let i = 0; i < other.size.width; ++i) {
+                playRule.data[other.size.height - j - 1][i] = other.data[i][j].slice(0);
+            }
+        }
+        return playRule;
+    }
+    static createRotation180(other) {
+        let playRule = new PlayRule(other.index, other.isStartSymbol, other.incomingEdgeType);
+        playRule.size = {
+            width: other.size.width,
+            height: other.size.height
+        };
+        for (let i = 0; i < other.size.width; ++i) {
+            playRule.data.push(new Array());
+            for (let j = 0; j < other.size.height; ++j) {
+                playRule.data[i].push([-1, -1, -1, -1]);
+            }
+        }
+        for (let j = 0; j < other.size.height; ++j) {
+            for (let i = 0; i < other.size.width; ++i) {
+                playRule.data[other.size.width - i - 1][other.size.height - j - 1] = other.data[i][j].slice(0);
+            }
+        }
+        return playRule;
+    }
+    static createRotation270(other) {
         let playRule = new PlayRule(other.index, other.isStartSymbol, other.incomingEdgeType);
         playRule.size = {
             width: other.size.height,
@@ -167,6 +238,27 @@ class PlayTree {
             }
         }
     }
+    static addRotatedTree90(from, to) {
+        for (let child of from.children) {
+            let rotated = PlayRule.createRotation90(child);
+            to.children.push(rotated);
+            this.addRotatedTree90(child, rotated);
+        }
+    }
+    static addRotatedTree180(from, to) {
+        for (let child of from.children) {
+            let rotated = PlayRule.createRotation180(child);
+            to.children.push(rotated);
+            this.addRotatedTree180(child, rotated);
+        }
+    }
+    static addRotatedTree270(from, to) {
+        for (let child of from.children) {
+            let rotated = PlayRule.createRotation270(child);
+            to.children.push(rotated);
+            this.addRotatedTree270(child, rotated);
+        }
+    }
 }
 class PlayBoard {
     constructor(edges, editRules, data, gridSize) {
@@ -176,17 +268,37 @@ class PlayBoard {
         //asser computerEditRule is not undefined
         this.gameStepPlayTree = new PlayTree(computerEditRule, edges, editRules, data, gridSize);
         let leftEditRule = editRules.get(InputState.Left);
-        //asser leftEditRule is not undefined
+        //assert leftEditRule is not undefined
         this.leftPlayTree = new PlayTree(leftEditRule, edges, editRules, data, gridSize);
         let rightEditRule = editRules.get(InputState.Right);
-        //asser rightEditRule is not undefined
+        //assert rightEditRule is not undefined
         this.rightPlayTree = new PlayTree(rightEditRule, edges, editRules, data, gridSize);
         let upEditRule = editRules.get(InputState.Up);
-        //asser upEditRule is not undefined
+        //assert upEditRule is not undefined
         this.upPlayTree = new PlayTree(upEditRule, edges, editRules, data, gridSize);
         let downEditRule = editRules.get(InputState.Down);
-        //asser downEditRule is not undefined
+        //assert downEditRule is not undefined
         this.downPlayTree = new PlayTree(downEditRule, edges, editRules, data, gridSize);
+        if (leftEditRule.includeRotations) {
+            PlayTree.addRotatedTree90(this.leftPlayTree.root, this.upPlayTree.root);
+            PlayTree.addRotatedTree180(this.leftPlayTree.root, this.rightPlayTree.root);
+            PlayTree.addRotatedTree270(this.leftPlayTree.root, this.downPlayTree.root);
+        }
+        if (rightEditRule.includeRotations) {
+            PlayTree.addRotatedTree90(this.rightPlayTree.root, this.downPlayTree.root);
+            PlayTree.addRotatedTree180(this.rightPlayTree.root, this.leftPlayTree.root);
+            PlayTree.addRotatedTree270(this.rightPlayTree.root, this.upPlayTree.root);
+        }
+        if (downEditRule.includeRotations) {
+            PlayTree.addRotatedTree90(this.downPlayTree.root, this.leftPlayTree.root);
+            PlayTree.addRotatedTree180(this.downPlayTree.root, this.upPlayTree.root);
+            PlayTree.addRotatedTree270(this.downPlayTree.root, this.rightPlayTree.root);
+        }
+        if (upEditRule.includeRotations) {
+            PlayTree.addRotatedTree90(this.upPlayTree.root, this.rightPlayTree.root);
+            PlayTree.addRotatedTree180(this.upPlayTree.root, this.downPlayTree.root);
+            PlayTree.addRotatedTree270(this.upPlayTree.root, this.leftPlayTree.root);
+        }
     }
     onUpdate(timeMS, boardData, boardBuffer, gridSize) {
         let delta = timeMS - this.lastTimeStep;
@@ -484,7 +596,7 @@ class Board {
         this.editBoard.unselectSelectedObject();
         this.debugRules();
     }
-    loadB64Data(b64Data) {
+    loadB64Data(b64Data, components) {
         this.b64ToData(b64Data, this.data, this.grid.gridSize);
         this.applyRealDataToGrid();
         for (let i = 0; i < this.grid.gridSize.width; ++i) {
@@ -496,8 +608,8 @@ class Board {
                 this.editBoard.maxRuleIndex = Math.max(ruleIndex + 1, this.editBoard.maxRuleIndex);
                 let rule = this.editBoard.rules.get(ruleIndex);
                 if (!rule) {
-                    let newRule = new EditRule(ruleIndex);
-                    this.editBoard.components.push(newRule.line);
+                    let newRule = new EditRule(ruleIndex, this.grid.layout);
+                    components.push(newRule.line);
                     this.editBoard.rules.set(ruleIndex, newRule);
                     newRule.dirtyBoundaries = true;
                     this.editBoard.calculateBoundaries(this.data, this.grid);
@@ -507,7 +619,7 @@ class Board {
         }
         this.editBoard.calculateReachability();
     }
-    loadEdgesString(edgesString, type) {
+    loadEdgesString(edgesString, type, components) {
         let edgesParts = edgesString.split(",");
         for (let i = 0; i < edgesParts.length; i += 2) {
             console.log("edge", edgesParts[i], "to", edgesParts[i + 1]);
@@ -519,9 +631,10 @@ class Board {
                 let edge = new Edge({
                     tailRuleIndex: tailRuleIndex,
                     fromTool: type,
+                    parentLayout: this.grid.layout,
                 });
                 edge.headRuleIndex = headRuleIndex;
-                this.editBoard.components.push(edge.arrow);
+                components.push(edge.arrow);
                 this.editBoard.edges.push(edge);
             }
         }
@@ -540,7 +653,7 @@ class Playbilder {
         let toolRect = new Rectangle(toolRectLayout);
         let toolCoord = { i: 0, j: 0 };
         function setToolFromToolbar(i, j) {
-            if (i != board.editBoard.editTool) {
+            if (i != board.editBoard.editTool && i != Tool.Move) {
                 board.editBoard.unselectSelectedObject();
             }
             board.editBoard.editTool = i;
@@ -608,7 +721,15 @@ class Playbilder {
         toolbarLayout.anchor = { x: 0.0, y: 1.0 };
         let toolbar = new Grid({ width: 9, height: 1 }, toolbarLayout, {
             populate(i, j) {
-                return [ImagePaths.Tools[tools[i][j]]];
+                switch (j) {
+                    // case Tool.EdgeAlways: {
+                    // 	let tool = j as Tool;
+                    // 	return this.createStampForEdgeTool(tool);
+                    // }
+                    default: {
+                        return [ImagePaths.Tools[tools[i][j]]];
+                    }
+                }
             },
             onClick(i, j) {
                 setToolFromToolbar(i, j);
@@ -665,7 +786,8 @@ class Playbilder {
         board.grid.children.push(playButton);
         board.grid.children.push(board.editBoard.ruleOptions.rootComponent);
         this.game.doLayout();
-        board.editBoard.components = this.game.components;
+        board.editBoard.setComponents(this.game.components);
+        board.editBoard.gridLayout = board.grid.layout;
         this.loadStateFromGetParams(getParams, board);
         this.game.contentProvider.createImageBlit(ImagePaths.Reals[0], { width: tileSize, height: tileSize });
     }
@@ -677,18 +799,18 @@ class Playbilder {
         let parallelString = getParams.get("parallel");
         let rotationsStr = getParams.get("rotations");
         if (b64Data) {
-            board.loadB64Data(b64Data);
+            board.loadB64Data(b64Data, this.game.components);
             if (alwaysString) {
-                board.loadEdgesString(alwaysString, Tool.EdgeAlways);
+                board.loadEdgesString(alwaysString, Tool.EdgeAlways, this.game.components);
             }
             if (matchesString) {
-                board.loadEdgesString(matchesString, Tool.EdgeIfMatched);
+                board.loadEdgesString(matchesString, Tool.EdgeIfMatched, this.game.components);
             }
             if (notMatchesString) {
-                board.loadEdgesString(notMatchesString, Tool.EdgeIfNotMatched);
+                board.loadEdgesString(notMatchesString, Tool.EdgeIfNotMatched, this.game.components);
             }
             if (parallelString) {
-                board.loadEdgesString(parallelString, Tool.EdgeParallel);
+                board.loadEdgesString(parallelString, Tool.EdgeParallel, this.game.components);
             }
             board.editBoard.calculateReachability();
             for (let element of board.editBoard.rules) {
@@ -714,6 +836,9 @@ class Playbilder {
                 }
             }
         }
+    }
+    createStampForEdgeTool(tool) {
+        return "";
     }
 }
 function getUrlVars() {

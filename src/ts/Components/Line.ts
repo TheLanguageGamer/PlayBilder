@@ -41,12 +41,18 @@ class Line {
 		for (let i = 0; i < this.points.length; ++i) {
 			let point = this.points[i];
 			if (point.isMove) {
-				ctx.moveTo(point.x, point.y);
+				ctx.moveTo(
+					this.layout.computed.position.x + point.x,
+					this.layout.computed.position.y + point.y
+				);
 			} else {
 				//ctx.beginPath();
 				//ctx.moveTo(this.points[i-1].x, this.points[i-1].y);
 				//ctx.strokeStyle = rgbToHex(256 - i*24, i*24, i*24);
-				ctx.lineTo(point.x, point.y);
+				ctx.lineTo(
+					this.layout.computed.position.x + point.x,
+					this.layout.computed.position.y + point.y
+				);
 				//ctx.stroke();
 			}
 		}

@@ -1,278 +1,4 @@
 "use strict";
-const ImagePaths = {
-    FutureIdeas: [
-        [
-            "images/futureIdeas/futureIdea8ED2C9AND8ED2C9.svg",
-            "images/futureIdeas/futureIdea8ED2C9AND00AAA0.svg",
-            "images/futureIdeas/futureIdea8ED2C9ANDFF7A5A.svg",
-            "images/futureIdeas/futureIdea8ED2C9ANDFFB85F.svg",
-            "images/futureIdeas/futureIdea8ED2C9AND2C5F2D.svg",
-            "images/futureIdeas/futureIdea8ED2C9ANDED2B33.svg",
-            "images/futureIdeas/futureIdea8ED2C9ANDD85A7F.svg",
-            "images/futureIdeas/futureIdea8ED2C9AND195190.svg",
-            "images/futureIdeas/futureIdea8ED2C9ANDA2A2A1.svg",
-            "images/futureIdeas/futureIdea8ED2C9AND603F83.svg",
-            "images/futureIdeas/futureIdea8ED2C9AND2BAE66.svg",
-            "images/futureIdeas/futureIdea8ED2C9AND2D2926.svg",
-        ],
-        [
-            "images/futureIdeas/futureIdea00AAA0AND8ED2C9.svg",
-            "images/futureIdeas/futureIdea00AAA0AND00AAA0.svg",
-            "images/futureIdeas/futureIdea00AAA0ANDFF7A5A.svg",
-            "images/futureIdeas/futureIdea00AAA0ANDFFB85F.svg",
-            "images/futureIdeas/futureIdea00AAA0AND2C5F2D.svg",
-            "images/futureIdeas/futureIdea00AAA0ANDED2B33.svg",
-            "images/futureIdeas/futureIdea00AAA0ANDD85A7F.svg",
-            "images/futureIdeas/futureIdea00AAA0AND195190.svg",
-            "images/futureIdeas/futureIdea00AAA0ANDA2A2A1.svg",
-            "images/futureIdeas/futureIdea00AAA0AND603F83.svg",
-            "images/futureIdeas/futureIdea00AAA0AND2BAE66.svg",
-            "images/futureIdeas/futureIdea00AAA0AND2D2926.svg",
-        ],
-        [
-            "images/futureIdeas/futureIdeaFF7A5AAND8ED2C9.svg",
-            "images/futureIdeas/futureIdeaFF7A5AAND00AAA0.svg",
-            "images/futureIdeas/futureIdeaFF7A5AANDFF7A5A.svg",
-            "images/futureIdeas/futureIdeaFF7A5AANDFFB85F.svg",
-            "images/futureIdeas/futureIdeaFF7A5AAND2C5F2D.svg",
-            "images/futureIdeas/futureIdeaFF7A5AANDED2B33.svg",
-            "images/futureIdeas/futureIdeaFF7A5AANDD85A7F.svg",
-            "images/futureIdeas/futureIdeaFF7A5AAND195190.svg",
-            "images/futureIdeas/futureIdeaFF7A5AANDA2A2A1.svg",
-            "images/futureIdeas/futureIdeaFF7A5AAND603F83.svg",
-            "images/futureIdeas/futureIdeaFF7A5AAND2BAE66.svg",
-            "images/futureIdeas/futureIdeaFF7A5AAND2D2926.svg",
-        ],
-        [
-            "images/futureIdeas/futureIdeaFFB85FAND8ED2C9.svg",
-            "images/futureIdeas/futureIdeaFFB85FAND00AAA0.svg",
-            "images/futureIdeas/futureIdeaFFB85FANDFF7A5A.svg",
-            "images/futureIdeas/futureIdeaFFB85FANDFFB85F.svg",
-            "images/futureIdeas/futureIdeaFFB85FAND2C5F2D.svg",
-            "images/futureIdeas/futureIdeaFFB85FANDED2B33.svg",
-            "images/futureIdeas/futureIdeaFFB85FANDD85A7F.svg",
-            "images/futureIdeas/futureIdeaFFB85FAND195190.svg",
-            "images/futureIdeas/futureIdeaFFB85FANDA2A2A1.svg",
-            "images/futureIdeas/futureIdeaFFB85FAND603F83.svg",
-            "images/futureIdeas/futureIdeaFFB85FAND2BAE66.svg",
-            "images/futureIdeas/futureIdeaFFB85FAND2D2926.svg",
-        ],
-        [
-            "images/futureIdeas/futureIdea2C5F2DAND8ED2C9.svg",
-            "images/futureIdeas/futureIdea2C5F2DAND00AAA0.svg",
-            "images/futureIdeas/futureIdea2C5F2DANDFF7A5A.svg",
-            "images/futureIdeas/futureIdea2C5F2DANDFFB85F.svg",
-            "images/futureIdeas/futureIdea2C5F2DAND2C5F2D.svg",
-            "images/futureIdeas/futureIdea2C5F2DANDED2B33.svg",
-            "images/futureIdeas/futureIdea2C5F2DANDD85A7F.svg",
-            "images/futureIdeas/futureIdea2C5F2DAND195190.svg",
-            "images/futureIdeas/futureIdea2C5F2DANDA2A2A1.svg",
-            "images/futureIdeas/futureIdea2C5F2DAND603F83.svg",
-            "images/futureIdeas/futureIdea2C5F2DAND2BAE66.svg",
-            "images/futureIdeas/futureIdea2C5F2DAND2D2926.svg",
-        ],
-        [
-            "images/futureIdeas/futureIdeaED2B33AND8ED2C9.svg",
-            "images/futureIdeas/futureIdeaED2B33AND00AAA0.svg",
-            "images/futureIdeas/futureIdeaED2B33ANDFF7A5A.svg",
-            "images/futureIdeas/futureIdeaED2B33ANDFFB85F.svg",
-            "images/futureIdeas/futureIdeaED2B33AND2C5F2D.svg",
-            "images/futureIdeas/futureIdeaED2B33ANDED2B33.svg",
-            "images/futureIdeas/futureIdeaED2B33ANDD85A7F.svg",
-            "images/futureIdeas/futureIdeaED2B33AND195190.svg",
-            "images/futureIdeas/futureIdeaED2B33ANDA2A2A1.svg",
-            "images/futureIdeas/futureIdeaED2B33AND603F83.svg",
-            "images/futureIdeas/futureIdeaED2B33AND2BAE66.svg",
-            "images/futureIdeas/futureIdeaED2B33AND2D2926.svg",
-        ],
-        [
-            "images/futureIdeas/futureIdeaD85A7FAND8ED2C9.svg",
-            "images/futureIdeas/futureIdeaD85A7FAND00AAA0.svg",
-            "images/futureIdeas/futureIdeaD85A7FANDFF7A5A.svg",
-            "images/futureIdeas/futureIdeaD85A7FANDFFB85F.svg",
-            "images/futureIdeas/futureIdeaD85A7FAND2C5F2D.svg",
-            "images/futureIdeas/futureIdeaD85A7FANDED2B33.svg",
-            "images/futureIdeas/futureIdeaD85A7FANDD85A7F.svg",
-            "images/futureIdeas/futureIdeaD85A7FAND195190.svg",
-            "images/futureIdeas/futureIdeaD85A7FANDA2A2A1.svg",
-            "images/futureIdeas/futureIdeaD85A7FAND603F83.svg",
-            "images/futureIdeas/futureIdeaD85A7FAND2BAE66.svg",
-            "images/futureIdeas/futureIdeaD85A7FAND2D2926.svg",
-        ],
-        [
-            "images/futureIdeas/futureIdea195190AND8ED2C9.svg",
-            "images/futureIdeas/futureIdea195190AND00AAA0.svg",
-            "images/futureIdeas/futureIdea195190ANDFF7A5A.svg",
-            "images/futureIdeas/futureIdea195190ANDFFB85F.svg",
-            "images/futureIdeas/futureIdea195190AND2C5F2D.svg",
-            "images/futureIdeas/futureIdea195190ANDED2B33.svg",
-            "images/futureIdeas/futureIdea195190ANDD85A7F.svg",
-            "images/futureIdeas/futureIdea195190AND195190.svg",
-            "images/futureIdeas/futureIdea195190ANDA2A2A1.svg",
-            "images/futureIdeas/futureIdea195190AND603F83.svg",
-            "images/futureIdeas/futureIdea195190AND2BAE66.svg",
-            "images/futureIdeas/futureIdea195190AND2D2926.svg",
-        ],
-        [
-            "images/futureIdeas/futureIdeaA2A2A1AND8ED2C9.svg",
-            "images/futureIdeas/futureIdeaA2A2A1AND00AAA0.svg",
-            "images/futureIdeas/futureIdeaA2A2A1ANDFF7A5A.svg",
-            "images/futureIdeas/futureIdeaA2A2A1ANDFFB85F.svg",
-            "images/futureIdeas/futureIdeaA2A2A1AND2C5F2D.svg",
-            "images/futureIdeas/futureIdeaA2A2A1ANDED2B33.svg",
-            "images/futureIdeas/futureIdeaA2A2A1ANDD85A7F.svg",
-            "images/futureIdeas/futureIdeaA2A2A1AND195190.svg",
-            "images/futureIdeas/futureIdeaA2A2A1ANDA2A2A1.svg",
-            "images/futureIdeas/futureIdeaA2A2A1AND603F83.svg",
-            "images/futureIdeas/futureIdeaA2A2A1AND2BAE66.svg",
-            "images/futureIdeas/futureIdeaA2A2A1AND2D2926.svg",
-        ],
-        [
-            "images/futureIdeas/futureIdea603F83AND8ED2C9.svg",
-            "images/futureIdeas/futureIdea603F83AND00AAA0.svg",
-            "images/futureIdeas/futureIdea603F83ANDFF7A5A.svg",
-            "images/futureIdeas/futureIdea603F83ANDFFB85F.svg",
-            "images/futureIdeas/futureIdea603F83AND2C5F2D.svg",
-            "images/futureIdeas/futureIdea603F83ANDED2B33.svg",
-            "images/futureIdeas/futureIdea603F83ANDD85A7F.svg",
-            "images/futureIdeas/futureIdea603F83AND195190.svg",
-            "images/futureIdeas/futureIdea603F83ANDA2A2A1.svg",
-            "images/futureIdeas/futureIdea603F83AND603F83.svg",
-            "images/futureIdeas/futureIdea603F83AND2BAE66.svg",
-            "images/futureIdeas/futureIdea603F83AND2D2926.svg",
-        ],
-        [
-            "images/futureIdeas/futureIdea2BAE66AND8ED2C9.svg",
-            "images/futureIdeas/futureIdea2BAE66AND00AAA0.svg",
-            "images/futureIdeas/futureIdea2BAE66ANDFF7A5A.svg",
-            "images/futureIdeas/futureIdea2BAE66ANDFFB85F.svg",
-            "images/futureIdeas/futureIdea2BAE66AND2C5F2D.svg",
-            "images/futureIdeas/futureIdea2BAE66ANDED2B33.svg",
-            "images/futureIdeas/futureIdea2BAE66ANDD85A7F.svg",
-            "images/futureIdeas/futureIdea2BAE66AND195190.svg",
-            "images/futureIdeas/futureIdea2BAE66ANDA2A2A1.svg",
-            "images/futureIdeas/futureIdea2BAE66AND603F83.svg",
-            "images/futureIdeas/futureIdea2BAE66AND2BAE66.svg",
-            "images/futureIdeas/futureIdea2BAE66AND2D2926.svg",
-        ],
-        [
-            "images/futureIdeas/futureIdea2D2926AND8ED2C9.svg",
-            "images/futureIdeas/futureIdea2D2926AND00AAA0.svg",
-            "images/futureIdeas/futureIdea2D2926ANDFF7A5A.svg",
-            "images/futureIdeas/futureIdea2D2926ANDFFB85F.svg",
-            "images/futureIdeas/futureIdea2D2926AND2C5F2D.svg",
-            "images/futureIdeas/futureIdea2D2926ANDED2B33.svg",
-            "images/futureIdeas/futureIdea2D2926ANDD85A7F.svg",
-            "images/futureIdeas/futureIdea2D2926AND195190.svg",
-            "images/futureIdeas/futureIdea2D2926ANDA2A2A1.svg",
-            "images/futureIdeas/futureIdea2D2926AND603F83.svg",
-            "images/futureIdeas/futureIdea2D2926AND2BAE66.svg",
-            "images/futureIdeas/futureIdea2D2926AND2D2926.svg",
-        ],
-    ],
-    Reals: [
-        //"images/real/real01FF70.png",
-        //"svgtest.svg",
-        // "images/real/real2ECC40.png",
-        // "images/real/real3D9970.png",
-        // "images/real/real7FDBFF.png",
-        // "images/real/real39CCCC.png",
-        // "images/real/real0074D9.png",
-        // "images/real/real85144b.png",	
-        // "images/real/realB10DC9.png",
-        // "images/real/realF012BE.png",
-        // "images/real/realFF851B.png",
-        // "images/real/realFF4136.png",
-        // "images/real/realFFDC00.png",
-        "images/real/realV28ED2C9.svg",
-        "images/real/realV200AAA0.svg",
-        "images/real/realV2FF7A5A.svg",
-        "images/real/realV2FFB85F.svg",
-        "images/real/realV22C5F2D.svg",
-        "images/real/realV2ED2B33.svg",
-        "images/real/realV2D85A7F.svg",
-        "images/real/realV2195190.svg",
-        "images/real/realV2A2A2A1.svg",
-        "images/real/realV2603F83.svg",
-        "images/real/realV22BAE66.svg",
-        "images/real/realV22D2926.svg",
-    ],
-    Ideas: [
-        // "images/idea/idea01FF70.png",
-        // "images/idea/idea2ECC40.png",
-        // "images/idea/idea3D9970.png",
-        // "images/idea/idea7FDBFF.png",
-        // "images/idea/idea39CCCC.png",
-        // "images/idea/idea0074D9.png",
-        // "images/idea/idea85144b.png",
-        // "images/idea/ideaB10DC9.png",
-        // "images/idea/ideaF012BE.png",
-        // "images/idea/ideaFF851B.png",
-        // "images/idea/ideaFF4136.png",
-        // "images/idea/ideaFFDC00.png",
-        "images/idea/ideaV28ED2C9.svg",
-        "images/idea/ideaV200AAA0.svg",
-        "images/idea/ideaV2FF7A5A.svg",
-        "images/idea/ideaV2FFB85F.svg",
-        "images/idea/ideaV22C5F2D.svg",
-        "images/idea/ideaV2ED2B33.svg",
-        "images/idea/ideaV2D85A7F.svg",
-        "images/idea/ideaV2195190.svg",
-        "images/idea/ideaV2A2A2A1.svg",
-        "images/idea/ideaV2603F83.svg",
-        "images/idea/ideaV22BAE66.svg",
-        "images/idea/ideaV22D2926.svg",
-    ],
-    Futures: [
-        // "images/future/future01FF70.png",
-        // "images/future/future2ECC40.png",
-        // "images/future/future3D9970.png",
-        // "images/future/future7FDBFF.png",
-        // "images/future/future39CCCC.png",
-        // "images/future/future0074D9.png",
-        // "images/future/future85144b.png",
-        // "images/future/futureB10DC9.png",
-        // "images/future/futureF012BE.png",
-        // "images/future/futureFF851B.png",
-        // "images/future/futureFF4136.png",
-        // "images/future/futureFFDC00.png",
-        "images/future/futureV28ED2C9.svg",
-        "images/future/futureV200AAA0.svg",
-        "images/future/futureV2FF7A5A.svg",
-        "images/future/futureV2FFB85F.svg",
-        "images/future/futureV22C5F2D.svg",
-        "images/future/futureV2ED2B33.svg",
-        "images/future/futureV2D85A7F.svg",
-        "images/future/futureV2195190.svg",
-        "images/future/futureV2A2A2A1.svg",
-        "images/future/futureV2603F83.svg",
-        "images/future/futureV22BAE66.svg",
-        "images/future/futureV22D2926.svg",
-    ],
-    Tools: {
-        "Pencil": "images/tools/icons8-pencil-64.png",
-        "Eraser": "images/tools/icons8-eraser-64.png",
-        "Move": "images/tools/icons8-move-100.png",
-        "Select": "images/tools/icons8-one-finger-96.png",
-        "RulePad": "images/tools/toolRulePad.png",
-        "EdgeAlways": "images/tools/toolEdgeAlways.png",
-        "EdgeIfMatched": "images/tools/toolEdgeIfMatched.png",
-        "EdgeIfNotMatched": "images/tools/toolEdgeIfNotMatched.png",
-        "EdgeParallel": "images/tools/toolEdgeParallel.png",
-    },
-    InputState: {
-        "Computer": "images/state/icons8-computer-80.png",
-        "Left": "images/state/icons8-left-96.png",
-        "Right": "images/state/icons8-right-96.png",
-        "Up": "images/state/icons8-up-96.png",
-        "Down": "images/state/icons8-down-arrow-96.png",
-    },
-    Icons: {
-        "Play": "images/icons/icons8-play-100.png",
-        "Pause": "images/icons/icons8-pause-100.png",
-        "Checkmark": "images/icons/icons8-checkmark-104.png",
-    },
-};
 var InputState;
 (function (InputState) {
     InputState[InputState["Computer"] = 0] = "Computer";
@@ -308,7 +34,7 @@ var Direction;
     Direction[Direction["Up"] = 3] = "Up";
 })(Direction || (Direction = {}));
 class EditRule {
-    constructor(index) {
+    constructor(index, parentLayout) {
         this.size = 0;
         this.line = new Line();
         this.boundaryEdges = new Set();
@@ -319,6 +45,7 @@ class EditRule {
         this.index = index;
         this.line.color = Constants.Colors.Grey;
         this.line.lineDash = [7, 3];
+        this.line.layout.doLayout(parentLayout.computed);
     }
     disable() {
         this.line.points.length = 0;
@@ -366,6 +93,7 @@ class Edge {
         else if (obj.fromTool == Tool.EdgeParallel) {
             this.setEdgeType(EdgeType.Parallel);
         }
+        this.arrow.layout.doLayout(obj.parentLayout.computed);
     }
     setEdgeType(type) {
         this.type = type;
@@ -499,19 +227,30 @@ class RuleOptionsGUI {
 class EditBoard {
     constructor() {
         this.components = [];
+        this.gridLayout = new Layout(0, 0, 0, 0, 0, 0, 0, 0);
         this.ruleOptions = new RuleOptionsGUI();
         this.editTool = Tool.Pencil;
         this.editModality = Modality.Real;
         this.editBlockType = 0;
-        this.isMoving = false;
+        this.isMovingRule = false;
         this.movingRuleIndex = -1;
         this.movingLastCoordinate = { x: 0, y: 0 };
         this.movingStartCoordinate = { x: 0, y: 0 };
+        this.isSelectingReal = false;
+        this.realSelectionRectangle = new Rectangle(new Layout(0, 0, 0, 0, 0, 0, 0, 0));
+        this.isMovingRealSelection = false;
         this.isAddingEdge = false;
         this.edges = new Array();
         this.rules = new Map();
         this.maxRuleIndex = 0;
         this.edits = [];
+    }
+    setComponents(components) {
+        this.components = components;
+        this.components.push(this.realSelectionRectangle);
+        this.realSelectionRectangle.layout.visible = false;
+        this.realSelectionRectangle.strokeColor = Constants.Colors.Blue.Pure;
+        this.realSelectionRectangle.lineDash = [2, 2];
     }
     findAdjacentRule(i, j, data, gridSize) {
         let rule = -1;
@@ -772,6 +511,76 @@ class EditBoard {
         }
         return ret;
     }
+    canMoveRealSelection(selection, deltaI, deltaJ, data, grid) {
+        let ret = true;
+        for (let i = selection.position.x; i < selection.position.x + selection.size.width; ++i) {
+            for (let j = selection.position.y; j < selection.position.y + selection.size.height; ++j) {
+                let movedI = i + deltaI;
+                let movedJ = j + deltaJ;
+                ret = ret && grid.isValidCoordinate(movedI, movedJ);
+                if (!boxContainsPoint(selection, movedI, movedJ)) {
+                    ret = ret
+                        && data[movedI][movedJ][0] < 0
+                        && data[movedI][movedJ][3] < 0;
+                }
+            }
+        }
+        console.log("canMoveRealSelection", ret);
+        return ret;
+    }
+    doMoveRealSelection(selection, deltaI, deltaJ, data, grid) {
+        console.log("guess we can move", deltaI, deltaJ);
+        if (deltaI <= 0 && deltaJ <= 0) {
+            for (let i = selection.position.x; i < selection.position.x + selection.size.width; ++i) {
+                for (let j = selection.position.y; j < selection.position.y + selection.size.height; ++j) {
+                    let movedI = i + deltaI;
+                    let movedJ = j + deltaJ;
+                    this.setCell(movedI, movedJ, data[i][j][0], data[movedI][movedJ][1], data[movedI][movedJ][2], data[movedI][movedJ][3], data, grid);
+                    this.setCell(i, j, -1, data[i][j][1], data[i][j][2], data[i][j][3], data, grid);
+                }
+            }
+        }
+        else if (deltaI >= 0 && deltaJ >= 0) {
+            for (let i = selection.position.x + selection.size.width - 1; i >= selection.position.x; --i) {
+                for (let j = selection.position.y + selection.size.height - 1; j >= selection.position.y; --j) {
+                    let movedI = i + deltaI;
+                    let movedJ = j + deltaJ;
+                    this.setCell(movedI, movedJ, data[i][j][0], data[movedI][movedJ][1], data[movedI][movedJ][2], data[movedI][movedJ][3], data, grid);
+                    this.setCell(i, j, -1, data[i][j][1], data[i][j][2], data[i][j][3], data, grid);
+                }
+            }
+        }
+        else if (deltaI >= 0 && deltaJ <= 0) {
+            for (let i = selection.position.x + selection.size.width - 1; i >= selection.position.x; --i) {
+                for (let j = selection.position.y; j < selection.position.y + selection.size.height; ++j) {
+                    let movedI = i + deltaI;
+                    let movedJ = j + deltaJ;
+                    this.setCell(movedI, movedJ, data[i][j][0], data[movedI][movedJ][1], data[movedI][movedJ][2], data[movedI][movedJ][3], data, grid);
+                    this.setCell(i, j, -1, data[i][j][1], data[i][j][2], data[i][j][3], data, grid);
+                }
+            }
+        }
+        else if (deltaI <= 0 && deltaJ >= 0) {
+            for (let i = selection.position.x; i < selection.position.x + selection.size.width; ++i) {
+                for (let j = selection.position.y + selection.size.height - 1; j >= selection.position.y; --j) {
+                    let movedI = i + deltaI;
+                    let movedJ = j + deltaJ;
+                    this.setCell(movedI, movedJ, data[i][j][0], data[movedI][movedJ][1], data[movedI][movedJ][2], data[movedI][movedJ][3], data, grid);
+                    this.setCell(i, j, -1, data[i][j][1], data[i][j][2], data[i][j][3], data, grid);
+                }
+            }
+        }
+        selection.position.x += deltaI;
+        selection.position.y += deltaJ;
+        grid.setLayoutToBox(this.realSelectionRectangle.layout, selection);
+        this.realSelectionRectangle.layout.doLayout(this.gridLayout.computed);
+        //debug
+        for (let i = selection.position.x; i < selection.position.x + selection.size.width; ++i) {
+            for (let j = selection.position.y; j < selection.position.y + selection.size.height; ++j) {
+                console.log(data[i][j][0]);
+            }
+        }
+    }
     doMoveRuleIndex(ruleIndex, deltaI, deltaJ, data, grid) {
         if (deltaI <= 0 && deltaJ <= 0) {
             for (let i = 0; i < grid.gridSize.width; ++i) {
@@ -834,7 +643,7 @@ class EditBoard {
             if (newRuleIndex <= -1) {
                 newRuleIndex = this.maxRuleIndex;
                 this.maxRuleIndex += 1;
-                let rule = new EditRule(newRuleIndex);
+                let rule = new EditRule(newRuleIndex, this.gridLayout);
                 this.components.push(rule.line);
                 this.rules.set(newRuleIndex, rule);
             }
@@ -1012,6 +821,7 @@ class EditBoard {
             }
         }
     }
+    //only updates grid, not data
     setGridCell(i, j, realType, ideaType, futureType, rulePad, grid) {
         //set grid cell path
         if (rulePad >= 0 && rulePad < InputState.__Length) {
@@ -1094,6 +904,11 @@ class EditBoard {
             this.selectedEdge.arrow.headMargin = 6;
             this.selectedEdge = undefined;
         }
+        if (this.realSelectionRectangle.layout.visible) {
+            this.realSelectionBox = undefined;
+            this.realSelectionRectangle.layout.visible = false;
+            this.realSelectionRectangle.lineDashSpeed = 0;
+        }
     }
     selectEdge(edge) {
         edge.arrow.lineWidth = 5;
@@ -1104,7 +919,10 @@ class EditBoard {
         let returnEdge = undefined;
         let minDistance = 6;
         for (let edge of this.edges) {
-            let distance = minimumDistanceToLineSegment({ x: e.offsetX, y: e.offsetY }, edge.arrow.from, edge.arrow.to);
+            let distance = minimumDistanceToLineSegment({
+                x: e.offsetX - edge.arrow.layout.computed.position.x,
+                y: e.offsetY - edge.arrow.layout.computed.position.y,
+            }, edge.arrow.from, edge.arrow.to);
             if (distance < minDistance) {
                 minDistance = distance;
                 returnEdge = edge;
@@ -1117,7 +935,7 @@ class EditBoard {
             case Tool.Move: {
                 let ruleIndex = data[i][j][3];
                 if (ruleIndex > -1) {
-                    this.isMoving = true;
+                    this.isMovingRule = true;
                     this.movingRuleIndex = ruleIndex;
                     this.movingStartCoordinate.x = i;
                     this.movingStartCoordinate.y = j;
@@ -1125,8 +943,14 @@ class EditBoard {
                     this.movingLastCoordinate.y = j;
                     this.selectRuleIndex(ruleIndex);
                 }
-                else {
-                    this.unselectSelectedObject();
+                else if (this.realSelectionBox
+                    && grid.coordinateBoxContainsPosition(this.realSelectionBox, e.offsetX, e.offsetY)) {
+                    console.log("will move real selection box");
+                    this.isMovingRealSelection = true;
+                    this.movingStartCoordinate.x = i;
+                    this.movingStartCoordinate.y = j;
+                    this.movingLastCoordinate.x = i;
+                    this.movingLastCoordinate.y = j;
                 }
                 break;
             }
@@ -1141,10 +965,11 @@ class EditBoard {
                     let edge = new Edge({
                         tailRuleIndex: ruleIndex,
                         fromTool: this.editTool,
+                        parentLayout: this.gridLayout,
                     });
-                    edge.arrow.to.x = e.offsetX;
-                    edge.arrow.to.y = e.offsetY;
                     edge.arrow.from = edge.findClosestPoint(edge.arrow.to, rule, grid);
+                    edge.arrow.to.x = e.offsetX - edge.arrow.layout.computed.position.x;
+                    edge.arrow.to.y = e.offsetY - edge.arrow.layout.computed.position.y;
                     this.edge = edge;
                     this.components.push(edge.arrow);
                 }
@@ -1160,6 +985,13 @@ class EditBoard {
                 else if (ruleIndex > -1) {
                     this.selectRuleIndex(ruleIndex);
                 }
+                else {
+                    this.isSelectingReal = true;
+                    this.realSelectionRectangle.layout.visible = true;
+                    this.realSelectionRectangle.layout.setUpperLeft(e.offsetX - this.gridLayout.computed.position.x, e.offsetY - this.gridLayout.computed.position.y);
+                    this.realSelectionRectangle.layout.setLowerRight(e.offsetX - this.gridLayout.computed.position.x, e.offsetY - this.gridLayout.computed.position.y);
+                    this.realSelectionRectangle.layout.doLayout(this.gridLayout.computed);
+                }
                 break;
             }
             default: {
@@ -1168,7 +1000,7 @@ class EditBoard {
         }
     }
     onMouseMove(e, data, grid) {
-        if (this.isMoving) {
+        if (this.isMovingRule) {
             let currentI = grid.getCoordinateForXPosition(e.offsetX);
             let currentJ = grid.getCoordinateForYPosition(e.offsetY);
             let deltaI = currentI - this.movingLastCoordinate.x;
@@ -1191,12 +1023,34 @@ class EditBoard {
                 //error, can't move rule here
             }
         }
+        else if (this.isMovingRealSelection) {
+            let currentI = grid.getCoordinateForXPosition(e.offsetX);
+            let currentJ = grid.getCoordinateForYPosition(e.offsetY);
+            let deltaI = currentI - this.movingLastCoordinate.x;
+            let deltaJ = currentJ - this.movingLastCoordinate.y;
+            if (deltaI == 0 && deltaJ == 0) {
+                //do nothing
+            }
+            else if (this.realSelectionBox
+                && this.canMoveRealSelection(this.realSelectionBox, deltaI, deltaJ, data, grid)) {
+                this.doMoveRealSelection(this.realSelectionBox, deltaI, deltaJ, data, grid);
+                this.movingLastCoordinate.x = currentI;
+                this.movingLastCoordinate.y = currentJ;
+            }
+            else {
+                //error, can't move rule here
+            }
+        }
+        else if (this.isSelectingReal) {
+            this.realSelectionRectangle.layout.setLowerRight(e.offsetX - this.gridLayout.computed.position.x, e.offsetY - this.gridLayout.computed.position.y);
+            this.realSelectionRectangle.layout.doLayout(this.gridLayout.computed);
+        }
         else if (this.isAddingEdge) {
             if (this.edge) {
                 let rule = this.rules.get(this.edge.tailRuleIndex);
                 if (rule) {
-                    this.edge.arrow.to.x = e.offsetX;
-                    this.edge.arrow.to.y = e.offsetY;
+                    this.edge.arrow.to.x = e.offsetX - this.edge.arrow.layout.computed.position.x;
+                    this.edge.arrow.to.y = e.offsetY - this.edge.arrow.layout.computed.position.y;
                     this.edge.arrow.from = this.edge.findClosestPoint(this.edge.arrow.to, rule, grid);
                 }
             }
@@ -1308,7 +1162,7 @@ class EditBoard {
         return true;
     }
     onMouseUp(i, j, data, grid) {
-        if (this.isMoving) {
+        if (this.isMovingRule) {
             let deltaI = this.movingLastCoordinate.x - this.movingStartCoordinate.x;
             let deltaJ = this.movingLastCoordinate.y - this.movingStartCoordinate.y;
             if (deltaI != 0 || deltaJ != 0) {
@@ -1318,12 +1172,39 @@ class EditBoard {
                     ruleIndex: this.movingRuleIndex,
                 }));
             }
-            this.isMoving = false;
+            this.isMovingRule = false;
             this.movingRuleIndex = -1;
             this.movingStartCoordinate.x = 0;
             this.movingStartCoordinate.y = 0;
             this.movingLastCoordinate.x = 0;
             this.movingLastCoordinate.y = 0;
+        }
+        else if (this.isMovingRealSelection) {
+            this.isMovingRealSelection = false;
+            this.movingStartCoordinate.x = 0;
+            this.movingStartCoordinate.y = 0;
+            this.movingLastCoordinate.x = 0;
+            this.movingLastCoordinate.y = 0;
+        }
+        else if (this.isSelectingReal) {
+            this.isSelectingReal = false;
+            let layout = this.realSelectionRectangle.layout;
+            let tileSize = grid.computeTileSize();
+            if (tileSize >= Math.abs(layout.computed.size.width)
+                || tileSize >= Math.abs(layout.computed.size.height)) {
+                this.unselectSelectedObject();
+            }
+            else {
+                this.realSelectionBox = grid.clipRectangleToCoordinates(layout);
+                if (this.realSelectionBox.size.width != 0
+                    && this.realSelectionBox.size.height != 0) {
+                    this.realSelectionRectangle.lineDashSpeed = -0.333;
+                    this.realSelectionRectangle.layout.doLayout(this.gridLayout.computed);
+                }
+                else {
+                    this.unselectSelectedObject();
+                }
+            }
         }
         else if (this.isAddingEdge) {
             this.isAddingEdge = false;

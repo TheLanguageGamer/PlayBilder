@@ -6,6 +6,9 @@ class Rectangle {
 	strokeColor? : string = Constants.Colors.Black;
 	fillColor? : string;
 	lineWidth : number = 2;
+	lineDash : number[] = [];
+	lineDashOffset : number = 0;
+	lineDashSpeed : number = 0;
 
 	constructor(layout : Layout) {
 		this.layout = layout;
@@ -16,6 +19,9 @@ class Rectangle {
 			return;
 		}
 		ctx.beginPath();
+		ctx.setLineDash(this.lineDash);
+		this.lineDashOffset += this.lineDashSpeed;
+		ctx.lineDashOffset = this.lineDashOffset;
 		ctx.lineWidth = this.lineWidth;
 		if (this.strokeColor) {
 			ctx.strokeStyle = this.strokeColor;
