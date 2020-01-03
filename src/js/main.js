@@ -352,7 +352,7 @@ var BoardState;
 })(BoardState || (BoardState = {}));
 ;
 class Board {
-    constructor(gridSize) {
+    constructor(gridSize, screenSize) {
         this.state = BoardState.Edit;
         this.editBoard = new EditBoard();
         this.saved = new Array();
@@ -376,9 +376,11 @@ class Board {
                 this.buffer[i].push([-1, -1, -1, -1]);
             }
         }
-        let gridLayout = new Layout(0.5, 0.5, 0, 10, 1.0, 20 / 21, -40, -40);
-        gridLayout.anchor = { x: 0.5, y: 0.5 * 20 / 21 };
-        gridLayout.aspect = gridSize.width / gridSize.height;
+        let widthRelative = gridSize.width / (gridSize.width + 8);
+        let heightRelative = gridSize.height / (gridSize.height + 2);
+        let gridLayout = new Layout(0.5, 2 / gridSize.height, 0, 10, widthRelative, heightRelative, -40, -40);
+        gridLayout.anchor = { x: 0.5, y: 0.0 };
+        gridLayout.aspect = (gridSize.width + 8) / (gridSize.height + 2);
         gridLayout.fixedAspect = true;
         let _this = this;
         this.grid = new Grid({ width: gridSize.width, height: gridSize.height }, gridLayout, {
@@ -408,7 +410,7 @@ class Board {
         });
         this.grid.layout.doLayout({
             position: { x: 0, y: 0 },
-            size: { width: window.innerWidth, height: window.innerHeight },
+            size: { width: screenSize.width, height: screenSize.height },
         });
     }
     dataToB64(data, gridSize) {
@@ -642,9 +644,10 @@ class Board {
 }
 class Playbilder {
     constructor(container, boardSize, getParams) {
-        let board = new Board(boardSize);
+        let screenSize = getGameScreenSize();
+        let board = new Board(boardSize, screenSize);
         let tileSize = board.grid.computeTileSize();
-        board.grid.tileSize = tileSize;
+        console.log("PlayBilder constructor tileSize", tileSize);
         let paletteLayout = new Layout(0, 0, -20, tileSize, 0, 0, tileSize * 3, tileSize * 12);
         let selectedRectLayout = new Layout(0, 0, 0, 0, 0, 0, tileSize, tileSize);
         let selectedRect = new Rectangle(selectedRectLayout);
@@ -789,7 +792,7 @@ class Playbilder {
         board.editBoard.setComponents(this.game.components);
         board.editBoard.gridLayout = board.grid.layout;
         this.loadStateFromGetParams(getParams, board);
-        this.game.contentProvider.createImageBlit(ImagePaths.Reals[0], { width: tileSize, height: tileSize });
+        //this.game.contentProvider.createImageBlit(ImagePaths.Reals[0], {width : tileSize, height : tileSize});
     }
     loadStateFromGetParams(getParams, board) {
         let b64Data = getParams.get("data");

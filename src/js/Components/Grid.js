@@ -1,7 +1,7 @@
 "use strict";
 class Grid {
     constructor(gridSize, layout, controller = {}) {
-        this.tileSize = 0;
+        //tileSize : number = 0;
         this.downAt = { x: -1, y: -1 };
         this.color = Constants.Colors.VeryLightGrey;
         this.layout = layout;
@@ -26,10 +26,14 @@ class Grid {
     // 	}
     // }
     computeTileSize() {
-        return Math.floor(Math.min(this.layout.computed.size.width / this.gridSize.width, this.layout.computed.size.height / this.gridSize.height));
+        let ret = Math.floor(Math.min(this.layout.computed.size.width / this.gridSize.width, this.layout.computed.size.height / this.gridSize.height));
+        // if (ret != this.tileSize) {
+        // 	console.log("tileSize:", ret);
+        // }
+        return ret;
     }
     render(ctx, cp) {
-        this.tileSize = this.computeTileSize();
+        let tileSize = this.computeTileSize();
         if (!this.layout.visible) {
             return;
         }
@@ -38,18 +42,18 @@ class Grid {
         ctx.setLineDash([]);
         ctx.strokeStyle = this.color;
         for (let i = 0; i <= this.gridSize.width; ++i) {
-            ctx.moveTo(this.layout.computed.position.x + i * this.tileSize, this.layout.computed.position.y);
-            ctx.lineTo(this.layout.computed.position.x + i * this.tileSize, this.layout.computed.position.y + this.gridSize.height * this.tileSize);
+            ctx.moveTo(this.layout.computed.position.x + i * tileSize, this.layout.computed.position.y);
+            ctx.lineTo(this.layout.computed.position.x + i * tileSize, this.layout.computed.position.y + this.gridSize.height * tileSize);
         }
         for (let i = 0; i <= this.gridSize.height; ++i) {
-            ctx.moveTo(this.layout.computed.position.x, this.layout.computed.position.y + i * this.tileSize);
-            ctx.lineTo(this.layout.computed.position.x + this.gridSize.width * this.tileSize, this.layout.computed.position.y + i * this.tileSize);
+            ctx.moveTo(this.layout.computed.position.x, this.layout.computed.position.y + i * tileSize);
+            ctx.lineTo(this.layout.computed.position.x + this.gridSize.width * tileSize, this.layout.computed.position.y + i * tileSize);
         }
         for (let j = 0; j < this.gridSize.height; ++j) {
             for (let i = 0; i < this.gridSize.width; ++i) {
                 for (let path of this.grid[i][j]) {
                     if (path && path.length > 0) {
-                        cp.blitImage(ctx, cp.createImageBlit(path, { width: this.tileSize, height: this.tileSize }), this.layout.computed.position.x + i * this.tileSize, this.layout.computed.position.y + j * this.tileSize);
+                        cp.blitImage(ctx, cp.createImageBlit(path, { width: tileSize, height: tileSize }), this.layout.computed.position.x + i * tileSize, this.layout.computed.position.y + j * tileSize);
                     }
                 }
             }
@@ -57,15 +61,15 @@ class Grid {
         ctx.stroke();
     }
     getCoordinateForXPosition(x) {
-        return Math.floor((x - this.layout.computed.position.x) / this.tileSize);
+        return Math.floor((x - this.layout.computed.position.x) / this.computeTileSize());
     }
     getCoordinateForYPosition(y) {
-        return Math.floor((y - this.layout.computed.position.y) / this.tileSize);
+        return Math.floor((y - this.layout.computed.position.y) / this.computeTileSize());
     }
     getPositionForCoordinate(i, j) {
         return {
-            x: i * this.tileSize,
-            y: j * this.tileSize,
+            x: i * this.computeTileSize(),
+            y: j * this.computeTileSize(),
         };
     }
     coordinateBoxContainsPosition(box, x, y) {

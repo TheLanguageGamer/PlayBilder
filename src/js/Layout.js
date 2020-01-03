@@ -56,16 +56,23 @@ class Layout {
         };
     }
     doLayout(parent) {
+        //parent size: 734, 715 position: 0, 0
         let relative = this.relative;
+        //size: 0.71, 0.91 position: 0.5, 0.5
         let offset = this.offset;
+        //size: -40, -40 position: 0, 10
         let newWidth = relative.size.width * parent.size.width + offset.size.width;
+        //newWidth: 484
         let newHeight = relative.size.height * parent.size.height + offset.size.height;
+        //newHeight: 610
         this.computed.size = { width: newWidth, height: newHeight };
         if (this.fixedAspect) {
+            //aspect = width/height;
             let aspectWidth = newHeight * this.aspect;
             let aspectHeight = newWidth / this.aspect;
             if (aspectWidth < newWidth) {
                 this.computed.size = { width: aspectWidth, height: newHeight };
+                //aspectWidth/newHeight = newHeight*0.5/newHeight
             }
             else {
                 this.computed.size = { width: newWidth, height: aspectHeight };
@@ -74,10 +81,12 @@ class Layout {
         else {
             this.aspect = newWidth / newHeight;
         }
-        let newX = parent.position.x
-            + parent.size.width * relative.position.x
-            - this.anchor.x * this.computed.size.width
-            + offset.position.x;
+        //computed size: 479, 610
+        let newX = parent.position.x //0
+            + parent.size.width * relative.position.x //734*0.5
+            - this.anchor.x * this.computed.size.width //0.5*479
+            + offset.position.x; //0
+        //newX: 127
         let newY = parent.position.y
             + parent.size.height * relative.position.y
             - this.anchor.y * this.computed.size.height
