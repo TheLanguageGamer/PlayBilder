@@ -11,7 +11,7 @@ function getGameScreenSize() {
 	let leftPadding = info ? info.clientWidth + 5 : 5;
 	return {
 		width : window.innerWidth - leftPadding,
-		height : window.innerHeight - 10,
+		height : window.innerHeight - 15,
 	};
 }
 
