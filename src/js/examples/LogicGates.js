@@ -1,5 +1,4 @@
 "use strict";
-var f = (obj) => Object.keys(obj).map(k => [k, obj[k]]);
 var Example_LogicGates = new Map([
     ["w", "40"],
     ["h", "30"],

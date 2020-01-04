@@ -4,7 +4,7 @@ class TextLabel {
         this.text = "";
         this.font = "20px monospace";
         this.fontSize = 12;
-        this.fileStyle = Constants.Colors.LightGrey;
+        this.fillStyle = Constants.Colors.LightGrey;
         if (text) {
             this.text = text;
         }
@@ -22,7 +22,7 @@ class TextLabel {
         ctx.beginPath();
         ctx.lineWidth = 2.0;
         ctx.font = this.font;
-        ctx.fillStyle = this.fileStyle;
+        ctx.fillStyle = this.fillStyle;
         ctx.fillText(this.text, this.layout.computed.position.x, this.layout.computed.position.y - this.fontSize * 0.5);
     }
 }

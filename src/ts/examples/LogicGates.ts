@@ -1,4 +1,3 @@
-var f = (obj : any) => Object.keys(obj).map(k => [k, obj[k]]);
 var Example_LogicGates = new Map<string, string>([
 	["w", "40"],
 	["h", "30"],

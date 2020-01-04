@@ -227,10 +227,10 @@ class RuleOptionsGUI {
 		ruleOptions.children = [];
 		ruleOptions.children.push(this.rotationsCheckbox);
 
-		let rotationsLabelLayout = new Layout(0, 0, 22, 22, 0, 0, 0, 0);
+		let rotationsLabelLayout = new Layout(0, 0, 22, 5, 1, 0, 0, 0);
 		let rotationsLabel = new TextBox(rotationsLabelLayout, "Include Rotations");
 		rotationsLabel.setFontSize(12);
-		rotationsLabel.fileStyle = Constants.Colors.Black;
+		rotationsLabel.fillStyle = Constants.Colors.Black;
 		ruleOptions.children.push(rotationsLabel);
 
 		this.rootComponent = ruleOptions;

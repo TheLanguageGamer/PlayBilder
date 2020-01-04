@@ -857,6 +857,9 @@ let example = getParams.get("example");
 if (example == "LogicGates") {
     getParams = Example_LogicGates;
 }
+else if (example == "AGoodSnowmanIsHardToBuild") {
+    getParams = Example_AGoodSnowmanIsHardToBuild;
+}
 let wParam = getParams.get("w");
 let hParam = getParams.get("h");
 let width = wParam ? parseInt(wParam) : 20;
