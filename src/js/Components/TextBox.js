@@ -42,7 +42,7 @@ class TextBox {
             }
         }
         if (lineStart < this.text.length) {
-            let line = this.text.substring(lineStart, this.text.length - 1);
+            let line = this.text.substring(lineStart, this.text.length);
             this.lines.push(line);
         }
         this.dirty = false;

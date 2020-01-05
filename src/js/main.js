@@ -380,7 +380,7 @@ class Board {
         let heightRelative = gridSize.height / (gridSize.height + 2);
         let gridLayout = new Layout(0.5, 2 / gridSize.height, 0, 10, widthRelative, heightRelative, -40, -40);
         gridLayout.anchor = { x: 0.5, y: 0.0 };
-        gridLayout.aspect = (gridSize.width + 8) / (gridSize.height + 2);
+        gridLayout.aspect = (gridSize.width) / (gridSize.height);
         gridLayout.fixedAspect = true;
         let _this = this;
         this.grid = new Grid({ width: gridSize.width, height: gridSize.height }, gridLayout, {
