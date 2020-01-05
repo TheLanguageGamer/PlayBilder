@@ -7,7 +7,7 @@ class Button implements Component {
 	layout : Layout;
 	children : Component[];
 	controller : ButtonController;
-	onClick : (e : MouseEvent) => boolean;
+	onClick : (e : MouseEvent) => InputResponse;
 	onMouseDown : (e : MouseEvent) => boolean;
 	onMouseOut : (e : MouseEvent) => void;
 
@@ -40,7 +40,7 @@ class Button implements Component {
 			if (this.togglePaths) {
 				this.toggleIndex = (this.toggleIndex + 1) % this.togglePaths.length;
 			}
-			return true;
+			return InputResponse.Sunk;
 		}
 		this.onMouseDown = function(e : MouseEvent) {
 			this.foreground.layout.offset.position.x = 1;

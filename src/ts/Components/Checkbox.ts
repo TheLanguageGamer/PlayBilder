@@ -6,14 +6,14 @@ class Checkbox implements Component {
 
 	layout : Layout;
 	value : boolean = false;
-	onClick : (e : MouseEvent) => boolean;
+	onClick : (e : MouseEvent) => InputResponse;
 
 	constructor(layout : Layout, controller : CheckboxController) {
 		this.layout = layout;
 		this.onClick = function(e : MouseEvent) {
 			this.value = !this.value;
 			controller.onValueChanged(this.value);
-			return true;
+			return InputResponse.Sunk;
 		}
 	}
 

@@ -20,5 +20,6 @@ var Constants = {
 		Red : {
 			NCS : "#C40233",
 		},
-	}
+	},
+	CursorInterval : 400,
 }

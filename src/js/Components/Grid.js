@@ -127,7 +127,7 @@ class Grid {
     }
     onClick(e) {
         if (!this.controller.onClick) {
-            return false;
+            return InputResponse.Ignored;
         }
         const x = this.getCoordinateForXPosition(e.offsetX);
         const y = this.getCoordinateForYPosition(e.offsetY);
@@ -135,10 +135,10 @@ class Grid {
             || y < 0
             || x >= this.gridSize.width
             || y >= this.gridSize.height) {
-            return false;
+            return InputResponse.Ignored;
         }
         this.controller.onClick(x, y);
-        return true;
+        return InputResponse.Sunk;
     }
     onMouseDown(e) {
         if (!this.controller.onMouseDown && !this.controller.onSelect) {

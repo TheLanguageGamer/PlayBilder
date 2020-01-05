@@ -1,4 +1,5 @@
 "use strict";
+var DEBUG_CONTENT_PROVIDER = true;
 class ContentProvider {
     constructor() {
         this.images = {};
@@ -11,8 +12,10 @@ class ContentProvider {
         this.viewport.width = 512;
         this.viewport.height = 512;
         this.context.clearRect(0, 0, 512, 512);
-        // let container = document.getElementById('debug')!;
-        // container.insertBefore(this.viewport, container.firstChild);
+        if (DEBUG_CONTENT_PROVIDER) {
+            let container = document.getElementById('debug');
+            container.insertBefore(this.viewport, container.firstChild);
+        }
     }
     getImage(path) {
         if (!(path in this.images)) {

@@ -174,7 +174,7 @@ class Grid implements Component {
 	}
 	onClick(e : MouseEvent) {
 		if (!this.controller.onClick) {
-			return false;
+			return InputResponse.Ignored;
 		}
 		const x = this.getCoordinateForXPosition(e.offsetX);
 		const y = this.getCoordinateForYPosition(e.offsetY);
@@ -182,10 +182,10 @@ class Grid implements Component {
 			|| y < 0
 			|| x >= this.gridSize.width
 			|| y >= this.gridSize.height) {
-			return false;
+			return InputResponse.Ignored;
 		}
 		this.controller.onClick(x, y);
-		return true;
+		return InputResponse.Sunk;
 	}
 	onMouseDown(e : MouseEvent) {
 		if (!this.controller.onMouseDown && !this.controller.onSelect) {

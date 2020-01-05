@@ -6,7 +6,7 @@ class Checkbox {
         this.onClick = function (e) {
             this.value = !this.value;
             controller.onValueChanged(this.value);
-            return true;
+            return InputResponse.Sunk;
         };
     }
     render(ctx, cp) {

@@ -12,7 +12,7 @@ class Button {
             if (this.togglePaths) {
                 this.toggleIndex = (this.toggleIndex + 1) % this.togglePaths.length;
             }
-            return true;
+            return InputResponse.Sunk;
         };
         this.onMouseDown = function (e) {
             this.foreground.layout.offset.position.x = 1;

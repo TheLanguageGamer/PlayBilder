@@ -39,7 +39,7 @@ class Game {
                 _this.controller.onUpdate(timeMS);
             }
             _this.context.clearRect(0, 0, _this.viewport.width, _this.viewport.height);
-            _this.renderRecursive(_this.components);
+            _this.renderRecursive(_this.components, timeMS);
         }
         window.addEventListener('click', function (e) {
             if (_this._stopped) {
@@ -51,6 +51,10 @@ class Game {
             if (_this._stopped) {
                 return;
             }
+            if (_this.focusedComponent && _this.focusedComponent.blur) {
+                _this.focusedComponent.blur();
+            }
+            _this.focusedComponent = undefined;
             _this.mouseDownRecursive(_this.components, e);
         });
         window.addEventListener('mouseup', function (e) {
@@ -83,7 +87,10 @@ class Game {
             if (_this._stopped) {
                 return;
             }
-            if (_this.controller.onKeyDown) {
+            if (_this.focusedComponent && _this.focusedComponent.onKeyDown) {
+                _this.focusedComponent.onKeyDown(e);
+            }
+            else if (_this.controller.onKeyDown) {
                 _this.controller.onKeyDown(e);
             }
         });
@@ -109,7 +116,7 @@ class Game {
             }
         }
     }
-    renderRecursive(components) {
+    renderRecursive(components, timeMS) {
         for (let component of components) {
             if (component.layout.visible) {
                 if (DEBUG_LAYOUT) {
@@ -118,9 +125,9 @@ class Game {
                     this.context.rect(component.layout.computed.position.x, component.layout.computed.position.y, component.layout.computed.size.width, component.layout.computed.size.height);
                     this.context.stroke();
                 }
-                component.render(this.context, this.contentProvider);
+                component.render(this.context, this.contentProvider, timeMS);
                 if (component.children) {
-                    this.renderRecursive(component.children);
+                    this.renderRecursive(component.children, timeMS);
                 }
             }
         }
@@ -128,9 +135,15 @@ class Game {
     clickRecursive(components, e) {
         for (let component of components) {
             if (component.onClick
-                && component.layout.containsPosition(e.offsetX, e.offsetY)
-                && component.onClick(e)) {
-                break;
+                && component.layout.containsPosition(e.offsetX, e.offsetY)) {
+                let response = component.onClick(e);
+                if (response == InputResponse.Sunk) {
+                    break;
+                }
+                else if (response == InputResponse.Focused) {
+                    this.focusedComponent = component;
+                    break;
+                }
             }
             if (component.children) {
                 this.clickRecursive(component.children, e);
@@ -143,6 +156,7 @@ class Game {
                 && component.layout.containsPosition(e.offsetX, e.offsetY)
                 && component.onMouseDown(e)) {
                 this.mouseDownComponent = component;
+                this.focusedComponent = component;
                 break;
             }
             if (component.children) {
@@ -164,7 +178,7 @@ class Game {
                 _this.controller.onUpdate(timeMS);
             }
             _this.context.clearRect(0, 0, _this.viewport.width, _this.viewport.height);
-            _this.renderRecursive(_this.components);
+            _this.renderRecursive(_this.components, timeMS);
         }
         update(performance.now());
     }
