@@ -1,5 +1,5 @@
 "use strict";
-var DEBUG_CONTENT_PROVIDER = true;
+var DEBUG_CONTENT_PROVIDER = false;
 class ContentProvider {
     constructor() {
         this.images = {};

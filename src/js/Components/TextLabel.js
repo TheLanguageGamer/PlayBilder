@@ -23,7 +23,7 @@ class TextLabel {
         ctx.lineWidth = 2.0;
         ctx.font = this.font;
         ctx.fillStyle = this.fillStyle;
-        ctx.fillText(this.text, this.layout.computed.position.x, this.layout.computed.position.y - this.fontSize * 0.5);
+        ctx.fillText(this.text, this.layout.computed.position.x, this.layout.computed.position.y + this.fontSize * 0.75);
     }
 }
 //# sourceMappingURL=TextLabel.js.map

@@ -1,4 +1,10 @@
 "use strict";
+var RelativeLayout;
+(function (RelativeLayout) {
+    RelativeLayout[RelativeLayout["None"] = 0] = "None";
+    RelativeLayout[RelativeLayout["StackVertical"] = 1] = "StackVertical";
+    RelativeLayout[RelativeLayout["StackHorizontal"] = 2] = "StackHorizontal";
+})(RelativeLayout || (RelativeLayout = {}));
 function boxContainsPoint(box, x, y) {
     return x >= box.position.x
         && y >= box.position.y
@@ -39,6 +45,7 @@ function minimumDistanceToLineSegment(p, l1, l2) {
 }
 class Layout {
     constructor(relX, relY, offX, offY, relWidth, relHeight, offWidth, offHeight) {
+        this.relativeLayout = RelativeLayout.None;
         this.relative = { size: { width: 0, height: 0 }, position: { x: 0, y: 0 } };
         this.offset = { size: { width: 0, height: 0 }, position: { x: 0, y: 0 } };
         this.anchor = { x: 0, y: 0 };
@@ -56,6 +63,9 @@ class Layout {
         };
     }
     doLayout(parent) {
+        this.doLayoutInternal(parent, parent.position.x, parent.position.y);
+    }
+    doLayoutInternal(parent, xInset, yInset) {
         //parent size: 734, 715 position: 0, 0
         let relative = this.relative;
         //size: 0.71, 0.91 position: 0.5, 0.5
@@ -82,30 +92,48 @@ class Layout {
             this.aspect = newWidth / newHeight;
         }
         //computed size: 479, 610
-        let newX = parent.position.x //0
+        let newX = xInset //0
             + parent.size.width * relative.position.x //734*0.5
             - this.anchor.x * this.computed.size.width //0.5*479
             + offset.position.x; //0
         //newX: 127
-        let newY = parent.position.y
+        let newY = yInset
             + parent.size.height * relative.position.y
             - this.anchor.y * this.computed.size.height
             + offset.position.y;
         this.computed.position = { x: newX, y: newY };
     }
-    doLayoutRecursive(parent, components) {
-        this.doLayout(parent);
+    doLayoutRecursiveInternal(parent, xInset, yInset, components) {
+        this.doLayoutInternal(parent, xInset, yInset);
         if (components) {
-            for (let component of components) {
-                component.layout.doLayoutRecursive(this.computed, component.children);
+            var childXInset = this.computed.position.x;
+            var childYInset = this.computed.position.y;
+            for (var component of components) {
+                component.layout.doLayoutRecursiveInternal(this.computed, childXInset, childYInset, component.children);
+                if (this.relativeLayout == RelativeLayout.StackVertical) {
+                    childYInset = component.layout.bottom();
+                }
+                else if (this.relativeLayout == RelativeLayout.StackHorizontal) {
+                    childXInset = component.layout.right();
+                }
             }
         }
+    }
+    doLayoutRecursive(parent, components) {
+        //assert: not RelativeLayout.StackVertical, RelativeLayout.StackHorizontal
+        this.doLayoutRecursiveInternal(parent, parent.position.x, parent.position.y, components);
     }
     containsPosition(x, y) {
         return x >= this.computed.position.x
             && y >= this.computed.position.y
             && x <= this.computed.position.x + this.computed.size.width
             && y <= this.computed.position.y + this.computed.size.height;
+    }
+    right() {
+        return this.computed.position.x + this.computed.size.width;
+    }
+    bottom() {
+        return this.computed.position.y + this.computed.size.height;
     }
     setUpperLeft(x, y) {
         this.offset.position.x = x;

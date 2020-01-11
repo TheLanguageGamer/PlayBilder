@@ -1,17 +1,30 @@
+interface TextInputController {
+	onTextChanged?: (newText : string) => void;
+}
+
 class TextInput {
 	
 	layout : Layout;
 	children? : Component[];
+	controller : TextInputController;
 	text : string = "";
+	placeholderText : string = "";
 	private font : string = "20px monospace";
 	private fontSize : number = 12;
-	fillStyle : string = Constants.Colors.LightGrey;
+	private maxTextLength : number = -1;
+	fillStyle : string = Constants.Colors.Black;
+	placeholderFillStyle : string = Constants.Colors.LightGrey;
 	isFocused : boolean = false;
 	lastTimeStep : DOMHighResTimeStamp = 0;
 	showCursor : boolean = false;
 	cursorPosition : number = 0;
 
-	constructor(layout : Layout, text? : string) {
+	constructor(
+		layout : Layout,
+		controller : TextInputController,
+		text? : string) {
+
+		this.controller = controller;
 		if (text) {
 			this.text = text;
 		}
@@ -81,11 +94,25 @@ class TextInput {
 			this.resetCursorBlink();
 		}
 		console.log(e.key, "new text:", this.text);
+		this.clipText();
+	}
+
+	clipText() {
+		if (this.maxTextLength > -1
+			&& this.text.length > this.maxTextLength) {
+			this.text = this.text.substring(0, this.maxTextLength);
+			this.cursorPosition = Math.min(this.text.length, this.cursorPosition);
+		}
 	}
 
 	setFontSize(fontSize : number) {
 		this.fontSize = fontSize;
 		this.font = fontSize.toString() + "px monospace";
+	}
+
+	setMaxTextLength(maxTextLength : number) {
+		this.maxTextLength = Math.floor(maxTextLength);
+		this.clipText();
 	}
 
 	render(
@@ -96,15 +123,28 @@ class TextInput {
 		if (!this.layout.visible) {
 			return;
 		}
+
+		let showPlaceholder = this.text.length == 0
+							&& this.placeholderText.length > 0
+							&& !this.isFocused;
+
 		ctx.beginPath();
 		ctx.lineWidth = 2.0;
 		ctx.font = this.font;
-		ctx.fillStyle = this.fillStyle;
-		ctx.fillText(
-			this.text,
-			this.layout.computed.position.x,
-			this.layout.computed.position.y + this.fontSize*0.75
-		);
+		ctx.fillStyle = showPlaceholder ? this.placeholderFillStyle : this.fillStyle;
+		if (showPlaceholder) {
+			ctx.fillText(
+				this.placeholderText,
+				this.layout.computed.position.x,
+				this.layout.computed.position.y + this.fontSize*0.75
+			);
+		} else {
+			ctx.fillText(
+				this.text,
+				this.layout.computed.position.x,
+				this.layout.computed.position.y + this.fontSize*0.75
+			);
+		}
 		if (this.isFocused) {
 			let delta : DOMHighResTimeStamp = timeMS - this.lastTimeStep;
 			if (delta > Constants.CursorInterval) {

@@ -225,7 +225,7 @@ class RuleOptionsGUI {
     }
 }
 class EditBoard {
-    constructor() {
+    constructor(controller) {
         this.components = [];
         this.gridLayout = new Layout(0, 0, 0, 0, 0, 0, 0, 0);
         this.ruleOptions = new RuleOptionsGUI();
@@ -244,6 +244,7 @@ class EditBoard {
         this.rules = new Map();
         this.maxRuleIndex = 0;
         this.edits = [];
+        this.controller = controller;
     }
     setComponents(components) {
         this.components = components;
@@ -892,6 +893,7 @@ class EditBoard {
             this.selectedRule = rule;
         }
         //else, panic!
+        this.controller.onObjectSelected();
     }
     unselectSelectedObject() {
         if (this.selectedRule) {
@@ -909,11 +911,13 @@ class EditBoard {
             this.realSelectionRectangle.layout.visible = false;
             this.realSelectionRectangle.lineDashSpeed = 0;
         }
+        this.controller.onObjectUnselected();
     }
     selectEdge(edge) {
         edge.arrow.lineWidth = 5;
         edge.arrow.headMargin = 10;
         this.selectedEdge = edge;
+        this.controller.onObjectSelected();
     }
     findEdgeToSelect(e) {
         let returnEdge = undefined;

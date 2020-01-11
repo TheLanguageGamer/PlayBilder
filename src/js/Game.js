@@ -95,14 +95,6 @@ class Game {
             }
         });
     }
-    doLayoutRecursive(components, parent) {
-        for (let component of components) {
-            component.layout.doLayout(parent);
-            if (component.children) {
-                this.doLayoutRecursive(component.children, component.layout.computed);
-            }
-        }
-    }
     doLayout() {
         let screenSize = getGameScreenSize();
         let box = {
@@ -110,10 +102,7 @@ class Game {
             size: { width: screenSize.width, height: screenSize.height },
         };
         for (let component of this.components) {
-            component.layout.doLayout(box);
-            if (component.children) {
-                this.doLayoutRecursive(component.children, component.layout.computed);
-            }
+            component.layout.doLayoutRecursive(box, component.children);
         }
     }
     renderRecursive(components, timeMS) {

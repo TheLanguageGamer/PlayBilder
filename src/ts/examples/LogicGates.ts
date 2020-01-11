@@ -7,4 +7,5 @@ var Example_LogicGates = new Map<string, string>([
 	["notMatches", ""],
 	["parallel", ""],
 	["rotations", "0,0,0,0,0,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,1,1"],
+	["gsi", "350"],
 ]);

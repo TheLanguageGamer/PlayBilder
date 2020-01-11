@@ -248,9 +248,15 @@ class RuleOptionsGUI {
 	}
 }
 
+interface EditBoardController {
+	onObjectSelected : () => void;
+	onObjectUnselected : () => void;
+}
+
 class EditBoard {
 
 	private components : Component[] = [];
+	controller : EditBoardController;
 	gridLayout : Layout = new Layout(0, 0, 0, 0, 0, 0, 0, 0);
 	ruleOptions : RuleOptionsGUI = new RuleOptionsGUI();
 
@@ -279,6 +285,10 @@ class EditBoard {
 	maxRuleIndex : number = 0;
 
 	edits : Edit[] = [];
+
+	constructor(controller : EditBoardController) {
+		this.controller = controller;
+	}
 
 	setComponents(components : Component[]) {
 		this.components = components;
@@ -1093,6 +1103,7 @@ class EditBoard {
 			this.selectedRule = rule;
 		}
 		//else, panic!
+		this.controller.onObjectSelected();
 	}
 
 	unselectSelectedObject() {
@@ -1111,12 +1122,14 @@ class EditBoard {
 			this.realSelectionRectangle.layout.visible = false;
 			this.realSelectionRectangle.lineDashSpeed = 0;
 		}
+		this.controller.onObjectUnselected();
 	}
 
 	selectEdge(edge : Edge) {
 		edge.arrow.lineWidth = 5;
 		edge.arrow.headMargin = 10;
 		this.selectedEdge = edge;
+		this.controller.onObjectSelected();
 	}
 
 	findEdgeToSelect(e : MouseEvent) : undefined | Edge {

@@ -8,5 +8,6 @@ var Example_LogicGates = new Map([
     ["notMatches", ""],
     ["parallel", ""],
     ["rotations", "0,0,0,0,0,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,1,1"],
+    ["gsi", "350"],
 ]);
 //# sourceMappingURL=LogicGates.js.map

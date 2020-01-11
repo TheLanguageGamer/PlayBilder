@@ -49,7 +49,7 @@ class TestBootstrapper {
 			0, 0, 5, 5,
 			1, 1, -10, -10
 		);
-		let textInput3 = new TextInput(textLayout3, "Hey how's it going");
+		let textInput3 = new TextInput(textLayout3, {}, "Hey how's it going");
 		textInput3.fillStyle = Constants.Colors.Black;
 		textInput3.setFontSize(14);
 		rect3.children = [];

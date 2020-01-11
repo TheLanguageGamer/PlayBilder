@@ -646,6 +646,7 @@ class Board {
 		ret += "parallel=" + parallelStr;
 		ret += "&";
 		ret += "rotations=" + rotationsStr;
+		//ret += "gsi=" + this.
 		return ret;
 	}
 
@@ -729,7 +730,17 @@ class Board {
 	}
 
 	constructor (gridSize : Size, screenSize : Size) {
-		this.editBoard = new EditBoard();
+
+		let gameSettingsGui = new GameSettingsGUI();
+
+		this.editBoard = new EditBoard({
+			onObjectSelected() {
+				gameSettingsGui.hide();
+			},
+			onObjectUnselected() {
+				gameSettingsGui.show();
+			}
+		});
 
 		this.saved = new Array();
 		for (let i = 0; i < gridSize.width; ++i) {
@@ -759,7 +770,7 @@ class Board {
 		let heightRelative = gridSize.height/(gridSize.height + 2);
 		let gridLayout = new Layout(0.5, 2/gridSize.height, 0, 10,
 			widthRelative,
-			heightRelative, -40, -40);
+			heightRelative, -kGameSettingsWidth, -40);
 		gridLayout.anchor = {x: 0.5, y: 0.0};
 		gridLayout.aspect = (gridSize.width)/(gridSize.height);
 		gridLayout.fixedAspect = true;
@@ -793,11 +804,12 @@ class Board {
 				},
 			}
 		);
-
 		this.grid.layout.doLayout({
 			position: {x:0, y:0},
 			size: {width: screenSize.width, height: screenSize.height},
 		});
+		this.grid.children = [];
+		this.grid.children.push(gameSettingsGui.rootComponent);
 	}
 
 	debugRules() {
@@ -877,6 +889,62 @@ class Board {
 				this.editBoard.edges.push(edge);
 			}
 		}
+	}
+
+	setComponents(components : Component[]) {
+		this.editBoard.setComponents(components);
+		this.editBoard.gridLayout = this.grid.layout;
+	}
+}
+
+let kGameSettingsWidth = 150;
+
+class GameSettingsGUI {
+	rootComponent : Component;
+	title : TextInput;
+
+	constructor() {
+		let fontSize = 18;
+
+		let rootLayout = new Layout(1, 0, 10, 0, 0, 0, kGameSettingsWidth, 200);
+		let root = new Rectangle(rootLayout);
+		root.lineWidth = 1;
+		root.layout.relativeLayout = RelativeLayout.StackVertical;
+
+		let titleLayout = new Layout(0, 0, 5, 5, 1, 0, 0, 20);
+		let title = new TextInput(titleLayout, {}, "My Game");
+		title.placeholderText = "Untitled";
+		title.setFontSize(fontSize);
+		title.setMaxTextLength((kGameSettingsWidth-10)/(fontSize*0.6));
+
+		let intervalLabelLayout = new Layout(0, 0, 5, 5, 0.7, 0, 0, 14);
+		let intervalLabel = new TextLabel(intervalLabelLayout, "Interval (ms):");
+		intervalLabel.setFontSize(12);
+		intervalLabel.fillStyle = Constants.Colors.Black;
+
+		let intervalLayout = new Layout(1, 0, 5, 0, 1, 0, 0, 14);
+		let interval = new TextInput(intervalLayout, {}, "200");
+		interval.placeholderText = "0";
+		interval.setFontSize(12);
+		interval.setMaxTextLength(4);
+
+		intervalLabel.children = [];
+		intervalLabel.children.push(interval);
+
+		root.children = [];
+		root.children.push(title);
+		root.children.push(intervalLabel);
+
+		this.rootComponent = root;
+		this.title = title;
+	}
+
+	hide() {
+		this.rootComponent.layout.visible = false;
+	}
+
+	show() {
+		this.rootComponent.layout.visible = true;
 	}
 }
 
@@ -1113,18 +1181,17 @@ class Playbilder {
     		}	
     	);
 		this.game.components.push(board.grid);
-		board.grid.children = [];
-		board.grid.children.push(palette);
-		board.grid.children.push(toolbar);
-		board.grid.children.push(playButton);
-		board.grid.children.push(board.editBoard.ruleOptions.rootComponent);
-		this.game.doLayout();
+		if (board.grid.children) {
+			board.grid.children.push(palette);
+			board.grid.children.push(toolbar);
+			board.grid.children.push(playButton);
+			board.grid.children.push(board.editBoard.ruleOptions.rootComponent);
+		}
 
-		board.editBoard.setComponents(this.game.components);
-		board.editBoard.gridLayout = board.grid.layout;
+		board.setComponents(this.game.components);
+		this.game.doLayout();
 		this.loadStateFromGetParams(getParams, board);
 		
-
         //this.game.contentProvider.createImageBlit(ImagePaths.Reals[0], {width : tileSize, height : tileSize});
     }
 }

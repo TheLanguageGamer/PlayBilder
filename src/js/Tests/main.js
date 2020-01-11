@@ -23,7 +23,7 @@ class TestBootstrapper {
         let rectLayout3 = new Layout(0, 0, 620, 20, 0, 0, 300, 25);
         let rect3 = new Rectangle(rectLayout3);
         let textLayout3 = new Layout(0, 0, 5, 5, 1, 1, -10, -10);
-        let textInput3 = new TextInput(textLayout3, "Hey how's it going");
+        let textInput3 = new TextInput(textLayout3, {}, "Hey how's it going");
         textInput3.fillStyle = Constants.Colors.Black;
         textInput3.setFontSize(14);
         rect3.children = [];
