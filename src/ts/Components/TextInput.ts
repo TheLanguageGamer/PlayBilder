@@ -101,7 +101,11 @@ class TextInput {
 				this.cursorPosition -= 1;
 				this.resetCursorBlink();
 			}
-		} else {
+		} else if (this.textInputType == TextInputType.Integer
+			&& (e.keyCode < 48 || e.keyCode >57)) {
+			return;
+		}
+		else {
 			this.setText(
 				this.text.substring(0, this.cursorPosition)
 				+ e.key

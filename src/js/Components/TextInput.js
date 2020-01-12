@@ -1,4 +1,9 @@
 "use strict";
+var TextInputType;
+(function (TextInputType) {
+    TextInputType[TextInputType["Any"] = 0] = "Any";
+    TextInputType[TextInputType["Integer"] = 1] = "Integer";
+})(TextInputType || (TextInputType = {}));
 class TextInput {
     constructor(layout, controller, text) {
         this.placeholderText = "";
@@ -12,6 +17,7 @@ class TextInput {
         this.lastTimeStep = 0;
         this.showCursor = false;
         this.cursorPosition = 0;
+        this.textInputType = TextInputType.Any;
         this.controller = controller;
         if (text) {
             this.setText(text);
@@ -76,6 +82,10 @@ class TextInput {
                 this.cursorPosition -= 1;
                 this.resetCursorBlink();
             }
+        }
+        else if (this.textInputType == TextInputType.Integer
+            && (e.keyCode < 48 || e.keyCode > 57)) {
+            return;
         }
         else {
             this.setText(this.text.substring(0, this.cursorPosition)

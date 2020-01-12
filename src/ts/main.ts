@@ -945,6 +945,7 @@ class GameSettingsGUI {
 		interval.placeholderText = "0";
 		interval.setFontSize(12);
 		interval.setMaxTextLength(4);
+		interval.textInputType = TextInputType.Integer;
 
 		intervalLabel.children = [];
 		intervalLabel.children.push(interval);
