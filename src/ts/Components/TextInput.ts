@@ -2,22 +2,28 @@ interface TextInputController {
 	onTextChanged?: (newText : string) => void;
 }
 
+enum TextInputType {
+	Any = 0,
+	Integer,
+}
+
 class TextInput {
 	
 	layout : Layout;
 	children? : Component[];
 	controller : TextInputController;
-	text : string = "";
 	placeholderText : string = "";
 	private font : string = "20px monospace";
 	private fontSize : number = 12;
 	private maxTextLength : number = -1;
+	private text : string = "";
 	fillStyle : string = Constants.Colors.Black;
 	placeholderFillStyle : string = Constants.Colors.LightGrey;
 	isFocused : boolean = false;
 	lastTimeStep : DOMHighResTimeStamp = 0;
 	showCursor : boolean = false;
 	cursorPosition : number = 0;
+	textInputType = TextInputType.Any;
 
 	constructor(
 		layout : Layout,
@@ -26,10 +32,17 @@ class TextInput {
 
 		this.controller = controller;
 		if (text) {
-			this.text = text;
+			this.setText(text);
 		}
 		this.setFontSize(this.fontSize);
 		this.layout = layout;
+	}
+
+	setText(text : string) {
+		this.text = text;
+		if (this.controller.onTextChanged) {
+			this.controller.onTextChanged(text);
+		}
 	}
 
 	focus(e : MouseEvent) {
@@ -81,15 +94,19 @@ class TextInput {
 			this.resetCursorBlink();
 		} else if (e.keyCode == 46 || e.keyCode == 8) {
 			if (this.cursorPosition > 0) {
-				this.text = this.text.substring(0, this.cursorPosition-1)
-					+ this.text.substring(this.cursorPosition, this.text.length);
+				this.setText(
+					this.text.substring(0, this.cursorPosition-1)
+					+ this.text.substring(this.cursorPosition, this.text.length)
+				);
 				this.cursorPosition -= 1;
 				this.resetCursorBlink();
 			}
 		} else {
-			this.text = this.text.substring(0, this.cursorPosition)
+			this.setText(
+				this.text.substring(0, this.cursorPosition)
 				+ e.key
-				+ this.text.substring(this.cursorPosition, this.text.length);
+				+ this.text.substring(this.cursorPosition, this.text.length)
+			);
 			this.cursorPosition += e.key.length;
 			this.resetCursorBlink();
 		}
@@ -100,7 +117,7 @@ class TextInput {
 	clipText() {
 		if (this.maxTextLength > -1
 			&& this.text.length > this.maxTextLength) {
-			this.text = this.text.substring(0, this.maxTextLength);
+			this.setText(this.text.substring(0, this.maxTextLength));
 			this.cursorPosition = Math.min(this.text.length, this.cursorPosition);
 		}
 	}

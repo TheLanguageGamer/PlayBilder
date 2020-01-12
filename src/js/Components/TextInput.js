@@ -1,11 +1,11 @@
 "use strict";
 class TextInput {
     constructor(layout, controller, text) {
-        this.text = "";
         this.placeholderText = "";
         this.font = "20px monospace";
         this.fontSize = 12;
         this.maxTextLength = -1;
+        this.text = "";
         this.fillStyle = Constants.Colors.Black;
         this.placeholderFillStyle = Constants.Colors.LightGrey;
         this.isFocused = false;
@@ -14,10 +14,16 @@ class TextInput {
         this.cursorPosition = 0;
         this.controller = controller;
         if (text) {
-            this.text = text;
+            this.setText(text);
         }
         this.setFontSize(this.fontSize);
         this.layout = layout;
+    }
+    setText(text) {
+        this.text = text;
+        if (this.controller.onTextChanged) {
+            this.controller.onTextChanged(text);
+        }
     }
     focus(e) {
         let x = e.offsetX - this.layout.computed.position.x;
@@ -65,16 +71,16 @@ class TextInput {
         }
         else if (e.keyCode == 46 || e.keyCode == 8) {
             if (this.cursorPosition > 0) {
-                this.text = this.text.substring(0, this.cursorPosition - 1)
-                    + this.text.substring(this.cursorPosition, this.text.length);
+                this.setText(this.text.substring(0, this.cursorPosition - 1)
+                    + this.text.substring(this.cursorPosition, this.text.length));
                 this.cursorPosition -= 1;
                 this.resetCursorBlink();
             }
         }
         else {
-            this.text = this.text.substring(0, this.cursorPosition)
+            this.setText(this.text.substring(0, this.cursorPosition)
                 + e.key
-                + this.text.substring(this.cursorPosition, this.text.length);
+                + this.text.substring(this.cursorPosition, this.text.length));
             this.cursorPosition += e.key.length;
             this.resetCursorBlink();
         }
@@ -84,7 +90,7 @@ class TextInput {
     clipText() {
         if (this.maxTextLength > -1
             && this.text.length > this.maxTextLength) {
-            this.text = this.text.substring(0, this.maxTextLength);
+            this.setText(this.text.substring(0, this.maxTextLength));
             this.cursorPosition = Math.min(this.text.length, this.cursorPosition);
         }
     }

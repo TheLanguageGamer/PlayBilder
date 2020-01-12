@@ -329,7 +329,7 @@ class PlayBoard {
 	upPlayTree : PlayTree;
 	downPlayTree : PlayTree;
 	lastTimeStep : DOMHighResTimeStamp = 0;
-	gameStepInterval : DOMHighResTimeStamp = 500;
+	gameStepInterval : DOMHighResTimeStamp;
 
 	onUpdate(
 		timeMS : DOMHighResTimeStamp,
@@ -406,8 +406,10 @@ class PlayBoard {
 		edges : Edge[],
 		editRules : Map<number, EditRule>,
 		data : number[][][],
-		gridSize : Size) {
+		gridSize : Size,
+		interval : DOMHighResTimeStamp) {
 
+		this.gameStepInterval = interval;
 		let computerEditRule = editRules.get(InputState.Computer) as EditRule;
 		//asser computerEditRule is not undefined
 		this.gameStepPlayTree = new PlayTree(
@@ -533,6 +535,7 @@ class Board {
 	buffer : number[][][];
 	editBoard : EditBoard;
 	playBoard? : PlayBoard;
+	gameStepInterval : DOMHighResTimeStamp = 500;
 
 	state : BoardState = BoardState.Edit;
 
@@ -673,7 +676,8 @@ class Board {
 				this.editBoard.edges,
 				this.editBoard.rules,
 				this.data,
-				this.grid.gridSize
+				this.grid.gridSize,
+				this.gameStepInterval
 			);
 			this.state = BoardState.Play;
 		}
@@ -731,7 +735,13 @@ class Board {
 
 	constructor (gridSize : Size, screenSize : Size) {
 
-		let gameSettingsGui = new GameSettingsGUI();
+		let _this = this;
+		let gameSettingsGui = new GameSettingsGUI({
+			onIntervalChanged(interval : number) {
+				console.log("New interval:", interval);
+				_this.gameStepInterval = interval;
+			},
+		});
 
 		this.editBoard = new EditBoard({
 			onObjectSelected() {
@@ -774,7 +784,7 @@ class Board {
 		gridLayout.anchor = {x: 0.5, y: 0.0};
 		gridLayout.aspect = (gridSize.width)/(gridSize.height);
 		gridLayout.fixedAspect = true;
-		let _this = this;
+
 		this.grid = new Grid(
 			{width: gridSize.width, height: gridSize.height},
 			gridLayout,
@@ -899,11 +909,14 @@ class Board {
 
 let kGameSettingsWidth = 150;
 
+interface GameSettingsController {
+	onIntervalChanged: (interval : number) => void;
+}
+
 class GameSettingsGUI {
 	rootComponent : Component;
-	title : TextInput;
 
-	constructor() {
+	constructor(controller : GameSettingsController) {
 		let fontSize = 18;
 
 		let rootLayout = new Layout(1, 0, 10, 0, 0, 0, kGameSettingsWidth, 200);
@@ -923,7 +936,12 @@ class GameSettingsGUI {
 		intervalLabel.fillStyle = Constants.Colors.Black;
 
 		let intervalLayout = new Layout(1, 0, 5, 0, 1, 0, 0, 14);
-		let interval = new TextInput(intervalLayout, {}, "200");
+		let interval = new TextInput(intervalLayout, {
+			onTextChanged(newText : string) {
+				let interval = parseInt(newText) || 0;
+				controller.onIntervalChanged(interval);
+			},
+		}, "200");
 		interval.placeholderText = "0";
 		interval.setFontSize(12);
 		interval.setMaxTextLength(4);
@@ -936,7 +954,6 @@ class GameSettingsGUI {
 		root.children.push(intervalLabel);
 
 		this.rootComponent = root;
-		this.title = title;
 	}
 
 	hide() {

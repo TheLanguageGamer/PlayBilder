@@ -38,21 +38,11 @@ class Grid implements Component {
 			}
 		}
 	}
-	// doPopulate(cp : ContentProvider) {
-	// 	let tileSize = this.computeTileSize();
-	// 	for (let i = 0; i < this.gridSize.width; ++i) {
-	// 		for (let j = 0; j < this.gridSize.height; ++j) {
-	// 		}
-	// 	}
-	// }
 	computeTileSize() {
 		let ret = Math.floor(Math.min(
 			this.layout.computed.size.width / this.gridSize.width,
 			this.layout.computed.size.height / this.gridSize.height,
 		));
-		// if (ret != this.tileSize) {
-		// 	console.log("tileSize:", ret);
-		// }
 		return ret;
 	}
 	render(ctx : CanvasRenderingContext2D, cp : ContentProvider) {
