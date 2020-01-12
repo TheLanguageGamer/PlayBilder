@@ -35,12 +35,12 @@ var Direction;
 })(Direction || (Direction = {}));
 class EditRule {
     constructor(index, parentLayout) {
+        this.includeRotations = false;
         this.size = 0;
         this.line = new Line();
         this.boundaryEdges = new Set();
         this.boundaryPoints = new Set();
         this.dirtyBoundaries = true;
-        this.includeRotations = false;
         this._reachable = false;
         this.index = index;
         this.line.color = Constants.Colors.Grey;
@@ -65,6 +65,16 @@ class EditRule {
     setReachable(value) {
         this.line.color = value ? Constants.Colors.Black : Constants.Colors.Grey;
         this._reachable = value;
+    }
+    save() {
+        return {
+            index: this.index,
+            includeRotations: this.includeRotations,
+        };
+    }
+    load(obj) {
+        this.index = obj.index;
+        this.includeRotations = obj.includeRotations;
     }
 }
 var EdgeType;
@@ -94,6 +104,24 @@ class Edge {
             this.setEdgeType(EdgeType.Parallel);
         }
         this.arrow.layout.doLayout(obj.parentLayout.computed);
+    }
+    save() {
+        return {
+            tailRuleIndex: this.tailRuleIndex,
+            headRuleIndex: this.headRuleIndex,
+            type: this.type,
+        };
+    }
+    load(archive) {
+        if (archive.tailRuleIndex) {
+            this.tailRuleIndex = archive.tailRuleIndex;
+        }
+        if (archive.headRuleIndex) {
+            this.headRuleIndex = archive.headRuleIndex;
+        }
+        if (archive.type) {
+            this.setEdgeType(archive.type);
+        }
     }
     setEdgeType(type) {
         this.type = type;

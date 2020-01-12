@@ -35,12 +35,13 @@ enum Direction {
 
 class EditRule {
 	index : number;
+	includeRotations : boolean = false;
+
 	size : number = 0;
 	line : Line = new Line();
 	boundaryEdges : Set<string> = new Set();
 	boundaryPoints : Set<string> = new Set();
 	dirtyBoundaries : boolean = true;
-	includeRotations : boolean = false;
 	private _reachable : boolean = false;
 	constructor(index : number, parentLayout : Layout) {
 		this.index = index;
@@ -66,6 +67,16 @@ class EditRule {
 	setReachable(value : boolean) {
 		this.line.color = value ? Constants.Colors.Black : Constants.Colors.Grey;
 		this._reachable = value;
+	}
+	save() {
+		return {
+			index : this.index,
+			includeRotations : this.includeRotations,
+		};
+	}
+	load(obj : {index : number, includeRotations : boolean}) {
+		this.index = obj.index;
+		this.includeRotations = obj.includeRotations;
 	}
 }
 
@@ -94,6 +105,24 @@ class Edge {
 			this.setEdgeType(EdgeType.Parallel);
 		}
 		this.arrow.layout.doLayout(obj.parentLayout.computed);
+	}
+	save() {
+		return {
+			tailRuleIndex : this.tailRuleIndex,
+			headRuleIndex : this.headRuleIndex,
+			type : this.type,
+		};
+	}
+	load(archive : any) {
+		if (archive.tailRuleIndex) {
+			this.tailRuleIndex = archive.tailRuleIndex;
+		}
+		if (archive.headRuleIndex) {
+			this.headRuleIndex = archive.headRuleIndex;
+		}
+		if (archive.type) {
+			this.setEdgeType(archive.type);
+		}
 	}
 	setEdgeType(type : EdgeType) {
 		this.type = type;
@@ -255,7 +284,7 @@ interface EditBoardController {
 
 class EditBoard {
 
-	private components : Component[] = [];
+	components : Component[] = [];
 	controller : EditBoardController;
 	gridLayout : Layout = new Layout(0, 0, 0, 0, 0, 0, 0, 0);
 	ruleOptions : RuleOptionsGUI = new RuleOptionsGUI();

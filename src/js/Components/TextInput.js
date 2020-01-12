@@ -31,6 +31,7 @@ class TextInput {
             this.controller.onTextChanged(text);
         }
     }
+    getText() { return this.text; }
     focus(e) {
         let x = e.offsetX - this.layout.computed.position.x;
         let y = e.offsetY - this.layout.computed.position.y;

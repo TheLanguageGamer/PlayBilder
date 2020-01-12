@@ -45,6 +45,8 @@ class TextInput {
 		}
 	}
 
+	getText() { return this.text; }
+
 	focus(e : MouseEvent) {
 		let x = e.offsetX - this.layout.computed.position.x;
 		let y = e.offsetY - this.layout.computed.position.y;

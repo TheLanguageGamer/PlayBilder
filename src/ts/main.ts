@@ -536,6 +536,7 @@ class Board {
 	editBoard : EditBoard;
 	playBoard? : PlayBoard;
 	gameStepInterval : DOMHighResTimeStamp = 500;
+	gameSettingsGui : GameSettingsGUI;
 
 	state : BoardState = BoardState.Edit;
 
@@ -649,8 +650,13 @@ class Board {
 		ret += "parallel=" + parallelStr;
 		ret += "&";
 		ret += "rotations=" + rotationsStr;
-		//ret += "gsi=" + this.
+		ret += "&";
+		ret += "interval=" + this.gameStepInterval;
 		return ret;
+	}
+
+	getTitle() {
+		return this.gameSettingsGui.title.getText();
 	}
 
 	copyData(from : number[][][], to : number[][][]) {
@@ -736,7 +742,7 @@ class Board {
 	constructor (gridSize : Size, screenSize : Size) {
 
 		let _this = this;
-		let gameSettingsGui = new GameSettingsGUI({
+		this.gameSettingsGui = new GameSettingsGUI({
 			onIntervalChanged(interval : number) {
 				console.log("New interval:", interval);
 				_this.gameStepInterval = interval;
@@ -745,10 +751,10 @@ class Board {
 
 		this.editBoard = new EditBoard({
 			onObjectSelected() {
-				gameSettingsGui.hide();
+				_this.gameSettingsGui.hide();
 			},
 			onObjectUnselected() {
-				gameSettingsGui.show();
+				_this.gameSettingsGui.show();
 			}
 		});
 
@@ -819,7 +825,7 @@ class Board {
 			size: {width: screenSize.width, height: screenSize.height},
 		});
 		this.grid.children = [];
-		this.grid.children.push(gameSettingsGui.rootComponent);
+		this.grid.children.push(this.gameSettingsGui.rootComponent);
 	}
 
 	debugRules() {
@@ -879,7 +885,49 @@ class Board {
 		}
 		this.editBoard.calculateReachability();
 	}
-
+	load(archive : any) {
+		if (archive.gameStepInterval) {
+			this.gameStepInterval = archive.gameStepInterval;
+			this.gameSettingsGui.interval.setText(this.gameStepInterval.toString());
+		}
+		if (archive.settings) {
+			if (archive.settings.title) {
+				this.gameSettingsGui.title.setText(archive.settings.title);
+			}
+		}
+		if (archive.data) {
+			this.data = archive.data;
+			this.applyRealDataToGrid();
+		}
+		if (archive.edges && archive.rules) {
+			for (let edgeArchive of archive.edges) {
+				let edge = new Edge({
+					tailRuleIndex : edgeArchive.tailRuleIndex,
+					fromTool : Tool.EdgeAlways,
+					parentLayout : this.grid.layout,
+				});
+				edge.load(edgeArchive);
+				this.editBoard.components.push(edge.arrow);
+				this.editBoard.edges.push(edge);
+			}
+			for (let ruleArchive of archive.rules) {
+				this.editBoard.maxRuleIndex = Math.max(
+					ruleArchive.index+1,
+					this.editBoard.maxRuleIndex
+				);
+				let rule = new EditRule(ruleArchive.index, this.grid.layout);
+				this.editBoard.components.push(rule.line);
+				this.editBoard.rules.set(ruleArchive.index, rule);
+				rule.dirtyBoundaries = true;
+				this.editBoard.calculateBoundaries(this.data, this.grid);
+				this.editBoard.respositionEdgesForRule(rule, this.grid);
+				if (rule) {
+					rule.load(ruleArchive);
+				}
+			}
+			this.editBoard.calculateReachability();
+		}
+	}
 	loadEdgesString(edgesString : string, type : Tool, components : Component[]) {
 		let edgesParts = edgesString.split(",");
 		for (let i = 0; i < edgesParts.length; i += 2) {
@@ -900,6 +948,26 @@ class Board {
 			}
 		}
 	}
+	save() {
+		let rules = [];
+		for (let element of this.editBoard.rules) {
+			let rule = element[1];
+			rules.push(rule.save());
+		}
+		let edges = [];
+		for (let edge of this.editBoard.edges) {
+			edges.push(edge.save());
+		}
+		return {
+			width : this.grid.gridSize.width,
+			height : this.grid.gridSize.height,
+			data : this.data,
+			rules : rules,
+			edges : edges,
+			gameStepInterval : this.gameStepInterval,
+			settings : this.gameSettingsGui.save(),
+		};
+	}
 
 	setComponents(components : Component[]) {
 		this.editBoard.setComponents(components);
@@ -915,6 +983,8 @@ interface GameSettingsController {
 
 class GameSettingsGUI {
 	rootComponent : Component;
+	title : TextInput;
+	interval : TextInput;
 
 	constructor(controller : GameSettingsController) {
 		let fontSize = 18;
@@ -955,15 +1025,41 @@ class GameSettingsGUI {
 		root.children.push(intervalLabel);
 
 		this.rootComponent = root;
+		this.title = title;
+		this.interval = interval;
 	}
-
 	hide() {
 		this.rootComponent.layout.visible = false;
 	}
-
 	show() {
 		this.rootComponent.layout.visible = true;
 	}
+	save() {
+		return {
+			title : this.title.getText(),
+		};
+	}
+	load(obj : {title : string}) {
+		this.title.setText(obj.title);
+	}
+}
+
+function download(data : string, filename : string, type : string) {
+    var file = new Blob([data], {type: type});
+    if (window.navigator.msSaveOrOpenBlob) // IE10+
+        window.navigator.msSaveOrOpenBlob(file, filename);
+    else { // Others
+        var a = document.createElement("a"),
+                url = URL.createObjectURL(file);
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(function() {
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);  
+        }, 0); 
+    }
 }
 
 class Playbilder {
@@ -1025,7 +1121,7 @@ class Playbilder {
 	constructor (
 		container : HTMLElement,
 		boardSize : Size,
-		getParams : Map<string, string>) {
+		archive : any) {
 
 		let screenSize = getGameScreenSize();
 		let board = new Board(boardSize, screenSize);
@@ -1091,7 +1187,7 @@ class Playbilder {
 
 		for (let i = 0; i < 10; ++i) {
 			let labelLayout = new Layout(
-				0, 0, -20, i*tileSize + 20,
+				0, 0, -20, i*tileSize + 0,
 				0, 0, tileSize, tileSize
 			);
 			let label = new TextLabel(labelLayout, i.toString());
@@ -1107,7 +1203,7 @@ class Playbilder {
 				text = "f";
 			}
 			let labelLayout = new Layout(
-				0, 0, (i+0.5)*tileSize, -5,
+				0, 0, i*tileSize, -20,
 				0, 0, tileSize, tileSize
 			);
 			let label = new TextLabel(labelLayout, text);
@@ -1149,8 +1245,28 @@ class Playbilder {
 		);
 		toolbar.children = [];
 		toolbar.children.push(toolRect);
-		let playButtonLayout = new Layout(
+
+		let downloadButtonLayout = new Layout(
 			1, 0, 0, -topbarBottomPadding,
+			0, 0, tileSize, tileSize
+		);
+		downloadButtonLayout.anchor = {x : 1.0, y : 1.0};
+		let downloadButton = new Button(
+			downloadButtonLayout,
+			{
+				onClick(e : MouseEvent) {
+					console.log("download ...");
+					let archive = JSON.stringify(board.save(), null, '\t');
+					console.log(archive);
+					download(archive, board.getTitle(), "application/json");
+					return true;
+				}
+			},
+		);
+		downloadButton.togglePaths = [ImagePaths.Icons["Download"]];
+
+		let playButtonLayout = new Layout(
+			1, 0, -tileSize*1.75, -topbarBottomPadding,
 			0, 0, tileSize, tileSize
 		);
 		playButtonLayout.anchor = {x : 1.0, y : 1.0};
@@ -1203,14 +1319,13 @@ class Playbilder {
 			board.grid.children.push(palette);
 			board.grid.children.push(toolbar);
 			board.grid.children.push(playButton);
+			board.grid.children.push(downloadButton);
 			board.grid.children.push(board.editBoard.ruleOptions.rootComponent);
 		}
 
 		board.setComponents(this.game.components);
 		this.game.doLayout();
-		this.loadStateFromGetParams(getParams, board);
-		
-        //this.game.contentProvider.createImageBlit(ImagePaths.Reals[0], {width : tileSize, height : tileSize});
+		board.load(archive);
     }
 }
 
@@ -1227,16 +1342,29 @@ function getUrlVars() {
 }
 
 let getParams = getUrlVars();
+let archive : any = {};
 let example = getParams.get("example");
 if (example == "LogicGates") {
-	getParams = Example_LogicGates;
+	archive = Example_LogicGates;
 } else if (example == "AGoodSnowmanIsHardToBuild") {
-	getParams = Example_AGoodSnowmanIsHardToBuild;
+	archive = Example_AGoodSnowmanIsHardToBuild;
+} else if (example == "Rule30") {
+	archive = Example_Rule30;
+} else if (example == "Tetris") {
+	archive = Example_Tetris;
+} else if (example == "Sokoban") {
+	archive = Example_Sokoban;
 }
 let wParam = getParams.get("w");
 let hParam = getParams.get("h");
 let width = wParam ? parseInt(wParam) : 20;
 let height = hParam ? parseInt(hParam) : 20;
+if (archive && archive.width) {
+	width = archive.width;
+}
+if (archive && archive.height) {
+	height = archive.height;
+}
 
 console.log("width:", width, "height:", height);
 
@@ -1244,6 +1372,6 @@ let $container = document.getElementById('container')!;
 let $playBilder = new Playbilder(
 	$container,
 	{width: width, height: height},
-	getParams
+	archive
 );
 $playBilder.game.start();
