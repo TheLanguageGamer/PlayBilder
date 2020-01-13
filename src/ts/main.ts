@@ -1481,6 +1481,8 @@ if (example == "LogicGates") {
 	archive = Example_Tetris;
 } else if (example == "Sokoban") {
 	archive = Example_Sokoban;
+} else if (example == "LangtonsAnt") {
+	archive = Example_LangtonsAnt;
 }
 let wParam = getParams.get("w");
 let hParam = getParams.get("h");
