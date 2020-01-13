@@ -4,6 +4,8 @@ var DEBUG_LAYOUT = false;
 interface GameController {
 	onKeyDown? : (e : KeyboardEvent) => void;
 	onUpdate? : (now : DOMHighResTimeStamp) => void;
+	willResize? : (screenSize : Size, cp : ContentProvider) => void;
+	didResize? : (screenSize : Size, cp : ContentProvider) => void;
 }
 
 function getGameScreenSize() {
@@ -45,23 +47,42 @@ class Game {
 		this.contentProvider = new ContentProvider();
 
 		var _this = this;
-		window.addEventListener("focus", function(event) {
-			_this.start();
-		});
-		window.addEventListener("blur", function(event) {
-			_this.stop();
-		})
 		function update(timeMS : DOMHighResTimeStamp) {
-			if (_this._stopped) {
+			window.requestAnimationFrame(update);
+			if (_this._stopped && !_this.contentProvider.needsRender) {
 				return;
 			}
-			window.requestAnimationFrame(update);
 			if (_this.controller.onUpdate) {
 				_this.controller.onUpdate(timeMS);
 			}
 			_this.context.clearRect(0, 0, _this.viewport.width, _this.viewport.height);
 			_this.renderRecursive(_this.components, timeMS);
+			_this.contentProvider.needsRender = false;
 		}
+		update(performance.now());
+		window.addEventListener("focus", function(event) {
+			_this.start();
+		});
+		window.addEventListener("blur", function(event) {
+			_this.stop();
+		});
+		window.addEventListener("resize", function(event) {
+			let screenSize = getGameScreenSize();
+			_this.viewport.width = screenSize.width;
+			_this.viewport.height = screenSize.height;
+			_this.context = _this.viewport.getContext('2d')!;
+			if (_this.controller.willResize) {
+				_this.controller.willResize(screenSize, _this.contentProvider);
+			}
+			_this.doLayout();
+			if (_this.controller.didResize) {
+				_this.controller.didResize(screenSize, _this.contentProvider);
+			}
+			_this.context = _this.viewport.getContext('2d')!;
+			_this.context.clearRect(0, 0, _this.viewport.width, _this.viewport.height);
+			_this.renderRecursive(_this.components, performance.now());
+			console.log("resize", screenSize.width, screenSize.height);
+		});
 		window.addEventListener('click', function(e: MouseEvent) {
 			if (_this._stopped) {
 				return;
@@ -186,18 +207,18 @@ class Game {
 	start() {
 		console.assert(this._stopped);
 		this._stopped = false;
-		let _this = this;
-		function update(timeMS : DOMHighResTimeStamp) {
-			if (_this._stopped) {
-				return;
-			}
-			window.requestAnimationFrame(update);
-			if (_this.controller.onUpdate) {
-				_this.controller.onUpdate(timeMS);
-			}
-			_this.context.clearRect(0, 0, _this.viewport.width, _this.viewport.height);
-			_this.renderRecursive(_this.components, timeMS);
-		}
-		update(performance.now());
+		// let _this = this;
+		// function update(timeMS : DOMHighResTimeStamp) {
+		// 	if (_this._stopped) {
+		// 		return;
+		// 	}
+		// 	window.requestAnimationFrame(update);
+		// 	if (_this.controller.onUpdate) {
+		// 		_this.controller.onUpdate(timeMS);
+		// 	}
+		// 	_this.context.clearRect(0, 0, _this.viewport.width, _this.viewport.height);
+		// 	_this.renderRecursive(_this.components, timeMS);
+		// }
+		// update(performance.now());
 	}
 }

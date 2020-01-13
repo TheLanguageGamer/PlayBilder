@@ -7,6 +7,8 @@ class ContentProvider {
         this.blits = new Map();
         this.padding = 5;
         this.offset = { x: 0, y: 0 };
+        this.session = 0;
+        this.needsRender = true;
         this.viewport = document.createElement("canvas");
         this.context = this.viewport.getContext('2d');
         this.viewport.width = 512;
@@ -48,8 +50,14 @@ class ContentProvider {
         this.boxes.push(box);
         this.offset.x += this.padding + size.width;
         let ctx = this.context;
+        let session = this.session;
+        let _this = this;
         image.addEventListener("load", function () {
+            if (_this.session != session) {
+                return;
+            }
             ctx.drawImage(image, box.position.x, box.position.y, size.width, size.height);
+            _this.needsRender = true;
         }, false);
         this.blits.set(path, index);
         return index;
@@ -58,6 +66,14 @@ class ContentProvider {
         let box = this.boxes[index];
         let data = this.context.getImageData(box.position.x, box.position.y, box.size.width, box.size.height);
         otherCtx.putImageData(data, x, y);
+    }
+    clear() {
+        this.session += 1;
+        this.context.clearRect(0, 0, 512, 512);
+        this.images = {};
+        this.blits.clear();
+        this.boxes = [];
+        this.offset = { x: 0, y: 0 };
     }
 }
 //# sourceMappingURL=ContentProvider.js.map

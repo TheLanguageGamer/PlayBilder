@@ -782,12 +782,12 @@ class Board {
 			}
 		}
 
-		let widthRelative = gridSize.width/(gridSize.width + 8);
+		let widthRelative = gridSize.width/(gridSize.width + 6);
 		let heightRelative = gridSize.height/(gridSize.height + 2);
-		let gridLayout = new Layout(0.5, 2/gridSize.height, 0, 10,
+		let gridLayout = new Layout(widthRelative/2, 2/gridSize.height, 0, 10,
 			widthRelative,
 			heightRelative, -kGameSettingsWidth, -40);
-		gridLayout.anchor = {x: 0.5, y: 0.0};
+		gridLayout.anchor = {x: widthRelative/2, y: 0.0};
 		gridLayout.aspect = (gridSize.width)/(gridSize.height);
 		gridLayout.fixedAspect = true;
 
@@ -898,6 +898,8 @@ class Board {
 		if (archive.data) {
 			this.data = archive.data;
 			this.applyRealDataToGrid();
+		} else {
+			this.setupInputStates();
 		}
 		if (archive.edges && archive.rules) {
 			for (let edgeArchive of archive.edges) {
@@ -926,6 +928,18 @@ class Board {
 				}
 			}
 			this.editBoard.calculateReachability();
+		}
+	}
+	didResize(screenSize : Size) {
+		for (let element of this.editBoard.rules) {
+			let rule = element[1];
+			rule.line.layout.doLayout(this.grid.layout.computed);
+			rule.dirtyBoundaries = true;
+			this.editBoard.respositionEdgesForRule(rule, this.grid);
+		}
+		this.editBoard.calculateBoundaries(this.data, this.grid);
+		for (let edge of this.editBoard.edges) {
+			edge.arrow.layout.doLayout(this.grid.layout.computed);
 		}
 	}
 	loadEdgesString(edgesString : string, type : Tool, components : Component[]) {
@@ -968,7 +982,6 @@ class Board {
 			settings : this.gameSettingsGui.save(),
 		};
 	}
-
 	setComponents(components : Component[]) {
 		this.editBoard.setComponents(components);
 		this.editBoard.gridLayout = this.grid.layout;
@@ -1062,8 +1075,19 @@ function download(data : string, filename : string, type : string) {
     }
 }
 
+let kTopbarBottomPadding = 20;
+
 class Playbilder {
 	game : Game;
+	board : Board;
+	palette : Component;
+	paletteHorizontalLabels : Component[];
+	paletteVerticalLabels : Component[];
+	selectedRect : Component;
+	toolRect : Component;
+	toolbar : Component;
+	downloadButton : Component;
+	playButton : Component;
 
 	loadStateFromGetParams(getParams : Map<string, string>, board : Board) {
 
@@ -1118,10 +1142,95 @@ class Playbilder {
 		return "";
 	}
 
+	didResize(screenSize : Size, cp : ContentProvider) {
+		cp.clear();
+		let tileSize = this.board.grid.computeTileSize();
+		this.board.didResize(screenSize);
+
+		this.palette.layout.offset = {
+			position : {
+				x : -20,
+				y : tileSize,
+			},
+			size : {
+				width : tileSize*3,
+				height : tileSize*12,
+			},
+		};
+		this.selectedRect.layout.offset.size = {
+			width : tileSize,
+			height : tileSize,
+		};
+		this.toolRect.layout.offset.size = {
+			width : tileSize,
+			height : tileSize,
+		};
+
+		this.toolbar.layout.offset = {
+			position : {
+				x : 0,
+				y : -kTopbarBottomPadding,
+			},
+			size : {
+				width : tileSize*9,
+				height : tileSize*1,
+			},
+		};
+
+		this.downloadButton.layout.offset = {
+			position : {
+				x : 0,
+				y : -kTopbarBottomPadding,
+			},
+			size : {
+				width : tileSize,
+				height : tileSize,
+			},
+		};
+		this.playButton.layout.offset = {
+			position : {
+				x : -tileSize*1.75,
+				y : -kTopbarBottomPadding,
+			},
+			size : {
+				width : tileSize,
+				height : tileSize,
+			},
+		};
+		for (let i = 0; i < this.paletteHorizontalLabels.length; ++i) {
+			let label = this.paletteHorizontalLabels[i];
+			label.layout.offset = {
+				position : {
+					x : -20,
+					y : i*tileSize,
+				},
+				size : {
+					width : tileSize,
+					height : tileSize,
+				},
+			};
+		}
+		for (let i = 0; i < this.paletteVerticalLabels.length; ++i) {
+			let label = this.paletteVerticalLabels[i];
+			label.layout.offset = {
+				position : {
+					x : i*tileSize,
+					y : -20,
+				},
+				size : {
+					width : tileSize,
+					height : tileSize,
+				},
+			};
+		}
+	}
+
 	constructor (
 		container : HTMLElement,
 		boardSize : Size,
 		archive : any) {
+
+		let _this = this;
 
 		let screenSize = getGameScreenSize();
 		let board = new Board(boardSize, screenSize);
@@ -1144,6 +1253,7 @@ class Playbilder {
 			if (i != board.editBoard.editTool && i != Tool.Move) {
 				board.editBoard.unselectSelectedObject();
 			}
+			let tileSize = board.grid.computeTileSize();
 			board.editBoard.editTool = i;
 			toolRect.layout.offset.position.x = i*tileSize;
 			toolRect.layout.offset.position.y = j*tileSize;
@@ -1154,6 +1264,7 @@ class Playbilder {
 
 		function setSelectedFromPalette(i : number, j : number) {
 			setToolFromToolbar(0, 0);
+			let tileSize = board.grid.computeTileSize();
 			board.editBoard.editModality = i;
 			board.editBoard.editBlockType = j;
 			selectedRect.layout.offset.position.x = i*tileSize;
@@ -1184,7 +1295,8 @@ class Playbilder {
 
 		palette.children = [];
 		palette.children.push(selectedRect);
-
+		this.paletteHorizontalLabels = [];
+		this.paletteVerticalLabels = [];
 		for (let i = 0; i < 10; ++i) {
 			let labelLayout = new Layout(
 				0, 0, -20, i*tileSize + 0,
@@ -1192,6 +1304,7 @@ class Playbilder {
 			);
 			let label = new TextLabel(labelLayout, i.toString());
 			palette.children.push(label);
+			this.paletteHorizontalLabels.push(label);
 		}
 		for (let i = 0; i < 3; ++i) {	
 			let text = "";
@@ -1208,6 +1321,7 @@ class Playbilder {
 			);
 			let label = new TextLabel(labelLayout, text);
 			palette.children.push(label);
+			this.paletteVerticalLabels.push(label);
 		}
 
 		const tools : string[][] = [
@@ -1216,9 +1330,8 @@ class Playbilder {
 			["EdgeIfMatched"], ["EdgeIfNotMatched"], ["EdgeParallel"],
 		];
 
-		let topbarBottomPadding = 20;
 		let toolbarLayout = new Layout(
-			0, 0, 0, -topbarBottomPadding,
+			0, 0, 0, -kTopbarBottomPadding,
 			0, 0, tileSize*9, tileSize*1
 		);
 		toolbarLayout.anchor = {x: 0.0, y: 1.0};
@@ -1247,7 +1360,7 @@ class Playbilder {
 		toolbar.children.push(toolRect);
 
 		let downloadButtonLayout = new Layout(
-			1, 0, 0, -topbarBottomPadding,
+			1, 0, 0, -kTopbarBottomPadding,
 			0, 0, tileSize, tileSize
 		);
 		downloadButtonLayout.anchor = {x : 1.0, y : 1.0};
@@ -1266,7 +1379,7 @@ class Playbilder {
 		downloadButton.togglePaths = [ImagePaths.Icons["Download"]];
 
 		let playButtonLayout = new Layout(
-			1, 0, -tileSize*1.75, -topbarBottomPadding,
+			1, 0, -tileSize*1.75, -kTopbarBottomPadding,
 			0, 0, tileSize, tileSize
 		);
 		playButtonLayout.anchor = {x : 1.0, y : 1.0};
@@ -1312,6 +1425,12 @@ class Playbilder {
 		    	onUpdate(timeMS : DOMHighResTimeStamp) {
 		    		board.onUpdate(timeMS);
 		    	},
+		    	willResize(screenSize : Size, cp : ContentProvider) {
+
+		    	},
+		    	didResize(screenSize : Size, cp : ContentProvider) {
+		    		_this.didResize(screenSize, cp);
+		    	},
     		}	
     	);
 		this.game.components.push(board.grid);
@@ -1326,6 +1445,14 @@ class Playbilder {
 		board.setComponents(this.game.components);
 		this.game.doLayout();
 		board.load(archive);
+
+		this.palette = palette;
+		this.selectedRect = selectedRect;
+		this.toolRect = toolRect;
+		this.toolbar = toolbar;
+		this.downloadButton = downloadButton;
+		this.playButton = playButton;
+		this.board = board;
     }
 }
 

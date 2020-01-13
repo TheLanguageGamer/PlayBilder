@@ -391,10 +391,10 @@ class Board {
                 this.buffer[i].push([-1, -1, -1, -1]);
             }
         }
-        let widthRelative = gridSize.width / (gridSize.width + 8);
+        let widthRelative = gridSize.width / (gridSize.width + 6);
         let heightRelative = gridSize.height / (gridSize.height + 2);
-        let gridLayout = new Layout(0.5, 2 / gridSize.height, 0, 10, widthRelative, heightRelative, -kGameSettingsWidth, -40);
-        gridLayout.anchor = { x: 0.5, y: 0.0 };
+        let gridLayout = new Layout(widthRelative / 2, 2 / gridSize.height, 0, 10, widthRelative, heightRelative, -kGameSettingsWidth, -40);
+        gridLayout.anchor = { x: widthRelative / 2, y: 0.0 };
         gridLayout.aspect = (gridSize.width) / (gridSize.height);
         gridLayout.fixedAspect = true;
         this.grid = new Grid({ width: gridSize.width, height: gridSize.height }, gridLayout, {
@@ -656,6 +656,9 @@ class Board {
             this.data = archive.data;
             this.applyRealDataToGrid();
         }
+        else {
+            this.setupInputStates();
+        }
         if (archive.edges && archive.rules) {
             for (let edgeArchive of archive.edges) {
                 let edge = new Edge({
@@ -680,6 +683,18 @@ class Board {
                 }
             }
             this.editBoard.calculateReachability();
+        }
+    }
+    didResize(screenSize) {
+        for (let element of this.editBoard.rules) {
+            let rule = element[1];
+            rule.line.layout.doLayout(this.grid.layout.computed);
+            rule.dirtyBoundaries = true;
+            this.editBoard.respositionEdgesForRule(rule, this.grid);
+        }
+        this.editBoard.calculateBoundaries(this.data, this.grid);
+        for (let edge of this.editBoard.edges) {
+            edge.arrow.layout.doLayout(this.grid.layout.computed);
         }
     }
     loadEdgesString(edgesString, type, components) {
@@ -795,8 +810,10 @@ function download(data, filename, type) {
         }, 0);
     }
 }
+let kTopbarBottomPadding = 20;
 class Playbilder {
     constructor(container, boardSize, archive) {
+        let _this = this;
         let screenSize = getGameScreenSize();
         let board = new Board(boardSize, screenSize);
         let tileSize = board.grid.computeTileSize();
@@ -812,6 +829,7 @@ class Playbilder {
             if (i != board.editBoard.editTool && i != Tool.Move) {
                 board.editBoard.unselectSelectedObject();
             }
+            let tileSize = board.grid.computeTileSize();
             board.editBoard.editTool = i;
             toolRect.layout.offset.position.x = i * tileSize;
             toolRect.layout.offset.position.y = j * tileSize;
@@ -821,6 +839,7 @@ class Playbilder {
         }
         function setSelectedFromPalette(i, j) {
             setToolFromToolbar(0, 0);
+            let tileSize = board.grid.computeTileSize();
             board.editBoard.editModality = i;
             board.editBoard.editBlockType = j;
             selectedRect.layout.offset.position.x = i * tileSize;
@@ -847,10 +866,13 @@ class Playbilder {
         });
         palette.children = [];
         palette.children.push(selectedRect);
+        this.paletteHorizontalLabels = [];
+        this.paletteVerticalLabels = [];
         for (let i = 0; i < 10; ++i) {
             let labelLayout = new Layout(0, 0, -20, i * tileSize + 0, 0, 0, tileSize, tileSize);
             let label = new TextLabel(labelLayout, i.toString());
             palette.children.push(label);
+            this.paletteHorizontalLabels.push(label);
         }
         for (let i = 0; i < 3; ++i) {
             let text = "";
@@ -866,14 +888,14 @@ class Playbilder {
             let labelLayout = new Layout(0, 0, i * tileSize, -20, 0, 0, tileSize, tileSize);
             let label = new TextLabel(labelLayout, text);
             palette.children.push(label);
+            this.paletteVerticalLabels.push(label);
         }
         const tools = [
             ["Pencil"], ["Eraser"], ["Move"],
             ["Select"], ["RulePad"], ["EdgeAlways"],
             ["EdgeIfMatched"], ["EdgeIfNotMatched"], ["EdgeParallel"],
         ];
-        let topbarBottomPadding = 20;
-        let toolbarLayout = new Layout(0, 0, 0, -topbarBottomPadding, 0, 0, tileSize * 9, tileSize * 1);
+        let toolbarLayout = new Layout(0, 0, 0, -kTopbarBottomPadding, 0, 0, tileSize * 9, tileSize * 1);
         toolbarLayout.anchor = { x: 0.0, y: 1.0 };
         let toolbar = new Grid({ width: 9, height: 1 }, toolbarLayout, {
             populate(i, j) {
@@ -893,7 +915,7 @@ class Playbilder {
         });
         toolbar.children = [];
         toolbar.children.push(toolRect);
-        let downloadButtonLayout = new Layout(1, 0, 0, -topbarBottomPadding, 0, 0, tileSize, tileSize);
+        let downloadButtonLayout = new Layout(1, 0, 0, -kTopbarBottomPadding, 0, 0, tileSize, tileSize);
         downloadButtonLayout.anchor = { x: 1.0, y: 1.0 };
         let downloadButton = new Button(downloadButtonLayout, {
             onClick(e) {
@@ -905,7 +927,7 @@ class Playbilder {
             }
         });
         downloadButton.togglePaths = [ImagePaths.Icons["Download"]];
-        let playButtonLayout = new Layout(1, 0, -tileSize * 1.75, -topbarBottomPadding, 0, 0, tileSize, tileSize);
+        let playButtonLayout = new Layout(1, 0, -tileSize * 1.75, -kTopbarBottomPadding, 0, 0, tileSize, tileSize);
         playButtonLayout.anchor = { x: 1.0, y: 1.0 };
         let playButton = new Button(playButtonLayout, {
             onClick(e) {
@@ -946,6 +968,11 @@ class Playbilder {
             onUpdate(timeMS) {
                 board.onUpdate(timeMS);
             },
+            willResize(screenSize, cp) {
+            },
+            didResize(screenSize, cp) {
+                _this.didResize(screenSize, cp);
+            },
         });
         this.game.components.push(board.grid);
         if (board.grid.children) {
@@ -957,10 +984,14 @@ class Playbilder {
         }
         board.setComponents(this.game.components);
         this.game.doLayout();
-        //let getParams = archive as Map<string, string>;
-        //this.loadStateFromGetParams(getParams, board);
         board.load(archive);
-        //this.game.contentProvider.createImageBlit(ImagePaths.Reals[0], {width : tileSize, height : tileSize});
+        this.palette = palette;
+        this.selectedRect = selectedRect;
+        this.toolRect = toolRect;
+        this.toolbar = toolbar;
+        this.downloadButton = downloadButton;
+        this.playButton = playButton;
+        this.board = board;
     }
     loadStateFromGetParams(getParams, board) {
         let b64Data = getParams.get("data");
@@ -1010,6 +1041,85 @@ class Playbilder {
     }
     createStampForEdgeTool(tool) {
         return "";
+    }
+    didResize(screenSize, cp) {
+        cp.clear();
+        let tileSize = this.board.grid.computeTileSize();
+        this.board.didResize(screenSize);
+        this.palette.layout.offset = {
+            position: {
+                x: -20,
+                y: tileSize,
+            },
+            size: {
+                width: tileSize * 3,
+                height: tileSize * 12,
+            },
+        };
+        this.selectedRect.layout.offset.size = {
+            width: tileSize,
+            height: tileSize,
+        };
+        this.toolRect.layout.offset.size = {
+            width: tileSize,
+            height: tileSize,
+        };
+        this.toolbar.layout.offset = {
+            position: {
+                x: 0,
+                y: -kTopbarBottomPadding,
+            },
+            size: {
+                width: tileSize * 9,
+                height: tileSize * 1,
+            },
+        };
+        this.downloadButton.layout.offset = {
+            position: {
+                x: 0,
+                y: -kTopbarBottomPadding,
+            },
+            size: {
+                width: tileSize,
+                height: tileSize,
+            },
+        };
+        this.playButton.layout.offset = {
+            position: {
+                x: -tileSize * 1.75,
+                y: -kTopbarBottomPadding,
+            },
+            size: {
+                width: tileSize,
+                height: tileSize,
+            },
+        };
+        for (let i = 0; i < this.paletteHorizontalLabels.length; ++i) {
+            let label = this.paletteHorizontalLabels[i];
+            label.layout.offset = {
+                position: {
+                    x: -20,
+                    y: i * tileSize,
+                },
+                size: {
+                    width: tileSize,
+                    height: tileSize,
+                },
+            };
+        }
+        for (let i = 0; i < this.paletteVerticalLabels.length; ++i) {
+            let label = this.paletteVerticalLabels[i];
+            label.layout.offset = {
+                position: {
+                    x: i * tileSize,
+                    y: -20,
+                },
+                size: {
+                    width: tileSize,
+                    height: tileSize,
+                },
+            };
+        }
     }
 }
 function getUrlVars() {

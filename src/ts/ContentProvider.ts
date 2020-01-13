@@ -9,6 +9,8 @@ class ContentProvider {
 	private blits : Map<string, number> = new Map();
 	private padding : number = 5;
 	private offset : Pos = {x : 0, y : 0};
+	private session : number = 0;
+	needsRender : boolean = true;
 	getImage(path : string) {
 		if (!(path in this.images)) {
 			this.images[path] = new Image();
@@ -40,7 +42,12 @@ class ContentProvider {
 		this.boxes.push(box);
 		this.offset.x += this.padding + size.width;
 		let ctx = this.context;
+		let session = this.session;
+		let _this = this;
 		image.addEventListener("load", function() {
+			if (_this.session != session) {
+				return;
+			}
 			ctx.drawImage(
 				image,
 				box.position.x,
@@ -48,6 +55,7 @@ class ContentProvider {
 				size.width,
 				size.height
 			);
+			_this.needsRender = true;
 		}, false);
 		this.blits.set(path, index);
 		return index;
@@ -56,6 +64,14 @@ class ContentProvider {
 		let box = this.boxes[index];
 		let data = this.context.getImageData(box.position.x, box.position.y, box.size.width, box.size.height);
 		otherCtx.putImageData(data, x, y);
+	}
+	clear() {
+		this.session += 1;
+    	this.context.clearRect(0, 0, 512, 512);
+    	this.images = {};
+		this.blits.clear();
+		this.boxes = [];
+		this.offset = {x : 0, y : 0};
 	}
 	constructor() {
 		this.viewport = document.createElement("canvas");
