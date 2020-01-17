@@ -6,6 +6,7 @@ interface GameController {
 	onUpdate? : (now : DOMHighResTimeStamp) => void;
 	willResize? : (screenSize : Size, cp : ContentProvider) => void;
 	didResize? : (screenSize : Size, cp : ContentProvider) => void;
+	needsLayout? : () => boolean;
 }
 
 function getGameScreenSize() {
@@ -49,8 +50,16 @@ class Game {
 		var _this = this;
 		function update(timeMS : DOMHighResTimeStamp) {
 			window.requestAnimationFrame(update);
-			if (_this._stopped && !_this.contentProvider.needsRender) {
+			if (_this._stopped
+				&& !_this.contentProvider.needsRender) {
 				return;
+			}
+			if (_this.controller.needsLayout
+				&& _this.controller.needsLayout()) {
+				_this.doLayout();
+				if (_this.controller.didResize) {
+					_this.controller.didResize(screenSize, _this.contentProvider);
+				}
 			}
 			if (_this.controller.onUpdate) {
 				_this.controller.onUpdate(timeMS);
@@ -78,7 +87,6 @@ class Game {
 			if (_this.controller.didResize) {
 				_this.controller.didResize(screenSize, _this.contentProvider);
 			}
-			_this.context = _this.viewport.getContext('2d')!;
 			_this.context.clearRect(0, 0, _this.viewport.width, _this.viewport.height);
 			_this.renderRecursive(_this.components, performance.now());
 			console.log("resize", screenSize.width, screenSize.height);

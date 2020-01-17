@@ -18,6 +18,26 @@ class Grid {
             }
         }
     }
+    resizeGrid(newSize) {
+        let actualSize = {
+            width: this.grid.length,
+            height: this.grid[0].length,
+        };
+        for (let i = 0; i < newSize.width; ++i) {
+            if (i >= actualSize.width) {
+                this.grid.push(new Array());
+            }
+            for (let j = 0; j < newSize.height; ++j) {
+                if (i >= actualSize.width || j >= actualSize.height) {
+                    this.grid[i].push();
+                    if (this.controller.populate) {
+                        this.grid[i][j] = this.controller.populate(i, j);
+                    }
+                }
+            }
+        }
+        this.gridSize = newSize;
+    }
     computeTileSize() {
         let ret = Math.floor(Math.min(this.layout.computed.size.width / this.gridSize.width, this.layout.computed.size.height / this.gridSize.height));
         return ret;

@@ -537,6 +537,7 @@ class Board {
 	playBoard? : PlayBoard;
 	gameStepInterval : DOMHighResTimeStamp = 500;
 	gameSettingsGui : GameSettingsGUI;
+	needsLayout = false;
 
 	state : BoardState = BoardState.Edit;
 
@@ -739,13 +740,54 @@ class Board {
 		}
 	}
 
+	resizeGrid(newSize : Size) {
+		let actualSize = {
+			width : this.data.length,
+			height : this.data[0].length,
+		};
+		for (let i = 0; i < newSize.width; ++i) {
+			if (i >= actualSize.width) {
+				this.saved.push(new Array());
+				this.data.push(new Array());
+				this.buffer.push(new Array());
+			}
+			for (let j = 0; j < newSize.height; ++j) {
+				if (i >= actualSize.width || j >= actualSize.height) {
+					this.saved[i].push([-1, -1, -1, -1]);
+					this.data[i].push([-1, -1, -1, -1]);
+					this.buffer[i].push([-1, -1, -1, -1]);
+				}
+			}
+		}
+		this.grid.resizeGrid(newSize);
+		this.needsLayout = true;
+	}
+
 	constructor (gridSize : Size, screenSize : Size) {
 
 		let _this = this;
-		this.gameSettingsGui = new GameSettingsGUI({
+		this.gameSettingsGui = new GameSettingsGUI(gridSize, {
 			onIntervalChanged(interval : number) {
 				console.log("New interval:", interval);
 				_this.gameStepInterval = interval;
+			},
+			onWidthChanged(width : number) {
+				if (_this.grid && _this.grid.gridSize.width != width) {
+					let newSize = {
+						width : width,
+						height : _this.grid.gridSize.height,
+					};
+					_this.resizeGrid(newSize);
+				}
+			},
+			onHeightChanged(height : number) {
+				if (_this.grid && _this.grid.gridSize.height != height) {
+					let newSize = {
+						width : _this.grid.gridSize.width,
+						height : height,
+					};
+					_this.resizeGrid(newSize);
+				}
 			},
 		});
 
@@ -991,21 +1033,56 @@ class Board {
 let kGameSettingsWidth = 150;
 
 interface GameSettingsController {
-	onIntervalChanged: (interval : number) => void;
+	onIntervalChanged : (interval : number) => void;
+	onWidthChanged : (width : number) => void;
+	onHeightChanged : (height : number) => void;
 }
 
 class GameSettingsGUI {
-	rootComponent : Component;
+	rootComponent : Rectangle;
 	title : TextInput;
 	interval : TextInput;
+	width : TextInput;
+	height : TextInput;
 
-	constructor(controller : GameSettingsController) {
+	addField(obj : {
+		onTextChanged : (newText : string) => void,
+		labelText : string,
+		defaultValue : string,
+		maxTextLength : number,
+	}) {
+		let labelLayout = new Layout(0, 0, 5, 5, 0.7, 0, 0, 14);
+		let label = new TextLabel(labelLayout, obj.labelText);
+		label.setFontSize(12);
+		label.fillStyle = Constants.Colors.Black;
+
+		let layout = new Layout(1, 0, 5, 0, 1, 0, 0, 14);
+		let textInput = new TextInput(layout, obj, obj.defaultValue);
+		textInput.placeholderText = "0";
+		textInput.setFontSize(12);
+		textInput.setMaxTextLength(obj.maxTextLength);
+		textInput.textInputType = TextInputType.Integer;
+
+		label.children = [];
+		label.children.push(textInput);
+
+		if (this.rootComponent.children) {
+			this.rootComponent.children.push(label);
+		}
+
+		return textInput;
+	}
+
+	constructor(
+		gridSize : Size,
+		controller : GameSettingsController) {
+
 		let fontSize = 18;
 
 		let rootLayout = new Layout(1, 0, 10, 0, 0, 0, kGameSettingsWidth, 200);
-		let root = new Rectangle(rootLayout);
-		root.lineWidth = 1;
-		root.layout.relativeLayout = RelativeLayout.StackVertical;
+		this.rootComponent = new Rectangle(rootLayout);
+		this.rootComponent.lineWidth = 1;
+		this.rootComponent.layout.relativeLayout = RelativeLayout.StackVertical;
 
 		let titleLayout = new Layout(0, 0, 5, 5, 1, 0, 0, 20);
 		let title = new TextInput(titleLayout, {}, "My Game");
@@ -1013,33 +1090,44 @@ class GameSettingsGUI {
 		title.setFontSize(fontSize);
 		title.setMaxTextLength((kGameSettingsWidth-10)/(fontSize*0.6));
 
-		let intervalLabelLayout = new Layout(0, 0, 5, 5, 0.7, 0, 0, 14);
-		let intervalLabel = new TextLabel(intervalLabelLayout, "Interval (ms):");
-		intervalLabel.setFontSize(12);
-		intervalLabel.fillStyle = Constants.Colors.Black;
+		this.rootComponent.children = [];
+		this.rootComponent.children.push(title);
 
-		let intervalLayout = new Layout(1, 0, 5, 0, 1, 0, 0, 14);
-		let interval = new TextInput(intervalLayout, {
+		this.interval = this.addField({
 			onTextChanged(newText : string) {
 				let interval = parseInt(newText) || 0;
 				controller.onIntervalChanged(interval);
 			},
-		}, "200");
-		interval.placeholderText = "0";
-		interval.setFontSize(12);
-		interval.setMaxTextLength(4);
-		interval.textInputType = TextInputType.Integer;
+			labelText : "Interval (ms):",
+			defaultValue : "200",
+			maxTextLength : 4,
+		});
 
-		intervalLabel.children = [];
-		intervalLabel.children.push(interval);
+		this.width = this.addField({
+			onTextChanged(newText : string) {
+				let width = parseInt(newText) || 5;
+				width = Math.max(width, 5);
+				controller.onWidthChanged(width);
+				console.log("width:", newText);
+			},
+			labelText : "Width:",
+			defaultValue : gridSize.width.toString(),
+			maxTextLength : 2,
+		});
 
-		root.children = [];
-		root.children.push(title);
-		root.children.push(intervalLabel);
+		this.height = this.addField({
+			onTextChanged(newText : string) {
+				let height = parseInt(newText) || 5;
+				height = Math.max(height, 5);
+				controller.onHeightChanged(height);
+				console.log("height:", newText);
+			},
+			labelText : "Height:",
+			defaultValue : gridSize.height.toString(),
+			maxTextLength : 2,
+		});
 
-		this.rootComponent = root;
 		this.title = title;
-		this.interval = interval;
 	}
 	hide() {
 		this.rootComponent.layout.visible = false;
@@ -1430,6 +1518,11 @@ class Playbilder {
 		    	},
 		    	didResize(screenSize : Size, cp : ContentProvider) {
 		    		_this.didResize(screenSize, cp);
+		    	},
+		    	needsLayout() {
+		    		let ret = board.needsLayout;
+		    		board.needsLayout = false;
+		    		return ret;
 		    	},
     		}	
     	);

@@ -11,6 +11,7 @@ var Constants = {
         Blue: {
             NCS: "#0087BD",
             Pure: "#0000FF",
+            Prussian: "#003153",
         },
         Green: {
             NCS: "#009F6B",
