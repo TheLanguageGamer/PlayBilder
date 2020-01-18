@@ -1048,18 +1048,18 @@ class EditBoard {
 
 		//set grid cell path
 		if (rulePad >= 0 && rulePad < InputState.__Length) {
-			grid.grid[i][j][0] = ImagePaths.InputState[InputState[rulePad]];
+			grid.grid[i][j][0] = PlaybilderPaths.InputState[InputState[rulePad]];
 			grid.grid[i][j][1] = "";
 		} else if (realType > -1) {
-			grid.grid[i][j][0] = ImagePaths.Reals[realType];
+			grid.grid[i][j][0] = PlaybilderPaths.Reals[realType];
 		} else if (ideaType > -1 && futureType > -1) {
-			grid.grid[i][j][0] = ImagePaths.FutureIdeas[futureType][ideaType];
+			grid.grid[i][j][0] = PlaybilderPaths.FutureIdeas[futureType][ideaType];
 			grid.grid[i][j][1] = "";
 		} else if (ideaType > -1) {
-			grid.grid[i][j][0] = ImagePaths.Ideas[ideaType];;
-			grid.grid[i][j][1] = ""
+			grid.grid[i][j][0] = PlaybilderPaths.Ideas[ideaType];;
+			grid.grid[i][j][1] = "";
 		} else if (futureType > -1) {
-			grid.grid[i][j][0] = ImagePaths.Futures[futureType];
+			grid.grid[i][j][0] = PlaybilderPaths.Futures[futureType];
 			grid.grid[i][j][1] = "";
 		} else {
 			grid.grid[i][j][0] = "";

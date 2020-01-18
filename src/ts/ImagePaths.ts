@@ -1,5 +1,5 @@
 
-const ImagePaths = {
+const PlaybilderPaths = {
 	FutureIdeas : [
 		[
 		"images/futureIdeas/futureIdea8ED2C9AND8ED2C9.svg",

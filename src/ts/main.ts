@@ -883,19 +883,19 @@ class Board {
 
 	setupInputStates() {
 		this.editBoard.rulePad(1, 1, this.data, this.grid);
-		this.grid.grid[1][1][0] = ImagePaths.InputState["Computer"];
+		this.grid.grid[1][1][0] = PlaybilderPaths.InputState["Computer"];
 		this.editBoard.edits.pop();
 		this.editBoard.rulePad(1, 3, this.data, this.grid);
-		this.grid.grid[1][3][0] = ImagePaths.InputState["Left"];
+		this.grid.grid[1][3][0] = PlaybilderPaths.InputState["Left"];
 		this.editBoard.edits.pop();
 		this.editBoard.rulePad(1, 5, this.data, this.grid);
-		this.grid.grid[1][5][0] = ImagePaths.InputState["Right"];
+		this.grid.grid[1][5][0] = PlaybilderPaths.InputState["Right"];
 		this.editBoard.edits.pop();
 		this.editBoard.rulePad(1, 7, this.data, this.grid);
-		this.grid.grid[1][7][0] = ImagePaths.InputState["Up"];
+		this.grid.grid[1][7][0] = PlaybilderPaths.InputState["Up"];
 		this.editBoard.edits.pop();
 		this.editBoard.rulePad(1, 9, this.data, this.grid);
-		this.grid.grid[1][9][0] = ImagePaths.InputState["Down"];
+		this.grid.grid[1][9][0] = PlaybilderPaths.InputState["Down"];
 		this.editBoard.edits.pop();
 		this.editBoard.calculateReachability();
 		this.editBoard.unselectSelectedObject();
@@ -1368,11 +1368,11 @@ class Playbilder {
 			{
 				populate(i : number, j : number) {
 					if (i == 0) {
-						return [ImagePaths.Reals[j]];
+						return [PlaybilderPaths.Reals[j]];
 					} else if (i == 1) {
-						return [ImagePaths.Ideas[j]];
+						return [PlaybilderPaths.Ideas[j]];
 					} else {
-						return [ImagePaths.Futures[j]];
+						return [PlaybilderPaths.Futures[j]];
 					}
 				},
 				onClick(i : number, j : number) {
@@ -1435,7 +1435,7 @@ class Playbilder {
 						// 	return this.createStampForEdgeTool(tool);
 						// }
 						default: {
-							return [ImagePaths.Tools[tools[i][j]]];
+							return [PlaybilderPaths.Tools[tools[i][j]]];
 						}
 					}
 				},

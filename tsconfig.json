@@ -7,5 +7,6 @@
 	},
 	"include" : [
 		"src/ts/**/*",
+		"Dots4/src/ts/**/*",
 	],
 }
