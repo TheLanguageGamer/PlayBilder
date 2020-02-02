@@ -1246,6 +1246,12 @@ else if (example == "Sokoban") {
 else if (example == "LangtonsAnt") {
     archive = Example_LangtonsAnt;
 }
+else {
+    let archiveString = localStorage.getItem("archive");
+    if (archiveString) {
+        archive = JSON.parse(archiveString);
+    }
+}
 let wParam = getParams.get("w");
 let hParam = getParams.get("h");
 let width = wParam ? parseInt(wParam) : 20;
@@ -1279,4 +1285,9 @@ function handleFiles(e) {
         reader.readAsText(files[0]);
     }
 }
+window.addEventListener('beforeunload', function (e) {
+    console.log("beforeunload");
+    let archive = JSON.stringify($playBilder.board.save(), null, '\t');
+    localStorage.setItem("archive", archive);
+});
 //# sourceMappingURL=main.js.map
