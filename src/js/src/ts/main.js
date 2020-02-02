@@ -985,7 +985,7 @@ class Playbilder {
         });
         toolbar.children = [];
         toolbar.children.push(toolRect);
-        let downloadButtonLayout = new Layout(1, 0, 0, -kTopbarBottomPadding, 0, 0, tileSize, tileSize);
+        let downloadButtonLayout = new Layout(1, 0, -tileSize * 1.75 * 1, -kTopbarBottomPadding, 0, 0, tileSize, tileSize);
         downloadButtonLayout.anchor = { x: 1.0, y: 1.0 };
         let downloadButton = new Button(downloadButtonLayout, {
             onClick(e) {
@@ -997,15 +997,23 @@ class Playbilder {
             }
         });
         downloadButton.togglePaths = [ImagePaths.Icons["Download"]];
-        let playButtonLayout = new Layout(1, 0, -tileSize * 1.75, -kTopbarBottomPadding, 0, 0, tileSize, tileSize);
+        let uploadButtonLayout = new Layout(1, 0, -tileSize * 1.75 * 0, -kTopbarBottomPadding, 0, 0, tileSize, tileSize);
+        uploadButtonLayout.anchor = { x: 1.0, y: 1.0 };
+        let uploadButton = new Button(uploadButtonLayout, {
+            onClick(e) {
+                let $upload = document.getElementById('upload');
+                $upload.click();
+                return true;
+            }
+        });
+        uploadButton.togglePaths = [ImagePaths.Icons["Upload"]];
+        let playButtonLayout = new Layout(1, 0, -tileSize * 1.75 * 2, -kTopbarBottomPadding, 0, 0, tileSize, tileSize);
         playButtonLayout.anchor = { x: 1.0, y: 1.0 };
         let playButton = new Button(playButtonLayout, {
             onClick(e) {
                 let url = board.asURL();
                 console.log(url);
                 board.toggleState();
-                if (board.state == BoardState.Play) {
-                }
                 return true;
             }
         });
@@ -1055,6 +1063,7 @@ class Playbilder {
             board.grid.children.push(toolbar);
             board.grid.children.push(playButton);
             board.grid.children.push(downloadButton);
+            board.grid.children.push(uploadButton);
             board.grid.children.push(board.editBoard.ruleOptions.rootComponent);
         }
         board.setComponents(this.game.components);
@@ -1065,6 +1074,7 @@ class Playbilder {
         this.toolRect = toolRect;
         this.toolbar = toolbar;
         this.downloadButton = downloadButton;
+        this.uploadButton = uploadButton;
         this.playButton = playButton;
         this.board = board;
     }
@@ -1149,9 +1159,19 @@ class Playbilder {
                 height: tileSize * 1,
             },
         };
+        this.uploadButton.layout.offset = {
+            position: {
+                x: -tileSize * 1.75 * 0,
+                y: -kTopbarBottomPadding,
+            },
+            size: {
+                width: tileSize,
+                height: tileSize,
+            },
+        };
         this.downloadButton.layout.offset = {
             position: {
-                x: 0,
+                x: -tileSize * 1.75 * 1,
                 y: -kTopbarBottomPadding,
             },
             size: {
@@ -1161,7 +1181,7 @@ class Playbilder {
         };
         this.playButton.layout.offset = {
             position: {
-                x: -tileSize * 1.75,
+                x: -tileSize * 1.75 * 2,
                 y: -kTopbarBottomPadding,
             },
             size: {
@@ -1240,4 +1260,23 @@ console.log("width:", width, "height:", height);
 let $container = document.getElementById('container');
 let $playBilder = new Playbilder($container, { width: width, height: height }, archive);
 $playBilder.game.start();
+let inputElement = document.getElementById("upload");
+inputElement.addEventListener("change", handleFiles, false);
+function handleFiles(e) {
+    console.log("handleFiles", e);
+    console.log(e.target);
+    let files = e.target.files;
+    console.log(files);
+    if (files && files.length > 0) {
+        let reader = new FileReader();
+        reader.onload = function (event) {
+            if (event.target && event.target.result) {
+                var obj = JSON.parse(event.target.result);
+                console.log("reader has read:", obj);
+                $playBilder.board.load(obj);
+            }
+        };
+        reader.readAsText(files[0]);
+    }
+}
 //# sourceMappingURL=main.js.map

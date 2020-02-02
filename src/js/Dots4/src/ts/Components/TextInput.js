@@ -67,6 +67,7 @@ class TextInput {
             || e.keyCode == 38
             || e.keyCode == 40) {
             //ignore
+            return false;
         }
         else if (e.keyCode == 37) {
             this.cursorPosition = Math.max(this.cursorPosition - 1, 0);
@@ -86,7 +87,7 @@ class TextInput {
         }
         else if (this.textInputType == TextInputType.Integer
             && (e.keyCode < 48 || e.keyCode > 57)) {
-            return;
+            return false;
         }
         else {
             this.setText(this.text.substring(0, this.cursorPosition)
@@ -97,6 +98,7 @@ class TextInput {
         }
         console.log(e.key, "new text:", this.text);
         this.clipText();
+        return true;
     }
     clipText() {
         if (this.maxTextLength > -1

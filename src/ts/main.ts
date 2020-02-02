@@ -1175,6 +1175,7 @@ class Playbilder {
 	toolRect : Component;
 	toolbar : Component;
 	downloadButton : Component;
+	uploadButton : Component;
 	playButton : Component;
 
 	loadStateFromGetParams(getParams : Map<string, string>, board : Board) {
@@ -1265,9 +1266,20 @@ class Playbilder {
 			},
 		};
 
+		this.uploadButton.layout.offset = {
+			position : {
+				x : -tileSize*1.75*0,
+				y : -kTopbarBottomPadding,
+			},
+			size : {
+				width : tileSize,
+				height : tileSize,
+			},
+		};
+
 		this.downloadButton.layout.offset = {
 			position : {
-				x : 0,
+				x : -tileSize*1.75*1,
 				y : -kTopbarBottomPadding,
 			},
 			size : {
@@ -1277,7 +1289,7 @@ class Playbilder {
 		};
 		this.playButton.layout.offset = {
 			position : {
-				x : -tileSize*1.75,
+				x : -tileSize*1.75*2,
 				y : -kTopbarBottomPadding,
 			},
 			size : {
@@ -1448,7 +1460,7 @@ class Playbilder {
 		toolbar.children.push(toolRect);
 
 		let downloadButtonLayout = new Layout(
-			1, 0, 0, -kTopbarBottomPadding,
+			1, 0, -tileSize*1.75*1, -kTopbarBottomPadding,
 			0, 0, tileSize, tileSize
 		);
 		downloadButtonLayout.anchor = {x : 1.0, y : 1.0};
@@ -1466,8 +1478,25 @@ class Playbilder {
 		);
 		downloadButton.togglePaths = [ImagePaths.Icons["Download"]];
 
+		let uploadButtonLayout = new Layout(
+			1, 0, -tileSize*1.75*0, -kTopbarBottomPadding,
+			0, 0, tileSize, tileSize
+		);
+		uploadButtonLayout.anchor = {x : 1.0, y : 1.0};
+		let uploadButton = new Button(
+			uploadButtonLayout,
+			{
+				onClick(e : MouseEvent) {
+					let $upload = document.getElementById('upload') as HTMLElement;
+					$upload.click();
+					return true;
+				}
+			},
+		);
+		uploadButton.togglePaths = [ImagePaths.Icons["Upload"]];
+
 		let playButtonLayout = new Layout(
-			1, 0, -tileSize*1.75, -kTopbarBottomPadding,
+			1, 0, -tileSize*1.75*2, -kTopbarBottomPadding,
 			0, 0, tileSize, tileSize
 		);
 		playButtonLayout.anchor = {x : 1.0, y : 1.0};
@@ -1478,9 +1507,6 @@ class Playbilder {
 					let url = board.asURL();
 					console.log(url);
 					board.toggleState();
-					if (board.state == BoardState.Play) {
-
-					}
 					return true;
 				}
 			},
@@ -1532,6 +1558,7 @@ class Playbilder {
 			board.grid.children.push(toolbar);
 			board.grid.children.push(playButton);
 			board.grid.children.push(downloadButton);
+			board.grid.children.push(uploadButton);
 			board.grid.children.push(board.editBoard.ruleOptions.rootComponent);
 		}
 
@@ -1544,6 +1571,7 @@ class Playbilder {
 		this.toolRect = toolRect;
 		this.toolbar = toolbar;
 		this.downloadButton = downloadButton;
+		this.uploadButton = uploadButton;
 		this.playButton = playButton;
 		this.board = board;
     }
@@ -1597,3 +1625,23 @@ let $playBilder = new Playbilder(
 	archive
 );
 $playBilder.game.start();
+
+let inputElement = document.getElementById("upload") as HTMLInputElement;
+inputElement.addEventListener("change", handleFiles, false);
+function handleFiles(e: Event) {
+	console.log("handleFiles", e);
+	console.log(e.target);
+	let files = (e.target as HTMLInputElement).files;
+	console.log(files);
+	if (files && files.length > 0) {
+		let reader = new FileReader();
+		reader.onload = function (event) {
+			if (event.target && event.target.result) {
+				var obj = JSON.parse(event.target.result as string);
+				console.log("reader has read:", obj);
+				$playBilder.board.load(obj);
+			}
+		};
+		reader.readAsText(files[0]);
+	}
+}

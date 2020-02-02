@@ -114,7 +114,9 @@ class Game {
                 return;
             }
             if (_this.focusedComponent && _this.focusedComponent.onKeyDown) {
-                _this.focusedComponent.onKeyDown(e);
+                if (_this.focusedComponent.onKeyDown(e)) {
+                    e.preventDefault();
+                }
             }
             else if (_this.controller.onKeyDown) {
                 _this.controller.onKeyDown(e);
