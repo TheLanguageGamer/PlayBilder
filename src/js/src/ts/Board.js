@@ -337,7 +337,7 @@ class Board {
         }
         this.editBoard.calculateReachability();
     }
-    clear() {
+    clear(includingDefaultRules = false) {
         //clear grid
         for (let i = 0; i < this.data.length; ++i) {
             for (let j = 0; j < this.data[0].length; ++j) {
@@ -356,13 +356,18 @@ class Board {
             }
         }
         this.applyRealDataToGrid();
+        this.editBoard.components.length = 0;
+        this.editBoard.setComponents(this.editBoard.components);
         for (let element of this.editBoard.rules) {
             let rule = element[1];
-            if (rule.index >= InputState.__Length) {
+            if (rule.index >= InputState.__Length || includingDefaultRules) {
                 rule.disable();
             }
+            else {
+                this.editBoard.components.push(rule.line);
+            }
         }
-        this.editBoard.maxRuleIndex = InputState.__Length;
+        this.editBoard.maxRuleIndex = includingDefaultRules ? 0 : InputState.__Length;
         this.editBoard.edges = new Array();
         this.editBoard.edge = undefined;
         this.editBoard.isAddingEdge = false;
@@ -378,6 +383,7 @@ class Board {
         this.editBoard.isMovingRealSelection = false;
     }
     load(archive) {
+        this.clear(true);
         if (archive.gameStepInterval) {
             this.gameStepInterval = archive.gameStepInterval;
             this.gameSettingsGui.interval.setText(this.gameStepInterval.toString());

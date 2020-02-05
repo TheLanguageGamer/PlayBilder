@@ -433,6 +433,8 @@ class Playbilder {
 		    	},
     		}	
     	);
+
+    	let gridOverlay = new Container();
 		this.game.components.push(board.grid);
 		if (board.grid.children) {
 			board.grid.children.push(palette);
@@ -442,9 +444,10 @@ class Playbilder {
 			board.grid.children.push(uploadButton);
 			board.grid.children.push(trashButton);
 			board.grid.children.push(board.editBoard.ruleOptions.rootComponent);
+			board.grid.children.push(gridOverlay);
 		}
 
-		board.setComponents(this.game.components);
+		board.setComponents(gridOverlay.children);
 		this.game.doLayout();
 		board.load(archive);
 
