@@ -17,7 +17,7 @@ function download(data : string, filename : string, type : string) {
     }
 }
 
-let kTopbarBottomPadding = 20;
+let kTopbarBottomPadding = 20 + 30;
 
 class Playbilder {
 	game : Game;
@@ -198,8 +198,52 @@ class Playbilder {
 
 		let _this = this;
 
+		let infobarLayout = new Layout(
+			0, 0, 0, -kTopbarBottomPadding + 40,
+			1, 0, 0, 25
+		);
+		infobarLayout.anchor = {x: 0.0, y: 1.0};
+		let infobar = new Rectangle(infobarLayout);
+		infobar.strokeColor = Constants.Colors.Yellow.Safety;
+		infobar.fillColor = Constants.Colors.Yellow.Light;
+
+        let infobarLabelLayout = new Layout(0, 0.5, 10, 7, 1.0, 1.0, -10, 0);
+        infobarLabelLayout.anchor = {x: 0.0, y: 0.5};
+        let infobarLabel = new TextLabel(infobarLabelLayout, "Warning: Be careful about doing that!");
+        infobarLabel.setFontSize(14);
+        infobarLabel.fillStyle = Constants.Colors.Black;
+
+        infobar.children = [];
+        infobar.children.push(infobarLabel);
+
+        function setUserFeedback(feedback : UserFeedback) {
+			console.log("Feedback!", feedback.state, feedback.message);
+			if (feedback.state == UserFeedbackState.None) {
+				infobarLayout.visible = false;
+			} else {
+				infobarLayout.visible = true;
+				infobarLabel.text = feedback.message;
+			}
+        }
+
+        function clearFeedback() {
+			setUserFeedback({
+				state : UserFeedbackState.None,
+				message : "",
+			});
+        }
+        clearFeedback();
+
 		let screenSize = getGameScreenSize();
-		let board = new Board(boardSize, screenSize);
+		let board = new Board(
+			boardSize,
+			screenSize,
+			{
+				onUserFeedback(feedback : UserFeedback) {
+					setUserFeedback(feedback);
+				}
+			}
+		);
 		let tileSize = board.grid.computeTileSize();
 		console.log("PlayBilder constructor tileSize", tileSize);
 
@@ -216,6 +260,7 @@ class Playbilder {
 		let toolRect = new Rectangle(toolRectLayout);
 		let toolCoord = {i : 0, j : 0};
 		function setToolFromToolbar(i : number, j : number) {
+			clearFeedback();
 			if (i != board.editBoard.editTool && i != Tool.Move) {
 				board.editBoard.unselectSelectedObject();
 			}
@@ -335,6 +380,7 @@ class Playbilder {
 			{
 				onClick(e : MouseEvent) {
 					console.log("download ...");
+					clearFeedback();
 					let archive = JSON.stringify(board.save(), null, '\t');
 					console.log(archive);
 					download(archive, board.getTitle() + ".json", "application/json");
@@ -353,6 +399,7 @@ class Playbilder {
 			uploadButtonLayout,
 			{
 				onClick(e : MouseEvent) {
+					clearFeedback();
 					let $upload = document.getElementById('upload') as HTMLElement;
 					$upload.click();
 					return true;
@@ -370,6 +417,7 @@ class Playbilder {
 			trashButtonLayout,
 			{
 				onClick(e : MouseEvent) {
+					clearFeedback();
 					console.log("trash it!")
 					board.clear();
 					return true;
@@ -387,6 +435,7 @@ class Playbilder {
 			playButtonLayout,
 			{
 				onClick(e : MouseEvent) {
+					clearFeedback();
 					board.toggleState();
 					return true;
 				}
@@ -415,7 +464,7 @@ class Playbilder {
 				    		}
 			    		}
 			    	}
-			    	board.onKeyDown(e);
+			    	return board.onKeyDown(e);
 		    	},
 		    	onUpdate(timeMS : DOMHighResTimeStamp) {
 		    		board.onUpdate(timeMS);
@@ -443,6 +492,7 @@ class Playbilder {
 			board.grid.children.push(downloadButton);
 			board.grid.children.push(uploadButton);
 			board.grid.children.push(trashButton);
+			board.grid.children.push(infobar);
 			board.grid.children.push(board.editBoard.ruleOptions.rootComponent);
 			board.grid.children.push(gridOverlay);
 		}

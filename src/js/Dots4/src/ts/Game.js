@@ -119,7 +119,9 @@ class Game {
                 }
             }
             else if (_this.controller.onKeyDown) {
-                _this.controller.onKeyDown(e);
+                if (_this.controller.onKeyDown(e)) {
+                    e.preventDefault();
+                }
             }
         });
     }

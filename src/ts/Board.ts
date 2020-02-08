@@ -5,6 +5,10 @@ enum BoardState {
 	Edit,
 };
 
+interface BoardController {
+	onUserFeedback : (feedback : UserFeedback) => void;
+}
+
 class Board {
 
 	grid : Grid;
@@ -214,8 +218,9 @@ class Board {
 				this.applyRealDataToGrid();
 			}
 		} else if (this.state == BoardState.Edit) {
-			this.editBoard.onKeyDown(e);
+			return this.editBoard.onKeyDown(e);
 		}
+		return false;
 	}
 
 	resizeGrid(newSize : Size) {
@@ -241,7 +246,7 @@ class Board {
 		this.needsLayout = true;
 	}
 
-	constructor (gridSize : Size, screenSize : Size) {
+	constructor (gridSize : Size, screenSize : Size, controller : BoardController) {
 
 		let _this = this;
 		this.gameSettingsGui = new GameSettingsGUI(gridSize, {
@@ -275,7 +280,10 @@ class Board {
 			},
 			onObjectUnselected() {
 				_this.gameSettingsGui.show();
-			}
+			},
+			onUserFeedback(feedback : UserFeedback) {
+				controller.onUserFeedback(feedback);
+			},
 		});
 
 		this.saved = new Array();
@@ -304,9 +312,9 @@ class Board {
 
 		let widthRelative = gridSize.width/(gridSize.width + 6);
 		let heightRelative = gridSize.height/(gridSize.height + 2);
-		let gridLayout = new Layout(widthRelative/2, 2/gridSize.height, 0, 10,
+		let gridLayout = new Layout(widthRelative/2, 2/gridSize.height, 0, 10 + 20,
 			widthRelative,
-			heightRelative, -kGameSettingsWidth, -40);
+			heightRelative, -kGameSettingsWidth, -40 - 10);
 		gridLayout.anchor = {x: widthRelative/2, y: 0.0};
 		gridLayout.aspect = (gridSize.width)/(gridSize.height);
 		gridLayout.fixedAspect = true;

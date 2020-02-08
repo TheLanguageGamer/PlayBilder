@@ -6,7 +6,7 @@ var BoardState;
 })(BoardState || (BoardState = {}));
 ;
 class Board {
-    constructor(gridSize, screenSize) {
+    constructor(gridSize, screenSize, controller) {
         this.gameStepInterval = 500;
         this.needsLayout = false;
         this.state = BoardState.Edit;
@@ -41,7 +41,10 @@ class Board {
             },
             onObjectUnselected() {
                 _this.gameSettingsGui.show();
-            }
+            },
+            onUserFeedback(feedback) {
+                controller.onUserFeedback(feedback);
+            },
         });
         this.saved = new Array();
         for (let i = 0; i < gridSize.width; ++i) {
@@ -66,7 +69,7 @@ class Board {
         }
         let widthRelative = gridSize.width / (gridSize.width + 6);
         let heightRelative = gridSize.height / (gridSize.height + 2);
-        let gridLayout = new Layout(widthRelative / 2, 2 / gridSize.height, 0, 10, widthRelative, heightRelative, -kGameSettingsWidth, -40);
+        let gridLayout = new Layout(widthRelative / 2, 2 / gridSize.height, 0, 10 + 20, widthRelative, heightRelative, -kGameSettingsWidth, -40 - 10);
         gridLayout.anchor = { x: widthRelative / 2, y: 0.0 };
         gridLayout.aspect = (gridSize.width) / (gridSize.height);
         gridLayout.fixedAspect = true;
@@ -259,8 +262,9 @@ class Board {
             }
         }
         else if (this.state == BoardState.Edit) {
-            this.editBoard.onKeyDown(e);
+            return this.editBoard.onKeyDown(e);
         }
+        return false;
     }
     resizeGrid(newSize) {
         let actualSize = {

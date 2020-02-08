@@ -39,6 +39,13 @@ var EditType;
     EditType[EditType["CellEdit"] = 1] = "CellEdit";
     EditType[EditType["RuleMove"] = 2] = "RuleMove";
 })(EditType || (EditType = {}));
+var UserFeedbackState;
+(function (UserFeedbackState) {
+    UserFeedbackState[UserFeedbackState["None"] = 0] = "None";
+    UserFeedbackState[UserFeedbackState["Info"] = 1] = "Info";
+    UserFeedbackState[UserFeedbackState["Warning"] = 2] = "Warning";
+    UserFeedbackState[UserFeedbackState["Error"] = 3] = "Error";
+})(UserFeedbackState || (UserFeedbackState = {}));
 class EditBoard {
     constructor(controller) {
         this.components = [];
@@ -284,12 +291,18 @@ class EditBoard {
         if (ruleIndex <= -1 && realType <= -1) {
             let adjacencies = EditRule.findAdjacentRule(i, j, data, grid.gridSize);
             if (adjacencies.count > 1) {
-                //TODO: can't join rules
+                this.controller.onUserFeedback({
+                    state: UserFeedbackState.Warning,
+                    message: "Warning: Rules can't be joined.",
+                });
                 return -1;
             }
             let newRuleIndex = adjacencies.rule;
             if (newRuleIndex >= 0 && newRuleIndex < InputState.__Length) {
-                //error, can't extend rule for input states
+                this.controller.onUserFeedback({
+                    state: UserFeedbackState.Warning,
+                    message: "Warning: Built-in rules can't be extended.",
+                });
                 return -1;
             }
             if (newRuleIndex <= -1) {
@@ -323,7 +336,10 @@ class EditBoard {
     erase(i, j, data, grid) {
         let ruleIndex = data[i][j][3];
         if (ruleIndex >= 0 && ruleIndex < InputState.__Length) {
-            //error, can't input state rules
+            this.controller.onUserFeedback({
+                state: UserFeedbackState.Warning,
+                message: "Warning: Can't erase built-in rules.",
+            });
             return;
         }
         if (data[i][j][0] != -1
@@ -377,16 +393,25 @@ class EditBoard {
         let newFutureType = futureType;
         let newRuleIndex = ruleIndex;
         if (ruleIndex >= 0 && ruleIndex < InputState.__Length) {
-            //error, can't change input state rules
+            this.controller.onUserFeedback({
+                state: UserFeedbackState.Warning,
+                message: "Warning: Built-in rules can't be changed.",
+            });
             return;
         }
         else if (editModality != Modality.Real
             && !this.canDrawRule(i, j, data, grid.gridSize)) {
-            //error
+            this.controller.onUserFeedback({
+                state: UserFeedbackState.Warning,
+                message: "Warning: Can't add real blocks to rules.",
+            });
             return;
         }
         else if (ruleIndex > -1 && editModality == Modality.Real) {
-            //error
+            this.controller.onUserFeedback({
+                state: UserFeedbackState.Warning,
+                message: "Warning: Can't add rules on top of real blocks.",
+            });
             return;
         }
         else if (editModality == Modality.Real && realType == editBlockType) {
@@ -517,6 +542,10 @@ class EditBoard {
         this.setCell(i2, j2, temp0, temp1, temp2, temp3, data, grid);
     }
     onSelect(i, j, data, grid) {
+        this.controller.onUserFeedback({
+            state: UserFeedbackState.None,
+            message: "",
+        });
         switch (this.editTool) {
             case Tool.Pencil: {
                 this.pencil(i, j, data, grid);
@@ -795,13 +824,19 @@ class EditBoard {
     }
     canConnect(edge, rule) {
         if (rule.index < InputState.__Length) {
-            //error, can't connect input states
+            this.controller.onUserFeedback({
+                state: UserFeedbackState.Error,
+                message: "Error: Can't connect a block rule to a user input rule.",
+            });
             return false;
         }
         for (let other of this.edges) {
             if (other.tailRuleIndex == edge.tailRuleIndex
                 && other.headRuleIndex == rule.index) {
-                //error: Any two rules can only connected by a single side
+                this.controller.onUserFeedback({
+                    state: UserFeedbackState.Error,
+                    message: "Error: These rules are already connected.",
+                });
                 return false;
             }
         }
@@ -864,7 +899,10 @@ class EditBoard {
                     this.edge.headRuleIndex = ruleIndex;
                     this.edges.push(this.edge);
                     if (this.isRuleGraphCyclic()) {
-                        //error: Edge makes rules graph cyclic
+                        this.controller.onUserFeedback({
+                            state: UserFeedbackState.Error,
+                            message: "Error: This edge would make the rule graph cyclic.",
+                        });
                         this.edge.disable();
                     }
                     else {
@@ -885,7 +923,9 @@ class EditBoard {
                 edge.disable();
                 this.calculateReachability();
             }
+            return true;
         }
+        return false;
     }
 }
 //# sourceMappingURL=EditBoard.js.map
