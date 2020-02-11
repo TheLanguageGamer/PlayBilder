@@ -407,7 +407,7 @@ class Board {
 					this.editBoard.rules.set(ruleIndex, newRule);
 					newRule.dirtyBoundaries = true;
 					this.editBoard.calculateBoundaries(this.data, this.grid);
-					this.editBoard.respositionEdgesForRule(newRule, this.grid);
+					this.editBoard.respositionEdgesForRule(newRule, this.data, this.grid);
 				}
 			}
 		}
@@ -500,7 +500,7 @@ class Board {
 				this.editBoard.rules.set(ruleArchive.index, rule);
 				rule.dirtyBoundaries = true;
 				this.editBoard.calculateBoundaries(this.data, this.grid);
-				this.editBoard.respositionEdgesForRule(rule, this.grid);
+				this.editBoard.respositionEdgesForRule(rule, this.data, this.grid);
 				if (rule) {
 					rule.load(ruleArchive);
 				}
@@ -513,7 +513,7 @@ class Board {
 			let rule = element[1];
 			rule.line.layout.doLayout(this.grid.layout.computed);
 			rule.dirtyBoundaries = true;
-			this.editBoard.respositionEdgesForRule(rule, this.grid);
+			this.editBoard.respositionEdgesForRule(rule, this.data, this.grid);
 		}
 		this.editBoard.calculateBoundaries(this.data, this.grid);
 		for (let edge of this.editBoard.edges) {

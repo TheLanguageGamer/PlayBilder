@@ -2521,64 +2521,119 @@ var Example_Sokoban = {
             "type": 1
         },
         {
+            "tailRuleIndex": -1,
+            "headRuleIndex": -1,
+            "type": 1
+        },
+        {
+            "tailRuleIndex": -1,
+            "headRuleIndex": -1,
+            "type": 1
+        },
+        {
+            "tailRuleIndex": -1,
+            "headRuleIndex": -1,
+            "type": 1
+        },
+        {
+            "tailRuleIndex": -1,
+            "headRuleIndex": -1,
+            "type": 1
+        },
+        {
+            "tailRuleIndex": -1,
+            "headRuleIndex": -1,
+            "type": 1
+        },
+        {
+            "tailRuleIndex": -1,
+            "headRuleIndex": -1,
+            "type": 1
+        },
+        {
+            "tailRuleIndex": -1,
+            "headRuleIndex": -1,
+            "type": 1
+        },
+        {
+            "tailRuleIndex": -1,
+            "headRuleIndex": -1,
+            "type": 1
+        },
+        {
+            "tailRuleIndex": -1,
+            "headRuleIndex": -1,
+            "type": 1
+        },
+        {
+            "tailRuleIndex": -1,
+            "headRuleIndex": -1,
+            "type": 1
+        },
+        {
+            "tailRuleIndex": -1,
+            "headRuleIndex": -1,
+            "type": 1
+        },
+        {
             "tailRuleIndex": 5,
             "headRuleIndex": 6,
-            "type": 1
+            "type": 3
         },
         {
             "tailRuleIndex": 6,
             "headRuleIndex": 7,
-            "type": 1
+            "type": 3
         },
         {
             "tailRuleIndex": 7,
             "headRuleIndex": 8,
-            "type": 1
+            "type": 3
         },
         {
             "tailRuleIndex": 8,
             "headRuleIndex": 9,
-            "type": 1
+            "type": 3
         },
         {
             "tailRuleIndex": 9,
             "headRuleIndex": 10,
-            "type": 1
+            "type": 3
         },
         {
             "tailRuleIndex": 10,
             "headRuleIndex": 11,
-            "type": 1
+            "type": 3
         },
         {
             "tailRuleIndex": 11,
             "headRuleIndex": 12,
-            "type": 1
+            "type": 3
         },
         {
             "tailRuleIndex": 12,
             "headRuleIndex": 13,
-            "type": 1
+            "type": 3
         },
         {
             "tailRuleIndex": 13,
             "headRuleIndex": 14,
-            "type": 1
+            "type": 3
         },
         {
             "tailRuleIndex": 14,
             "headRuleIndex": 15,
-            "type": 1
+            "type": 3
         },
         {
             "tailRuleIndex": 15,
             "headRuleIndex": 16,
-            "type": 1
-        },
+            "type": 3
+        }
     ],
     "gameStepInterval": 200,
     "settings": {
         "title": "Sokoban"
-    },
+    }
 };
 //# sourceMappingURL=Sokoban.js.map

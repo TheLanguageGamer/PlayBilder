@@ -7,15 +7,18 @@ function shuffle(a) {
     return a;
 }
 class PlayRule {
-    constructor(index, isStartSymbol, incomingEdgeType) {
+    constructor(index, isStartSymbol /*, incomingEdgeType : EdgeType*/) {
+        //children : PlayRule[] = [];
+        //children : Map<PlayRule, EdgeType> = new Map();
         this.children = [];
         this.rotations = [];
         this.isStartSymbol = false;
+        //incomingEdgeType : EdgeType;
         this.size = { width: 0, height: 0 };
         this.data = new Array();
         this.index = index;
         this.isStartSymbol = isStartSymbol;
-        this.incomingEdgeType = incomingEdgeType;
+        //this.incomingEdgeType = incomingEdgeType;
     }
     apply(boardData, boardBuffer, gridSize, startI, startJ) {
         for (let i = 0; i < this.size.width; ++i) {
@@ -66,13 +69,20 @@ class PlayRule {
         for (let rotation of this.rotations) {
             rotation.process(boardData, boardBuffer, gridSize);
         }
+        if (didMatch) {
+            for (let i = 0; i < gridSize.width; ++i) {
+                for (let j = 0; j < gridSize.height; ++j) {
+                    boardData[i][j][0] = boardBuffer[i][j][0];
+                }
+            }
+        }
         shuffle(this.children);
         for (let child of this.children) {
-            if ((child.incomingEdgeType == EdgeType.IfMatched && didMatch)
-                || (child.incomingEdgeType == EdgeType.IfNotMatched && !didMatch)
-                || (child.incomingEdgeType == EdgeType.Always)
-                || (child.incomingEdgeType == EdgeType.Parallel)) {
-                child.process(boardData, boardBuffer, gridSize);
+            if ((child.edgeType == EdgeType.IfMatched && didMatch)
+                || (child.edgeType == EdgeType.IfNotMatched && !didMatch)
+                || (child.edgeType == EdgeType.Always)
+                || (child.edgeType == EdgeType.Parallel)) {
+                child.rule.process(boardData, boardBuffer, gridSize);
             }
         }
     }
@@ -101,8 +111,8 @@ class PlayRule {
             },
         };
     }
-    static fromBoardData(editRule, data, gridSize, isStartSymbol, incomingEdgeType) {
-        let playRule = new PlayRule(editRule.index, isStartSymbol, incomingEdgeType);
+    static fromBoardData(editRule, data, gridSize, isStartSymbol) {
+        let playRule = new PlayRule(editRule.index, isStartSymbol);
         let box = this.getEditRuleBoundingBox(playRule.index, data, gridSize);
         playRule.size = box.size;
         console.log("BoundingBox:", box);
@@ -156,7 +166,7 @@ class PlayRule {
     
     */
     static createRotation90(other) {
-        let playRule = new PlayRule(other.index, other.isStartSymbol, other.incomingEdgeType);
+        let playRule = new PlayRule(other.index, other.isStartSymbol);
         playRule.size = {
             width: other.size.height,
             height: other.size.width
@@ -175,7 +185,7 @@ class PlayRule {
         return playRule;
     }
     static createRotation180(other) {
-        let playRule = new PlayRule(other.index, other.isStartSymbol, other.incomingEdgeType);
+        let playRule = new PlayRule(other.index, other.isStartSymbol);
         playRule.size = {
             width: other.size.width,
             height: other.size.height
@@ -194,7 +204,7 @@ class PlayRule {
         return playRule;
     }
     static createRotation270(other) {
-        let playRule = new PlayRule(other.index, other.isStartSymbol, other.incomingEdgeType);
+        let playRule = new PlayRule(other.index, other.isStartSymbol);
         playRule.size = {
             width: other.size.height,
             height: other.size.width

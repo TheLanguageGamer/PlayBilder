@@ -6,12 +6,19 @@ function shuffle(a : any[]) {
     return a;
 }
 
+interface PlayConnection {
+	rule : PlayRule,
+	edgeType : EdgeType,
+}
+
 class PlayRule {
-	children : PlayRule[] = [];
+	//children : PlayRule[] = [];
+	//children : Map<PlayRule, EdgeType> = new Map();
+	children : PlayConnection[] = [];
 	rotations : PlayRule[] = [];
 	index : number;
 	isStartSymbol : boolean = false;
-	incomingEdgeType : EdgeType;
+	//incomingEdgeType : EdgeType;
 	size : Size = {width : 0, height : 0};
 	data : number[][][] = new Array();
 
@@ -38,7 +45,13 @@ class PlayRule {
 		}
 	}
 
-	match(boardData : number[][][], boardBuffer : number[][][], gridSize : Size, startI : number, startJ : number) {
+	match(
+		boardData : number[][][],
+		boardBuffer : number[][][],
+		gridSize : Size,
+		startI : number,
+		startJ : number) {
+
 		if (startI + this.size.width > gridSize.width
 			|| startJ + this.size.height > gridSize.height) {
 			return false;
@@ -75,23 +88,31 @@ class PlayRule {
 			rotation.process(boardData, boardBuffer, gridSize);
 		}
 
+		if (didMatch) {
+			for (let i = 0; i < gridSize.width; ++i) {
+				for (let j = 0; j < gridSize.height; ++j) {
+					boardData[i][j][0] = boardBuffer[i][j][0];
+				}
+			}
+		}
+
 		shuffle(this.children);
 
 		for (let child of this.children) {
-			if ((child.incomingEdgeType == EdgeType.IfMatched && didMatch)
-				|| (child.incomingEdgeType == EdgeType.IfNotMatched && !didMatch)
-				|| (child.incomingEdgeType == EdgeType.Always)
-				|| (child.incomingEdgeType == EdgeType.Parallel)) {
+			if ((child.edgeType == EdgeType.IfMatched && didMatch)
+				|| (child.edgeType == EdgeType.IfNotMatched && !didMatch)
+				|| (child.edgeType == EdgeType.Always)
+				|| (child.edgeType == EdgeType.Parallel)) {
 
-				child.process(boardData, boardBuffer, gridSize);
+				child.rule.process(boardData, boardBuffer, gridSize);
 			}
 		}
 	}
 
-	constructor(index : number, isStartSymbol : boolean, incomingEdgeType : EdgeType) {
+	constructor(index : number, isStartSymbol : boolean/*, incomingEdgeType : EdgeType*/) {
 		this.index = index;
 		this.isStartSymbol = isStartSymbol;
-		this.incomingEdgeType = incomingEdgeType;
+		//this.incomingEdgeType = incomingEdgeType;
 	}
 
 	static getEditRuleBoundingBox(index : number, data : number[][][], gridSize : Size) {
@@ -125,10 +146,9 @@ class PlayRule {
 		editRule : EditRule,
 		data : number[][][],
 		gridSize : Size,
-		isStartSymbol : boolean,
-		incomingEdgeType : EdgeType) {
+		isStartSymbol : boolean) {
 
-		let playRule = new PlayRule(editRule.index, isStartSymbol, incomingEdgeType);
+		let playRule = new PlayRule(editRule.index, isStartSymbol);
 
 		let box = this.getEditRuleBoundingBox(playRule.index, data, gridSize);
 		playRule.size = box.size;
@@ -188,7 +208,7 @@ Horizontal reflection:
 
 */
 	static createRotation90(other : PlayRule) {
-		let playRule = new PlayRule(other.index, other.isStartSymbol, other.incomingEdgeType);
+		let playRule = new PlayRule(other.index, other.isStartSymbol);
 		playRule.size = {
 			width : other.size.height,
 			height : other.size.width
@@ -208,7 +228,7 @@ Horizontal reflection:
 	}
 
 	static createRotation180(other : PlayRule) {
-		let playRule = new PlayRule(other.index, other.isStartSymbol, other.incomingEdgeType);
+		let playRule = new PlayRule(other.index, other.isStartSymbol);
 		playRule.size = {
 			width : other.size.width,
 			height : other.size.height
@@ -228,7 +248,7 @@ Horizontal reflection:
 	}
 
 	static createRotation270(other : PlayRule) {
-		let playRule = new PlayRule(other.index, other.isStartSymbol, other.incomingEdgeType);
+		let playRule = new PlayRule(other.index, other.isStartSymbol);
 		playRule.size = {
 			width : other.size.height,
 			height : other.size.width

@@ -1195,7 +1195,7 @@ var Example_AGoodSnowmanIsHardToBuild = {
                 -1
             ],
             [
-                11,
+                10,
                 -1,
                 -1,
                 -1
@@ -1913,36 +1913,6 @@ var Example_AGoodSnowmanIsHardToBuild = {
                 -1
             ],
             [
-                9,
-                -1,
-                -1,
-                -1
-            ],
-            [
-                8,
-                -1,
-                -1,
-                -1
-            ],
-            [
-                -1,
-                -1,
-                -1,
-                -1
-            ],
-            [
-                -1,
-                -1,
-                -1,
-                -1
-            ],
-            [
-                -1,
-                -1,
-                -1,
-                -1
-            ],
-            [
                 8,
                 -1,
                 -1,
@@ -1950,6 +1920,24 @@ var Example_AGoodSnowmanIsHardToBuild = {
             ],
             [
                 8,
+                -1,
+                -1,
+                -1
+            ],
+            [
+                -1,
+                -1,
+                -1,
+                -1
+            ],
+            [
+                -1,
+                -1,
+                -1,
+                -1
+            ],
+            [
+                -1,
                 -1,
                 -1,
                 -1
@@ -1967,7 +1955,19 @@ var Example_AGoodSnowmanIsHardToBuild = {
                 -1
             ],
             [
-                9,
+                8,
+                -1,
+                -1,
+                -1
+            ],
+            [
+                8,
+                -1,
+                -1,
+                -1
+            ],
+            [
+                8,
                 -1,
                 -1,
                 -1
@@ -4689,119 +4689,234 @@ var Example_AGoodSnowmanIsHardToBuild = {
             "type": 1
         },
         {
+            "tailRuleIndex": -1,
+            "headRuleIndex": -1,
+            "type": 1
+        },
+        {
+            "tailRuleIndex": -1,
+            "headRuleIndex": -1,
+            "type": 1
+        },
+        {
+            "tailRuleIndex": -1,
+            "headRuleIndex": -1,
+            "type": 1
+        },
+        {
+            "tailRuleIndex": -1,
+            "headRuleIndex": -1,
+            "type": 1
+        },
+        {
+            "tailRuleIndex": -1,
+            "headRuleIndex": -1,
+            "type": 1
+        },
+        {
+            "tailRuleIndex": -1,
+            "headRuleIndex": -1,
+            "type": 1
+        },
+        {
+            "tailRuleIndex": -1,
+            "headRuleIndex": -1,
+            "type": 1
+        },
+        {
+            "tailRuleIndex": -1,
+            "headRuleIndex": -1,
+            "type": 1
+        },
+        {
+            "tailRuleIndex": -1,
+            "headRuleIndex": -1,
+            "type": 1
+        },
+        {
+            "tailRuleIndex": -1,
+            "headRuleIndex": -1,
+            "type": 1
+        },
+        {
+            "tailRuleIndex": -1,
+            "headRuleIndex": -1,
+            "type": 1
+        },
+        {
+            "tailRuleIndex": -1,
+            "headRuleIndex": -1,
+            "type": 1
+        },
+        {
+            "tailRuleIndex": -1,
+            "headRuleIndex": -1,
+            "type": 1
+        },
+        {
+            "tailRuleIndex": -1,
+            "headRuleIndex": -1,
+            "type": 1
+        },
+        {
+            "tailRuleIndex": -1,
+            "headRuleIndex": -1,
+            "type": 1
+        },
+        {
+            "tailRuleIndex": -1,
+            "headRuleIndex": -1,
+            "type": 1
+        },
+        {
+            "tailRuleIndex": -1,
+            "headRuleIndex": -1,
+            "type": 1
+        },
+        {
+            "tailRuleIndex": -1,
+            "headRuleIndex": -1,
+            "type": 1
+        },
+        {
+            "tailRuleIndex": -1,
+            "headRuleIndex": -1,
+            "type": 1
+        },
+        {
+            "tailRuleIndex": -1,
+            "headRuleIndex": -1,
+            "type": 1
+        },
+        {
+            "tailRuleIndex": -1,
+            "headRuleIndex": -1,
+            "type": 1
+        },
+        {
+            "tailRuleIndex": -1,
+            "headRuleIndex": -1,
+            "type": 1
+        },
+        {
+            "tailRuleIndex": -1,
+            "headRuleIndex": -1,
+            "type": 1
+        },
+        {
             "tailRuleIndex": 5,
             "headRuleIndex": 6,
-            "type": 1
+            "type": 3
         },
         {
             "tailRuleIndex": 6,
             "headRuleIndex": 7,
-            "type": 1
+            "type": 3
         },
         {
             "tailRuleIndex": 7,
             "headRuleIndex": 8,
-            "type": 1
+            "type": 3
         },
         {
             "tailRuleIndex": 8,
             "headRuleIndex": 9,
-            "type": 1
+            "type": 3
         },
         {
             "tailRuleIndex": 9,
             "headRuleIndex": 10,
-            "type": 1
+            "type": 3
         },
         {
             "tailRuleIndex": 10,
             "headRuleIndex": 11,
-            "type": 1
+            "type": 3
         },
         {
             "tailRuleIndex": 11,
             "headRuleIndex": 12,
-            "type": 1
+            "type": 3
         },
         {
             "tailRuleIndex": 12,
             "headRuleIndex": 16,
-            "type": 1
+            "type": 3
         },
         {
             "tailRuleIndex": 16,
             "headRuleIndex": 15,
-            "type": 1
+            "type": 3
         },
         {
             "tailRuleIndex": 15,
             "headRuleIndex": 14,
-            "type": 1
+            "type": 3
         },
         {
             "tailRuleIndex": 14,
             "headRuleIndex": 13,
-            "type": 1
+            "type": 3
         },
         {
             "tailRuleIndex": 13,
             "headRuleIndex": 17,
-            "type": 1
+            "type": 3
         },
         {
             "tailRuleIndex": 17,
             "headRuleIndex": 18,
-            "type": 1
+            "type": 3
         },
         {
             "tailRuleIndex": 18,
             "headRuleIndex": 19,
-            "type": 1
+            "type": 3
         },
         {
             "tailRuleIndex": 19,
             "headRuleIndex": 20,
-            "type": 1
+            "type": 3
         },
         {
             "tailRuleIndex": 20,
             "headRuleIndex": 21,
-            "type": 1
+            "type": 3
         },
         {
             "tailRuleIndex": 21,
             "headRuleIndex": 22,
-            "type": 1
+            "type": 3
         },
         {
             "tailRuleIndex": 22,
             "headRuleIndex": 23,
-            "type": 1
+            "type": 3
         },
         {
             "tailRuleIndex": 23,
             "headRuleIndex": 24,
-            "type": 1
+            "type": 3
         },
         {
             "tailRuleIndex": 24,
             "headRuleIndex": 25,
-            "type": 1
+            "type": 3
         },
         {
             "tailRuleIndex": 25,
             "headRuleIndex": 26,
-            "type": 1
+            "type": 3
         },
         {
             "tailRuleIndex": 26,
             "headRuleIndex": 28,
-            "type": 1
+            "type": 3
         },
         {
             "tailRuleIndex": 28,
             "headRuleIndex": 27,
-            "type": 1
+            "type": 3
         }
     ],
     "gameStepInterval": 200,

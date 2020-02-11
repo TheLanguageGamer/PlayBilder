@@ -38,6 +38,7 @@ class PlayBoard {
             PlayTree.addRotatedTree180(this.upPlayTree.root, this.downPlayTree.root);
             PlayTree.addRotatedTree270(this.upPlayTree.root, this.leftPlayTree.root);
         }
+        console.log("did construct PlayBoard");
     }
     onUpdate(timeMS, boardData, boardBuffer, gridSize) {
         let delta = timeMS - this.lastTimeStep;

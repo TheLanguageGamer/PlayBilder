@@ -197,5 +197,6 @@ class PlayBoard {
 				this.leftPlayTree.root
 			);
 		}
+		console.log("did construct PlayBoard");
 	}
 }

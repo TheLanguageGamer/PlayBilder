@@ -323,7 +323,7 @@ class EditBoard {
             if (rule) {
                 rule.dirtyBoundaries = true;
                 this.calculateBoundaries(data, grid);
-                this.respositionEdgesForRule(rule, grid);
+                this.respositionEdgesForRule(rule, data, grid);
                 this.selectRuleIndex(newRuleIndex);
             }
             return newRuleIndex;
@@ -371,7 +371,7 @@ class EditBoard {
                 this.undo(data, grid);
             }
             if (rule.isEnabled()) {
-                this.respositionEdgesForRule(rule, grid);
+                this.respositionEdgesForRule(rule, data, grid);
             }
             else {
                 this.disableEdgesForRule(rule);
@@ -461,7 +461,7 @@ class EditBoard {
                 }
                 else {
                     rule.enable();
-                    this.respositionEdgesForRule(rule, grid);
+                    this.respositionEdgesForRule(rule, data, grid);
                 }
             }
         }
@@ -472,7 +472,7 @@ class EditBoard {
         if (rule) {
             rule.dirtyBoundaries = true;
             this.calculateBoundaries(data, grid);
-            this.respositionEdgesForRule(rule, grid);
+            this.respositionEdgesForRule(rule, data, grid);
         }
     }
     undo(data, grid) {
@@ -646,7 +646,7 @@ class EditBoard {
                         fromTool: this.editTool,
                         parentLayout: this.gridLayout,
                     });
-                    edge.positionArrow(e.offsetX, e.offsetY, rule, grid);
+                    edge.positionMovingArrow(e.offsetX, e.offsetY, rule, grid);
                     this.edge = edge;
                     this.components.push(edge.arrow);
                 }
@@ -693,7 +693,7 @@ class EditBoard {
                 if (rule) {
                     rule.dirtyBoundaries = true;
                     this.calculateBoundaries(data, grid);
-                    this.respositionEdgesForRule(rule, grid);
+                    this.respositionEdgesForRule(rule, data, grid);
                 }
             }
             else {
@@ -726,7 +726,7 @@ class EditBoard {
             if (this.edge) {
                 let rule = this.rules.get(this.edge.tailRuleIndex);
                 if (rule) {
-                    this.edge.positionArrow(e.offsetX, e.offsetY, rule, grid);
+                    this.edge.positionMovingArrow(e.offsetX, e.offsetY, rule, grid);
                 }
             }
         }
@@ -739,22 +739,16 @@ class EditBoard {
             }
         }
     }
-    respositionEdgesForRule(rule, grid) {
+    respositionEdgesForRule(rule, data, grid) {
         for (let edge of this.edges) {
             //TODO recalculate both arrow from and to if either tail or head index matches
             if (edge.tailRuleIndex == rule.index) {
-                edge.arrow.from = edge.findClosestPoint(edge.arrow.to, rule, grid);
                 let other = this.rules.get(edge.headRuleIndex);
-                if (other) {
-                    edge.arrow.to = edge.findClosestPoint(edge.arrow.from, other, grid);
-                }
+                edge.repositionBasedOnTailMove(rule, other, data, grid);
             }
             if (edge.headRuleIndex == rule.index) {
-                edge.arrow.to = edge.findClosestPoint(edge.arrow.from, rule, grid);
                 let other = this.rules.get(edge.tailRuleIndex);
-                if (other) {
-                    edge.arrow.from = edge.findClosestPoint(edge.arrow.to, other, grid);
-                }
+                edge.repositionBasedOnHeadMove(rule, other, data, grid);
             }
         }
     }
@@ -762,7 +756,7 @@ class EditBoard {
         visited[rule.index] = true;
         recStack[rule.index] = true;
         for (let edge of this.edges) {
-            if (edge.headRuleIndex == rule.index) {
+            if (edge.headRuleIndex == rule.index && !edge.isLoop()) {
                 let neighbor = this.rules.get(edge.tailRuleIndex);
                 if (neighbor) {
                     if (!visited[neighbor.index]) {
@@ -895,10 +889,14 @@ class EditBoard {
                 if (ruleIndex > -1
                     && rule
                     && this.canConnect(this.edge, rule)) {
-                    this.edge.arrow.to = this.edge.findClosestPoint(this.edge.arrow.from, rule, grid);
                     this.edge.headRuleIndex = ruleIndex;
+                    this.edge.finalizeArrowPosition(rule, data, grid);
+                    if (this.edge.isLoop()) {
+                        this.edge.arrow.arced = true;
+                    }
                     this.edges.push(this.edge);
-                    if (this.isRuleGraphCyclic()) {
+                    if (this.isRuleGraphCyclic()
+                        && !this.isLoopException(this.edge)) {
                         this.controller.onUserFeedback({
                             state: UserFeedbackState.Error,
                             message: "Error: This edge would make the rule graph cyclic.",
@@ -914,6 +912,11 @@ class EditBoard {
                 }
             }
         }
+    }
+    isLoopException(edge) {
+        return edge.type == EdgeType.IfMatched
+            && edge.headRuleIndex >= InputState.__Length
+            && edge.isLoop();
     }
     onKeyDown(e) {
         if (e.keyCode == 46 || e.keyCode == 8) {

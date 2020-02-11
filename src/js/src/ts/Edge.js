@@ -77,6 +77,19 @@ class Edge {
     isEnabled() {
         return this.arrow.layout.visible;
     }
+    positionLoop(rule, data, grid) {
+        for (let i = 0; i < grid.gridSize.width; ++i) {
+            for (let j = 0; j < grid.gridSize.height; ++j) {
+                let ruleIndex = data[i][j][3];
+                if (rule.index == ruleIndex) {
+                    this.arrow.from = grid.getPositionForCoordinate(i, j);
+                    this.arrow.to = grid.getPositionForCoordinate(i + 1, j);
+                    this.arrow.to.x += 5;
+                    return;
+                }
+            }
+        }
+    }
     findClosestPoint(pos, rule, grid) {
         let ret = { x: 0, y: 0 };
         let minDistance1 = -1;
@@ -125,10 +138,43 @@ class Edge {
             y: y - this.arrow.layout.computed.position.y,
         }, this.arrow.from, this.arrow.to);
     }
-    positionArrow(offsetX, offsetY, rule, grid) {
+    positionMovingArrow(offsetX, offsetY, rule, grid) {
         this.arrow.to.x = offsetX - this.arrow.layout.computed.position.x;
         this.arrow.to.y = offsetY - this.arrow.layout.computed.position.y;
         this.arrow.from = this.findClosestPoint(this.arrow.to, rule, grid);
+    }
+    isLoop() {
+        return this.headRuleIndex == this.tailRuleIndex;
+    }
+    finalizeArrowPosition(rule, data, grid) {
+        if (this.isLoop()) {
+            this.positionLoop(rule, data, grid);
+        }
+        else {
+            this.arrow.to = this.findClosestPoint(this.arrow.from, rule, grid);
+        }
+    }
+    repositionBasedOnTailMove(rule1, rule2, data, grid) {
+        if (this.isLoop()) {
+            this.positionLoop(rule1, data, grid);
+        }
+        else {
+            this.arrow.from = this.findClosestPoint(this.arrow.to, rule1, grid);
+            if (rule2) {
+                this.arrow.to = this.findClosestPoint(this.arrow.from, rule2, grid);
+            }
+        }
+    }
+    repositionBasedOnHeadMove(rule1, rule2, data, grid) {
+        if (this.isLoop()) {
+            this.positionLoop(rule1, data, grid);
+        }
+        else {
+            this.arrow.to = this.findClosestPoint(this.arrow.from, rule1, grid);
+            if (rule2) {
+                this.arrow.from = this.findClosestPoint(this.arrow.to, rule2, grid);
+            }
+        }
     }
 }
 //# sourceMappingURL=Edge.js.map

@@ -60,7 +60,7 @@ class Playbilder {
 			for (let element of board.editBoard.rules) {
 				let rule = element[1];
 				if (rule.isEnabled()) {
-					board.editBoard.respositionEdgesForRule(rule, board.grid);
+					board.editBoard.respositionEdgesForRule(rule, board.data, board.grid);
 				}
 			}
 		} else {
