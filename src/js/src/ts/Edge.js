@@ -44,6 +44,9 @@ class Edge {
         if (archive.type) {
             this.setEdgeType(archive.type);
         }
+        if (this.isLoop()) {
+            this.arrow.arced = true;
+        }
     }
     setEdgeType(type) {
         this.type = type;

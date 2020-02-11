@@ -54,7 +54,7 @@ class PlayRule {
         }
         return matched;
     }
-    process(boardData, boardBuffer, gridSize) {
+    processContent(boardData, boardBuffer, gridSize) {
         let didMatch = false;
         if (!this.isStartSymbol) {
             for (let i = 0; i < gridSize.width; ++i) {
@@ -66,8 +66,15 @@ class PlayRule {
                 }
             }
         }
+        return didMatch;
+    }
+    process(boardData, boardBuffer, gridSize) {
+        let didMatch = this.processContent(boardData, boardBuffer, gridSize);
         for (let rotation of this.rotations) {
-            rotation.process(boardData, boardBuffer, gridSize);
+            if (didMatch) {
+                break;
+            }
+            didMatch = rotation.processContent(boardData, boardBuffer, gridSize);
         }
         if (didMatch) {
             for (let i = 0; i < gridSize.width; ++i) {
