@@ -232,6 +232,16 @@ class Playbilder {
 			} else {
 				infobarLayout.visible = true;
 				infobarLabel.text = feedback.message;
+				if (feedback.state == UserFeedbackState.Warning) {
+					infobar.strokeColor = Constants.Colors.Yellow.Safety;
+					infobar.fillColor = Constants.Colors.Yellow.Light;
+				} else if (feedback.state == UserFeedbackState.Error) {
+					infobar.strokeColor = Constants.Colors.Red.Imperial;
+					infobar.fillColor = Constants.Colors.Red.Light;
+				} else {
+					infobar.strokeColor = Constants.Colors.DarkGrey;
+					infobar.fillColor = Constants.Colors.VeryLightGrey;
+				}
 			}
         }
 

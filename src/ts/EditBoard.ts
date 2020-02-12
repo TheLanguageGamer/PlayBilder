@@ -1016,7 +1016,7 @@ class EditBoard {
 		if (rule.index < InputState.__Length) {
 			this.controller.onUserFeedback({
 				state : UserFeedbackState.Error,
-				message : "Error: Can't connect a block rule to a user input rule.",
+				message : "Error: Input rules can only have outgoing arrows.",
 			});
 			return false;
 		}

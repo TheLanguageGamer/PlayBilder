@@ -1,0 +1,93 @@
+<!doctype html>
+<html>
+	<head>
+	<meta charset="utf-8"/>
+	<style>
+		html, body {
+			height: 100%;
+		}
+		a {
+			color: #195190;
+			text-decoration: none;
+		}
+
+		a:hover {
+			text-decoration: underline;
+		}
+
+		a:active {
+			color: black;
+		}
+
+		a:visited {
+			color: #00AAA0;
+		}
+		#parentContainer {
+			height: 100%;
+		}
+		#info-container {
+			width: 160px;
+			font-family: monospace;
+			padding-left: 5px;
+			padding-top: 5px;
+			padding-right: 5px;
+			/*background-color: #e1fcf4;*/
+			height: 95%;
+			position: absolute;
+			top: 0;
+			left: 0;
+		}
+		#container {
+			background-color: white;
+			margin-left: 200px;
+		}
+		#title {
+			font-size: 24px;
+			font-weight: 800;
+			margin-top: 0px;
+		}
+		#footer
+		{
+			margin-bottom: 5px;
+			margin-left : 5px;
+			width: 160px;
+			height: 20px;
+			position: fixed;
+			bottom: 0;
+		}
+	</style>
+	</head>
+	<body style="margin:0px">
+		<input type="file" id="upload" style="display:none"/>
+		<div id="parentContainer">
+			<div id="info-container">
+				<p id="title">
+					<a href="">
+						<span style="color: #2BAE66;">Play</span><span style="color: #603F83;">Bilder</span>
+					</a>
+				</p>
+				<p>Examples</p>
+				<ul>
+					<li><a href="/PlayBilder/?example=Tetris">Tetris</a></li>
+					<li><a href="/PlayBilder/?example=Sokoban">Sokoban</a></li>
+					<li><a href="/PlayBilder/?example=AGoodSnowmanIsHardToBuild">A Good Snowman is Hard to Build</a></li>
+					<li><a href="/PlayBilder/?example=LogicGates">Logic Gates</a></li>
+					<li><a href="/PlayBilder/?example=Rule30">Rule 30</a></li>
+					<li><a href="/PlayBilder/?example=LangtonsAnt">Langton's Ant</a></li>
+					<li><a href="/PlayBilder/?example=WangTiles">Wang Tiles</a></li>
+				</ul>
+				<p id="info"></p>
+			</div>
+			<div id="container">
+				<p id="title">Blocks</p>
+				<p id="title">Tools</p>
+				<p id="title">Arrows</p>
+			</div>
+			<div id="footer">
+				<a href="https://twitter.com/Language_Gamer">Twitter</a>
+				/
+				<a href="https://github.com/TheLanguageGamer/">Github</a>
+			</div>
+		</div>
+	</body>
+</html>
