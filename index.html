@@ -25,7 +25,7 @@
 		#parentContainer {
 			height: 100%;
 		}
-		#info {
+		#info-container {
 			width: 160px;
 			font-family: monospace;
 			padding-left: 5px;
@@ -59,7 +59,7 @@
 	<body style="margin:0px">
 		<input type="file" id="upload" style="display:none"/>
 		<div id="parentContainer">
-			<div id="info">
+			<div id="info-container">
 				<p id="title">
 					<a href="">
 						<span style="color: #2BAE66;">Play</span><span style="color: #603F83;">Bilder</span>
@@ -67,13 +67,15 @@
 				</p>
 				<p>Examples</p>
 				<ul>
+					<li><a href="?example=Tetris">Tetris</a></li>
+					<li><a href="?example=Sokoban">Sokoban</a></li>
+					<li><a href="?example=AGoodSnowmanIsHardToBuild">A Good Snowman is Hard to Build</a></li>
 					<li><a href="?example=LogicGates">Logic Gates</a></li>
 					<li><a href="?example=Rule30">Rule 30</a></li>
-					<li><a href="?example=Sokoban">Sokoban</a></li>
 					<li><a href="?example=LangtonsAnt">Langton's Ant</a></li>
-					<li><a href="?example=Tetris">Tetris</a></li>
-					<li><a href="?example=AGoodSnowmanIsHardToBuild">A Good Snowman is Hard to Build</a></li>
+					<li><a href="?example=WangTiles">Wang Tiles</a></li>
 				</ul>
+				<p id="info"></p>
 			</div>
 			<div id="container"></div>
 			<div id="footer">
@@ -112,6 +114,7 @@
 		<script src="src/js/src/ts/examples/Sokoban.js"></script>
 		<script src="src/js/src/ts/examples/Tetris.js"></script>
 		<script src="src/js/src/ts/examples/LangtonsAnt.js"></script>
+		<script src="src/js/src/ts/examples/WangTiles.js"></script>
 		<script src="src/js/src/ts/PlayRule.js"></script>
 		<script src="src/js/src/ts/PlayTree.js"></script>
 		<script src="src/js/src/ts/PlayBoard.js"></script>

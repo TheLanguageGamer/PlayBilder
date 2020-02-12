@@ -47,6 +47,9 @@ class Edge {
         if (this.isLoop()) {
             this.arrow.arced = true;
         }
+        if (this.tailRuleIndex == -1 || this.headRuleIndex == -1) {
+            this.disable();
+        }
     }
     setEdgeType(type) {
         this.type = type;

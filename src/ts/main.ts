@@ -33,6 +33,15 @@ class Playbilder {
 	trashButton : Component;
 	playButton : Component;
 
+	load(archive : any) {
+
+		let info = document.getElementById('info')
+		if (archive.info && info) {
+			info.innerHTML = archive.info;
+		}
+		this.board.load(archive);
+	}
+
 	loadStateFromGetParams(getParams : Map<string, string>, board : Board) {
 
 		let b64Data = getParams.get("data");
@@ -499,7 +508,6 @@ class Playbilder {
 
 		board.setComponents(gridOverlay.children);
 		this.game.doLayout();
-		board.load(archive);
 
 		this.palette = palette;
 		this.selectedRect = selectedRect;
@@ -510,6 +518,8 @@ class Playbilder {
 		this.trashButton = trashButton;
 		this.playButton = playButton;
 		this.board = board;
+		
+		this.load(archive);
     }
 }
 
@@ -540,6 +550,8 @@ if (example == "LogicGates") {
 	archive = Example_Sokoban;
 } else if (example == "LangtonsAnt") {
 	archive = Example_LangtonsAnt;
+} else if (example == "WangTiles") {
+	archive = Example_WangTiles;
 } else {
 	// let archiveString = localStorage.getItem("archive");
 	// if (archiveString) {
@@ -580,7 +592,7 @@ function handleFiles(e: Event) {
 			if (event.target && event.target.result) {
 				var obj = JSON.parse(event.target.result as string);
 				console.log("reader has read:", obj);
-				$playBilder.board.load(obj);
+				$playBilder.load(obj);
 			}
 		};
 		reader.readAsText(files[0]);

@@ -253,7 +253,6 @@ class Playbilder {
         }
         board.setComponents(gridOverlay.children);
         this.game.doLayout();
-        board.load(archive);
         this.palette = palette;
         this.selectedRect = selectedRect;
         this.toolRect = toolRect;
@@ -263,6 +262,14 @@ class Playbilder {
         this.trashButton = trashButton;
         this.playButton = playButton;
         this.board = board;
+        this.load(archive);
+    }
+    load(archive) {
+        let info = document.getElementById('info');
+        if (archive.info && info) {
+            info.innerHTML = archive.info;
+        }
+        this.board.load(archive);
     }
     loadStateFromGetParams(getParams, board) {
         let b64Data = getParams.get("data");
@@ -442,6 +449,9 @@ else if (example == "Sokoban") {
 else if (example == "LangtonsAnt") {
     archive = Example_LangtonsAnt;
 }
+else if (example == "WangTiles") {
+    archive = Example_WangTiles;
+}
 else {
     // let archiveString = localStorage.getItem("archive");
     // if (archiveString) {
@@ -475,7 +485,7 @@ function handleFiles(e) {
             if (event.target && event.target.result) {
                 var obj = JSON.parse(event.target.result);
                 console.log("reader has read:", obj);
-                $playBilder.board.load(obj);
+                $playBilder.load(obj);
             }
         };
         reader.readAsText(files[0]);
