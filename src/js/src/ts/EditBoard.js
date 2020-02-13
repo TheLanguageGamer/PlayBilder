@@ -601,10 +601,12 @@ class EditBoard {
         let returnEdge = undefined;
         let minDistance = 6;
         for (let edge of this.edges) {
-            let distance = edge.distanceTo(e.offsetX, e.offsetY);
-            if (distance < minDistance) {
-                minDistance = distance;
-                returnEdge = edge;
+            if (edge.isEnabled()) {
+                let distance = edge.distanceTo(e.offsetX, e.offsetY);
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    returnEdge = edge;
+                }
             }
         }
         return returnEdge;
@@ -820,7 +822,7 @@ class EditBoard {
         if (rule.index < InputState.__Length) {
             this.controller.onUserFeedback({
                 state: UserFeedbackState.Error,
-                message: "Error: Can't connect a block rule to a user input rule.",
+                message: "Error: Input rules can only have outgoing arrows.",
             });
             return false;
         }

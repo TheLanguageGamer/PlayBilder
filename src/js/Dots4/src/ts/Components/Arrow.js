@@ -9,6 +9,12 @@ class Arrow {
         this.arced = false;
         this.layout = new Layout(0, 0, 0, 0, 0, 0, 0, 0);
     }
+    center() {
+        return {
+            x: this.from.x + (this.to.x - this.from.x) / 2,
+            y: this.from.y + (this.to.y - this.from.y) / 2,
+        };
+    }
     renderArced(ctx, cp) {
         var headlen = Math.floor(this.lineWidth / 2);
         let computedFromX = this.layout.computed.position.x + this.from.x;

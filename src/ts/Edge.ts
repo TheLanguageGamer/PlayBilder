@@ -144,14 +144,28 @@ class Edge {
 		this.arrow.headMargin = 10;
 	}
 	distanceTo(x : number, y : number) {
-		return minimumDistanceToLineSegment(
-			{
+		if (this.arrow.arced) {
+			let p = {
 				x : x - this.arrow.layout.computed.position.x,
 				y : y - this.arrow.layout.computed.position.y,
-			},
-			this.arrow.from,
-			this.arrow.to
-		);
+			};
+			let c = this.arrow.center();
+			let inarc = pointIntersectsArc(p, c, 1*Math.PI, 2*Math.PI);
+			return inarc ? minimumDistanceToArc(
+				p,
+				c,
+				calculateDistance(this.arrow.from, this.arrow.to) / 2
+			) : 1000;
+		} else {
+			return minimumDistanceToLineSegment(
+				{
+					x : x - this.arrow.layout.computed.position.x,
+					y : y - this.arrow.layout.computed.position.y,
+				},
+				this.arrow.from,
+				this.arrow.to
+			);
+		}
 	}
 	positionMovingArrow(offsetX : number, offsetY : number, rule : EditRule, grid : Grid) {
 		this.arrow.to.x = offsetX - this.arrow.layout.computed.position.x;

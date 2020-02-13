@@ -780,10 +780,12 @@ class EditBoard {
 		let returnEdge = undefined;
 		let minDistance = 6;
 		for (let edge of this.edges) {
-			let distance = edge.distanceTo(e.offsetX, e.offsetY);
-			if (distance < minDistance) {
-				minDistance = distance;
-				returnEdge = edge;
+			if (edge.isEnabled()) {
+				let distance = edge.distanceTo(e.offsetX, e.offsetY);
+				if (distance < minDistance) {
+					minDistance = distance;
+					returnEdge = edge;
+				}
 			}
 		}
 		return returnEdge;

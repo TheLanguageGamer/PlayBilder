@@ -43,6 +43,17 @@ function minimumDistanceToLineSegment(p, l1, l2) {
     };
     return calculateDistance(p, projection);
 }
+function minimumDistanceToArc(p, center, radius) {
+    let d = calculateDistance(p, center);
+    let ret = Math.abs(d - radius);
+    console.log("distance to arc:", ret);
+    return ret;
+}
+function pointIntersectsArc(p, center, startAngle, endAngle) {
+    var angle = Math.atan2(p.y - center.y, p.x - center.x) + Math.PI * 2;
+    console.log("angle", angle);
+    return angle > startAngle && angle < endAngle;
+}
 class Layout {
     constructor(relX, relY, offX, offY, relWidth, relHeight, offWidth, offHeight) {
         this.relativeLayout = RelativeLayout.None;
