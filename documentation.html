@@ -40,6 +40,7 @@
 		#container {
 			background-color: white;
 			margin-left: 200px;
+			max-width: 600px;
 		}
 		#title {
 			font-size: 24px;
@@ -62,10 +63,11 @@
 		<div id="parentContainer">
 			<div id="info-container">
 				<p id="title">
-					<a href="">
+					<a href="/PlayBilder">
 						<span style="color: #2BAE66;">Play</span><span style="color: #603F83;">Bilder</span>
 					</a>
 				</p>
+				<p><a href="documentation.html">Documentation</a></p>
 				<p>Examples</p>
 				<ul>
 					<li><a href="/PlayBilder/?example=Tetris">Tetris</a></li>
@@ -79,9 +81,54 @@
 				<p id="info"></p>
 			</div>
 			<div id="container">
-				<p id="title">Blocks</p>
-				<p id="title">Tools</p>
-				<p id="title">Arrows</p>
+				<div>
+					<br/>
+					<h1>Documentation</h1>
+					<h2>Rules</h2>
+					<p>
+						Game mechanics in PlayBilder are expressed as rules on the grid. Each rule is outlined with a dashed line:<br/>
+						<img src="/PlayBilder/images/tutorial/exampleRules.png" style="width: 274px; height: 77px"/><br/>
+						The following rule would match any 2x2 empty group of cells on the grid:<br/>
+						<img src="/PlayBilder/images/tutorial/emptyRule.png" style="width: 77px; height: 77px"/><br/>
+						Rules can contain 2 types of blocks:
+						<h3>Idea Blocks</h3>
+						Small blocks are <i>idea blocks</i>. Idea blocks represent the pattern of blocks that will be searched for when processing a rule. The following rule would match any 2x2 group of blue blocks on the grid:<br/>
+						<img src="/PlayBilder/images/tutorial/blueSquare.png" style="width: 77px; height: 77px"/><br/>
+						<h3>Future Blocks</h3>
+						Hollow blocks are <i>future blocks</i>. Future blocks represent how a group of blocks will be transformed. The following rule would transform all blue blocks to red blocks:<br/>
+						<img src="/PlayBilder/images/tutorial/blueToRed.png" style="width: 40px; height: 41px"/><br/>
+					</p>
+					<h2>Arrows</h2>
+					<p>
+						Arrows connect rules and determine which rules will be processed and when.
+						<h3>Black Arrows</h3>
+						Will always be followed. For example, if the rule on the left were processed, then the the rule on the right would be immediately processed afterwards:<br/>
+						<img src="/PlayBilder/images/tutorial/greenToRedToPurple.png" style="width: 114px; height: 49px"/><br/>
+						In this case, that means all green blocks would become red, and then immediately all red blocks would become purple. These two rules together are therefore equivalent to the single following rule:<br/>
+						<img src="/PlayBilder/images/tutorial/greenToPurple.png" style="width: 45px; height: 45px"/><br/>
+						<h3>Green Arrows</h3>
+						Will only be followed if the previous rule was somewhere matched. For example, these rules would result in all red blocks moving 1 cell to the right, but only <i>IF</i> there is at least 1 blue cell on the grid:<br/>
+						<img src="/PlayBilder/images/tutorial/redRightIfBlue.png" style="width: 134px; height: 44px"/><br/>
+						<h3>Red Arrows</h3>
+						Will only be followed if the previous rule was not matched anywhere. For example, these rules would result in all red blocks moving 1 cell to the right, but only if there are <i>NO</i> blue cells on the grid:<br/>
+						<img src="/PlayBilder/images/tutorial/redRightInNoBlue.png" style="width: 134px; height: 44px"/><br/>
+					</p>
+					<h2>Starting States</h2>
+					<p>
+						<h3>Keyboard Input States</h3>
+						Rules connected to input states will be processed whenever the corresponding keyboard keys are pressed (arrow keys/WASD). For example, the rule on the right will be processed whenever the UP arrow (or W) is pressed:<br/>
+						<img src="/PlayBilder/images/tutorial/redUpOnUp.png" style="width: 100px; height: 70px"/><br/>
+						<h3>Periodic States</h3>
+						Rules connected to the computer icon will run periodically. You can change the periodicity at which this happens using setting widget on the right:<br/>
+						<img src="/PlayBilder/images/tutorial/intervalSetting.png" style="width: 168px; height: 56px"/><br/>
+						<h3>Reachability</h3>
+						If a rule cannot be reached from any starting state, is will never be processed.<br/><br/>
+						Reachable rules are outlined in black:<br/>
+						<img src="/PlayBilder/images/tutorial/reachable.png" style="width: 132px; height: 44px"/><br/>
+						Unreachable rules are outlined in grey:<br/>
+						<img src="/PlayBilder/images/tutorial/unreachable.png" style="width: 129px; height: 40px"/><br/>
+					</p>
+				</div>
 			</div>
 			<div id="footer">
 				<a href="https://twitter.com/Language_Gamer">Twitter</a>
