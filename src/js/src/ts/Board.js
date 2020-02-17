@@ -9,6 +9,7 @@ class Board {
     constructor(gridSize, screenSize, controller) {
         this.gameStepInterval = 500;
         this.needsLayout = false;
+        this.levelIndex = 0;
         this.state = BoardState.Edit;
         let _this = this;
         this.gameSettingsGui = new GameSettingsGUI(gridSize, {
@@ -67,6 +68,8 @@ class Board {
                 this.buffer[i].push([-1, -1, -1, -1]);
             }
         }
+        this.levels = new Array();
+        this.createLevel(gridSize);
         let widthRelative = gridSize.width / (gridSize.width + 6);
         let heightRelative = gridSize.height / (gridSize.height + 2);
         let gridLayout = new Layout(widthRelative / 2, 2 / gridSize.height, 0, 10 + 20, widthRelative, heightRelative, -kGameSettingsWidth, -40 - 10);
@@ -288,6 +291,29 @@ class Board {
         this.grid.resizeGrid(newSize);
         this.needsLayout = true;
     }
+    createLevel(gridSize) {
+        let level = new Array();
+        for (let i = 0; i < gridSize.width; ++i) {
+            level.push(new Array());
+            for (let j = 0; j < gridSize.height; ++j) {
+                level[i].push(-1);
+            }
+        }
+        this.levels.push(level);
+    }
+    setLevel(index) {
+        console.assert(index >= 0 && index < this.levels.length);
+        let currentLevel = this.levels[this.levelIndex];
+        let newLevel = this.levels[index];
+        for (let i = 0; i < this.grid.gridSize.width; ++i) {
+            for (let j = 0; j < this.grid.gridSize.height; ++j) {
+                currentLevel[i][j] = this.data[i][j][0];
+                this.data[i][j][0] = newLevel[i][j];
+            }
+        }
+        this.applyRealDataToGrid();
+        this.levelIndex = index;
+    }
     debugRules() {
         let output = "";
         for (let i = 0; i < this.grid.gridSize.width; ++i) {
@@ -404,6 +430,10 @@ class Board {
         else {
             this.setupInputStates();
         }
+        if (archive.levels && archive.levelIndex != undefined) {
+            this.levels = archive.levels;
+            this.setLevel(archive.levelIndex);
+        }
         if (archive.edges && archive.rules) {
             for (let edgeArchive of archive.edges) {
                 let edge = new Edge({
@@ -472,10 +502,13 @@ class Board {
         for (let edge of this.editBoard.edges) {
             edges.push(edge.save());
         }
+        this.setLevel(this.levelIndex);
         return {
             width: this.grid.gridSize.width,
             height: this.grid.gridSize.height,
             data: this.data,
+            levels: this.levels,
+            levelIndex: this.levelIndex,
             rules: rules,
             edges: edges,
             gameStepInterval: this.gameStepInterval,

@@ -9,9 +9,6 @@ class Rectangle {
         this.layout = layout;
     }
     render(ctx, cp) {
-        if (!this.layout.visible) {
-            return;
-        }
         ctx.beginPath();
         ctx.setLineDash(this.lineDash);
         this.lineDashOffset += this.lineDashSpeed;

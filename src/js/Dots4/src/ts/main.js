@@ -29,6 +29,34 @@ class TestBootstrapper {
         rect3.children = [];
         rect3.children.push(textInput3);
         this.game.components.push(rect3);
+        let selectLayout = new Layout(0, 0, 650, 100, 0, 0, 200, 30);
+        let select = new Select(selectLayout, [
+            {
+                label: "Puppy",
+                id: 0,
+            },
+            {
+                label: "Alligator",
+                id: 1,
+            },
+            {
+                label: "What animal",
+                id: 2,
+            },
+            {
+                label: "Kitten",
+                id: 3,
+            },
+            {
+                label: "Such elephant like",
+                id: 4,
+            },
+        ], {
+            onSelectionChanged(index, option) {
+                console.log("Selected!", index, option.label);
+            },
+        });
+        this.game.components.push(select);
         this.game.doLayout();
     }
 }

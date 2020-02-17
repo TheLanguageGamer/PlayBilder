@@ -77,9 +77,14 @@ class Game {
             if (_this._stopped) {
                 return;
             }
-            if (_this.focusedComponent && _this.focusedComponent.blur) {
+            if (_this.focusedComponent
+                && _this.focusedComponent.blur
+                && !_this.focusedComponent.layout.containsPosition(e.offsetX, e.offsetY)) {
                 _this.focusedComponent.blur();
-            }
+            } /*else if(_this.focusedComponent
+                && _this.focusedComponent.layout.containsPosition(e.offsetX, e.offsetY)) {
+                    return;
+            }*/
             _this.focusedComponent = undefined;
             _this.mouseDownRecursive(_this.components, e);
         });
@@ -132,7 +137,7 @@ class Game {
             size: { width: screenSize.width, height: screenSize.height },
         };
         for (let component of this.components) {
-            component.layout.doLayoutRecursive(box, component.children);
+            component.layout.doLayoutRecursive(box, component);
         }
     }
     renderRecursive(components, timeMS) {
@@ -171,17 +176,20 @@ class Game {
     }
     mouseDownRecursive(components, e) {
         for (let component of components) {
+            if (component.children) {
+                if (this.mouseDownRecursive(component.children, e)) {
+                    return true;
+                }
+            }
             if (component.onMouseDown
                 && component.layout.containsPosition(e.offsetX, e.offsetY)
                 && component.onMouseDown(e)) {
                 this.mouseDownComponent = component;
                 this.focusedComponent = component;
-                break;
-            }
-            if (component.children) {
-                this.mouseDownRecursive(component.children, e);
+                return true;
             }
         }
+        return false;
     }
     stop() { this._stopped = true; }
     start() {

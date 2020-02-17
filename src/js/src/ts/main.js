@@ -146,7 +146,36 @@ class Playbilder {
             ["Select"], ["RulePad"], ["EdgeAlways"],
             ["EdgeIfMatched"], ["EdgeIfNotMatched"], ["EdgeParallel"],
         ];
-        let toolbarLayout = new Layout(0, 0, 0, -kTopbarBottomPadding, 0, 0, tileSize * 9, tileSize * 1);
+        let levelSelectLayout = new Layout(0, 0, tileSize * 7, -kTopbarBottomPadding, 0, 0, 150, 30);
+        levelSelectLayout.anchor = { x: 0.0, y: 1.0 };
+        let levelSelect = new Select(levelSelectLayout, [
+            {
+                label: "Level 1",
+                id: 0,
+            },
+        ], {
+            onSelectionChanged(index, option) {
+                console.log("Selected!", index, option.label);
+                board.setLevel(index);
+            },
+        });
+        let addLevelLayout = new Layout(0, 0, tileSize * 7 + 150 + 15, -kTopbarBottomPadding, 0, 0, tileSize, tileSize);
+        addLevelLayout.anchor = { x: 0.0, y: 1.0 };
+        let addLevel = new Button(addLevelLayout, {
+            onClick(e) {
+                console.log("add level!");
+                levelSelect.options.push({
+                    label: "Level " + (levelSelect.options.length + 1),
+                    id: levelSelect.options.length,
+                });
+                levelSelect.selectedIndex = levelSelect.options.length - 1;
+                board.createLevel(board.grid.gridSize);
+                board.setLevel(levelSelect.selectedIndex);
+                return true;
+            }
+        });
+        addLevel.togglePaths = [ImagePaths.Icons["Plus"]];
+        let toolbarLayout = new Layout(0, 0, -tileSize * 3, -kTopbarBottomPadding, 0, 0, tileSize * 9, tileSize * 1);
         toolbarLayout.anchor = { x: 0.0, y: 1.0 };
         let toolbar = new Grid({ width: 9, height: 1 }, toolbarLayout, {
             populate(i, j) {
@@ -166,7 +195,7 @@ class Playbilder {
         });
         toolbar.children = [];
         toolbar.children.push(toolRect);
-        let downloadButtonLayout = new Layout(1, 0, -tileSize * 1.75 * 2, -kTopbarBottomPadding, 0, 0, tileSize, tileSize);
+        let downloadButtonLayout = new Layout(1, 0, -tileSize * 1.75 * 2 + kGameSettingsWidth, -kTopbarBottomPadding, 0, 0, tileSize, tileSize);
         downloadButtonLayout.anchor = { x: 1.0, y: 1.0 };
         let downloadButton = new Button(downloadButtonLayout, {
             onClick(e) {
@@ -179,7 +208,7 @@ class Playbilder {
             }
         });
         downloadButton.togglePaths = [ImagePaths.Icons["Download"]];
-        let uploadButtonLayout = new Layout(1, 0, -tileSize * 1.75 * 1, -kTopbarBottomPadding, 0, 0, tileSize, tileSize);
+        let uploadButtonLayout = new Layout(1, 0, -tileSize * 1.75 * 1 + kGameSettingsWidth, -kTopbarBottomPadding, 0, 0, tileSize, tileSize);
         uploadButtonLayout.anchor = { x: 1.0, y: 1.0 };
         let uploadButton = new Button(uploadButtonLayout, {
             onClick(e) {
@@ -190,7 +219,7 @@ class Playbilder {
             }
         });
         uploadButton.togglePaths = [ImagePaths.Icons["Upload"]];
-        let trashButtonLayout = new Layout(1, 0, -tileSize * 1.75 * 0, -kTopbarBottomPadding, 0, 0, tileSize, tileSize);
+        let trashButtonLayout = new Layout(1, 0, -tileSize * 1.75 * 0 + kGameSettingsWidth, -kTopbarBottomPadding, 0, 0, tileSize, tileSize);
         trashButtonLayout.anchor = { x: 1.0, y: 1.0 };
         let trashButton = new Button(trashButtonLayout, {
             onClick(e) {
@@ -201,7 +230,7 @@ class Playbilder {
             }
         });
         trashButton.togglePaths = [ImagePaths.Icons["Trash"]];
-        let playButtonLayout = new Layout(1, 0, -tileSize * 1.75 * 3, -kTopbarBottomPadding, 0, 0, tileSize, tileSize);
+        let playButtonLayout = new Layout(1, 0, -tileSize * 1.75 * 3 + kGameSettingsWidth, -kTopbarBottomPadding, 0, 0, tileSize, tileSize);
         playButtonLayout.anchor = { x: 1.0, y: 1.0 };
         let playButton = new Button(playButtonLayout, {
             onClick(e) {
@@ -262,6 +291,8 @@ class Playbilder {
             board.grid.children.push(infobar);
             board.grid.children.push(board.editBoard.ruleOptions.rootComponent);
             board.grid.children.push(gridOverlay);
+            board.grid.children.push(levelSelect);
+            board.grid.children.push(addLevel);
         }
         board.setComponents(gridOverlay.children);
         this.game.doLayout();
@@ -274,6 +305,7 @@ class Playbilder {
         this.trashButton = trashButton;
         this.playButton = playButton;
         this.board = board;
+        this.levelSelect = levelSelect;
         this.load(archive);
     }
     load(archive) {
@@ -282,6 +314,13 @@ class Playbilder {
             info.innerHTML = archive.info;
         }
         this.board.load(archive);
+        while (this.board.levels.length > this.levelSelect.options.length) {
+            this.levelSelect.options.push({
+                label: "Level " + (this.levelSelect.options.length + 1),
+                id: this.levelSelect.options.length,
+            });
+        }
+        this.levelSelect.selectedIndex = this.board.levelIndex;
     }
     loadStateFromGetParams(getParams, board) {
         let b64Data = getParams.get("data");
@@ -356,7 +395,7 @@ class Playbilder {
         };
         this.toolbar.layout.offset = {
             position: {
-                x: 0,
+                x: -tileSize * 3,
                 y: -kTopbarBottomPadding,
             },
             size: {
@@ -366,7 +405,7 @@ class Playbilder {
         };
         this.trashButton.layout.offset = {
             position: {
-                x: -tileSize * 1.75 * 0,
+                x: -tileSize * 1.75 * 0 + kGameSettingsWidth,
                 y: -kTopbarBottomPadding,
             },
             size: {
@@ -376,7 +415,7 @@ class Playbilder {
         };
         this.uploadButton.layout.offset = {
             position: {
-                x: -tileSize * 1.75 * 1,
+                x: -tileSize * 1.75 * 1 + kGameSettingsWidth,
                 y: -kTopbarBottomPadding,
             },
             size: {
@@ -386,7 +425,7 @@ class Playbilder {
         };
         this.downloadButton.layout.offset = {
             position: {
-                x: -tileSize * 1.75 * 2,
+                x: -tileSize * 1.75 * 2 + kGameSettingsWidth,
                 y: -kTopbarBottomPadding,
             },
             size: {
@@ -396,7 +435,7 @@ class Playbilder {
         };
         this.playButton.layout.offset = {
             position: {
-                x: -tileSize * 1.75 * 3,
+                x: -tileSize * 1.75 * 3 + kGameSettingsWidth,
                 y: -kTopbarBottomPadding,
             },
             size: {

@@ -21,6 +21,9 @@ class Board {
 	gameSettingsGui : GameSettingsGUI;
 	needsLayout = false;
 
+	levels : number[][][];
+	levelIndex : number = 0;
+
 	state : BoardState = BoardState.Edit;
 
 	dataToB64(data : number[][][], gridSize : Size) {
@@ -246,6 +249,31 @@ class Board {
 		this.needsLayout = true;
 	}
 
+	createLevel(gridSize : Size) {
+		let level : number[][] = new Array();
+		for (let i = 0; i < gridSize.width; ++i) {
+			level.push(new Array());
+			for (let j = 0; j < gridSize.height; ++j) {
+				level[i].push(-1);
+			}
+		}
+		this.levels.push(level);
+	}
+
+	setLevel(index : number) {
+		console.assert(index >= 0 && index < this.levels.length);
+		let currentLevel = this.levels[this.levelIndex];
+		let newLevel = this.levels[index];
+		for (let i = 0; i < this.grid.gridSize.width; ++i) {
+			for (let j = 0; j < this.grid.gridSize.height; ++j) {
+				currentLevel[i][j] = this.data[i][j][0];
+				this.data[i][j][0] = newLevel[i][j];
+			}
+		}
+		this.applyRealDataToGrid();
+		this.levelIndex = index;
+	}
+
 	constructor (gridSize : Size, screenSize : Size, controller : BoardController) {
 
 		let _this = this;
@@ -309,6 +337,9 @@ class Board {
 				this.buffer[i].push([-1, -1, -1, -1]);
 			}
 		}
+
+		this.levels = new Array();
+		this.createLevel(gridSize);
 
 		let widthRelative = gridSize.width/(gridSize.width + 6);
 		let heightRelative = gridSize.height/(gridSize.height + 2);
@@ -479,6 +510,10 @@ class Board {
 		} else {
 			this.setupInputStates();
 		}
+		if (archive.levels && archive.levelIndex != undefined) {
+			this.levels = archive.levels;
+			this.setLevel(archive.levelIndex);
+		}
 		if (archive.edges && archive.rules) {
 			for (let edgeArchive of archive.edges) {
 				let edge = new Edge({
@@ -550,10 +585,13 @@ class Board {
 		for (let edge of this.editBoard.edges) {
 			edges.push(edge.save());
 		}
+		this.setLevel(this.levelIndex);
 		return {
 			width : this.grid.gridSize.width,
 			height : this.grid.gridSize.height,
 			data : this.data,
+			levels : this.levels,
+			levelIndex : this.levelIndex,
 			rules : rules,
 			edges : edges,
 			gameStepInterval : this.gameStepInterval,
