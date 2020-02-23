@@ -90,7 +90,15 @@ class PlayRule {
 		return didMatch;
 	}
 
-	process(boardData : number[][][], boardBuffer : number[][][], gridSize : Size) {
+	process(
+		boardData : number[][][],
+		boardBuffer : number[][][],
+		gridSize : Size) : boolean {
+
+		if (this.index == InputState.Win) {
+			return true;
+		}
+		let winning = false;
 		let didMatch = this.processContent(boardData, boardBuffer, gridSize);
 
 		for (let rotation of this.rotations) {
@@ -116,9 +124,10 @@ class PlayRule {
 				|| (child.edgeType == EdgeType.Always)
 				|| (child.edgeType == EdgeType.Parallel)) {
 
-				child.rule.process(boardData, boardBuffer, gridSize);
+				winning = winning || child.rule.process(boardData, boardBuffer, gridSize);
 			}
 		}
+		return winning;
 	}
 
 	constructor(index : number, isStartSymbol : boolean/*, incomingEdgeType : EdgeType*/) {

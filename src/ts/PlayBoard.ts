@@ -1,4 +1,9 @@
 
+interface PlayBoardProcessState {
+	didProcess : boolean,
+	isWinning : boolean;
+}
+
 class PlayBoard {
 
 	gameStepPlayTree : PlayTree;
@@ -18,10 +23,18 @@ class PlayBoard {
 		let delta : DOMHighResTimeStamp = timeMS - this.lastTimeStep;
 		if (delta >= this.gameStepInterval) {
 			this.lastTimeStep = timeMS;
-			this.gameStepPlayTree.root.process(boardData, boardBuffer, gridSize);
-			return true;
+			let winning = this.gameStepPlayTree.root.process(
+				boardData, boardBuffer, gridSize
+			);
+			return {
+				didProcess : true,
+				isWinning : winning,
+			};
 		}
-		return false;
+		return {
+			didProcess : false,
+			isWinning : false,
+		};
 	}
 
 	onKeyDown(
@@ -29,23 +42,29 @@ class PlayBoard {
 		boardData : number[][][],
 		boardBuffer : number[][][],
 		gridSize : Size) {
+
+		let isWinning = false;
+		let didProcess = false;
 	    if (e.keyCode == 38 || e.key == 'w') {
-	        this.onUp(boardData, boardBuffer, gridSize);
-	        return true;
+	        isWinning = this.onUp(boardData, boardBuffer, gridSize);
+	        didProcess = true;
 	    }
 	    else if (e.keyCode == 40 || e.key == 's') {
-	    	this.onDown(boardData, boardBuffer, gridSize);
-	        return true;
+	    	isWinning = this.onDown(boardData, boardBuffer, gridSize);
+	    	didProcess = true;
 	    }
 	    else if (e.keyCode == 37 || e.key == 'a') {
-	    	this.onLeft(boardData, boardBuffer, gridSize);
-	        return true;
+	    	isWinning = this.onLeft(boardData, boardBuffer, gridSize);
+	        didProcess = true;
 	    }
 	    else if (e.keyCode == 39 || e.key == 'd') {
-	    	this.onRight(boardData, boardBuffer, gridSize);
-	        return true;
+	    	isWinning = this.onRight(boardData, boardBuffer, gridSize);
+	        didProcess = true;
 	    }
-	    return false;
+	    return {
+	    	isWinning : isWinning,
+	    	didProcess : didProcess,
+	    };
 	}
 
 	onRight(
@@ -53,7 +72,7 @@ class PlayBoard {
 		boardBuffer : number[][][],
 		gridSize : Size) {
 		console.log("onRight");
-		this.rightPlayTree.root.process(boardData, boardBuffer, gridSize);
+		return this.rightPlayTree.root.process(boardData, boardBuffer, gridSize);
 	}
 
 	onLeft(
@@ -61,7 +80,7 @@ class PlayBoard {
 		boardBuffer : number[][][],
 		gridSize : Size) {
 		console.log("onLeft");
-		this.leftPlayTree.root.process(boardData, boardBuffer, gridSize);
+		return this.leftPlayTree.root.process(boardData, boardBuffer, gridSize);
 	}
 
 	onUp(
@@ -69,7 +88,7 @@ class PlayBoard {
 		boardBuffer : number[][][],
 		gridSize : Size) {
 		console.log("onUp");
-		this.upPlayTree.root.process(boardData, boardBuffer, gridSize);
+		return this.upPlayTree.root.process(boardData, boardBuffer, gridSize);
 	}
 
 	onDown(
@@ -77,7 +96,7 @@ class PlayBoard {
 		boardBuffer : number[][][],
 		gridSize : Size) {
 		console.log("onDown");
-		this.downPlayTree.root.process(boardData, boardBuffer, gridSize);
+		return this.downPlayTree.root.process(boardData, boardBuffer, gridSize);
 	}
 
 	constructor(

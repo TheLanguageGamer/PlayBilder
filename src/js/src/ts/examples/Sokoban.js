@@ -1,6 +1,5 @@
 "use strict";
 var Example_Sokoban = {
-    "info": "Levels from <a href='https://www.puzzlescript.net/play.html?p=5bf03155bf409a7966a4611231c863c8'> David Skinner</a>'s <a href='https://www.puzzlescript.net/play.html?p=5bf03155bf409a7966a4611231c863c8'>MicroBan I</a>.",
     "width": 20,
     "height": 20,
     "data": [
@@ -9,7 +8,7 @@ var Example_Sokoban = {
                 -1,
                 -1,
                 -1,
-                0
+                -1
             ],
             [
                 -1,
@@ -191,7 +190,19 @@ var Example_Sokoban = {
                 -1,
                 -1,
                 -1,
+                0
+            ],
+            [
+                -1,
+                -1,
+                -1,
                 -1
+            ],
+            [
+                -1,
+                6,
+                6,
+                18
             ],
             [
                 -1,
@@ -203,19 +214,7 @@ var Example_Sokoban = {
                 -1,
                 -1,
                 -1,
-                -1
-            ],
-            [
-                -1,
-                -1,
-                -1,
-                -1
-            ],
-            [
-                -1,
-                -1,
-                -1,
-                -1
+                5
             ],
             [
                 -1,
@@ -381,7 +380,7 @@ var Example_Sokoban = {
                 -1,
                 10,
                 -1,
-                5
+                17
             ],
             [
                 -1,
@@ -503,7 +502,7 @@ var Example_Sokoban = {
                 -1,
                 -1,
                 10,
-                5
+                17
             ],
             [
                 -1,
@@ -2591,14 +2590,14 @@ var Example_Sokoban = {
                 -1,
                 -1,
                 -1,
-                11,
-                11,
-                11,
-                11,
-                11,
-                11,
-                11,
                 -1,
+                -1,
+                -1,
+                11,
+                11,
+                11,
+                11,
+                11,
                 -1
             ],
             [
@@ -2613,20 +2612,61 @@ var Example_Sokoban = {
                 -1,
                 -1,
                 -1,
-                11,
                 -1,
-                -1,
-                5,
                 -1,
                 -1,
                 11,
                 -1,
+                -1,
+                -1,
+                11,
                 -1
             ],
             [
                 -1,
                 -1,
                 -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                11,
+                11,
+                11,
+                11,
+                -1,
+                -1,
+                11,
+                -1,
+                11,
+                -1,
+                11,
+                11
+            ],
+            [
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                11,
+                -1,
+                -1,
+                11,
+                11,
+                11,
+                11,
+                -1,
+                -1,
+                -1,
+                -1,
+                11
+            ],
+            [
                 -1,
                 -1,
                 -1,
@@ -2637,13 +2677,16 @@ var Example_Sokoban = {
                 -1,
                 11,
                 8,
+                6,
                 -1,
-                10,
+                -1,
+                -1,
+                -1,
                 -1,
                 -1,
                 11,
                 -1,
-                -1
+                11
             ],
             [
                 -1,
@@ -2654,18 +2697,18 @@ var Example_Sokoban = {
                 -1,
                 -1,
                 -1,
-                -1,
-                -1,
-                -1,
                 11,
-                11,
-                11,
-                -1,
+                8,
                 6,
                 11,
                 11,
+                11,
+                11,
+                11,
                 -1,
-                -1
+                -1,
+                -1,
+                11
             ],
             [
                 -1,
@@ -2676,18 +2719,18 @@ var Example_Sokoban = {
                 -1,
                 -1,
                 -1,
-                -1,
-                -1,
-                -1,
-                -1,
+                11,
+                10,
                 -1,
                 11,
                 -1,
                 -1,
+                -1,
                 11,
-                -1,
-                -1,
-                -1
+                11,
+                11,
+                11,
+                11
             ],
             [
                 -1,
@@ -2698,54 +2741,10 @@ var Example_Sokoban = {
                 -1,
                 -1,
                 -1,
-                -1,
-                -1,
-                -1,
-                -1,
-                -1,
                 11,
                 11,
                 11,
                 11,
-                -1,
-                -1,
-                -1
-            ],
-            [
-                -1,
-                -1,
-                -1,
-                -1,
-                -1,
-                -1,
-                -1,
-                -1,
-                -1,
-                -1,
-                -1,
-                -1,
-                -1,
-                -1,
-                -1,
-                -1,
-                -1,
-                -1,
-                -1,
-                -1
-            ],
-            [
-                -1,
-                -1,
-                -1,
-                -1,
-                -1,
-                -1,
-                -1,
-                -1,
-                -1,
-                -1,
-                -1,
-                -1,
                 -1,
                 -1,
                 -1,
@@ -5539,7 +5538,8 @@ var Example_Sokoban = {
                 -1,
                 -1
             ]
-        ], [
+        ],
+        [
             [
                 -1,
                 -1,
@@ -5980,7 +5980,7 @@ var Example_Sokoban = {
                 -1,
                 -1
             ]
-        ],
+        ]
     ],
     "levelIndex": 0,
     "rules": [
@@ -6051,12 +6051,20 @@ var Example_Sokoban = {
         {
             "index": 16,
             "includeRotations": false
+        },
+        {
+            "index": 17,
+            "includeRotations": false
+        },
+        {
+            "index": 18,
+            "includeRotations": false
         }
     ],
     "edges": [
         {
             "tailRuleIndex": 2,
-            "headRuleIndex": 5,
+            "headRuleIndex": 17,
             "type": 1
         },
         {
@@ -6115,7 +6123,7 @@ var Example_Sokoban = {
             "type": 1
         },
         {
-            "tailRuleIndex": 5,
+            "tailRuleIndex": 17,
             "headRuleIndex": 6,
             "type": 3
         },
@@ -6167,6 +6175,16 @@ var Example_Sokoban = {
         {
             "tailRuleIndex": 15,
             "headRuleIndex": 16,
+            "type": 3
+        },
+        {
+            "tailRuleIndex": 0,
+            "headRuleIndex": 18,
+            "type": 1
+        },
+        {
+            "tailRuleIndex": 18,
+            "headRuleIndex": 5,
             "type": 3
         }
     ],

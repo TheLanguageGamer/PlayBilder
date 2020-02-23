@@ -266,6 +266,7 @@ const PlaybilderPaths = {
 		"Right" : "images/state/icons8-right-96.png",
 		"Up" : "images/state/icons8-up-96.png",
 		"Down" : "images/state/icons8-down-arrow-96.png",
+		"Win" : "images/state/img_win_ribbon.png",
 	},
 	Icons : <Record<string, string>> {
 		"Play" : "images/icons/icons8-play-100.png",

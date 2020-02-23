@@ -5,6 +5,7 @@ enum InputState {
 	Right,
 	Up,
 	Down,
+	Win,
 	__Length,
 }
 
@@ -985,7 +986,7 @@ class EditBoard {
 		let shouldVisit : EditRule[] = [];
 		for (let element of this.rules) {
 			let rule = element[1];
-			if (rule.index < InputState.__Length && rule.index >= 0) {
+			if (rule.index < InputState.Win && rule.index >= 0) {
 				shouldVisit.push(rule);
 			}
 		}
@@ -1015,7 +1016,7 @@ class EditBoard {
 	}
 
 	canConnect(edge : Edge, rule : EditRule) {
-		if (rule.index < InputState.__Length) {
+		if (rule.index < InputState.Win) {
 			this.controller.onUserFeedback({
 				state : UserFeedbackState.Error,
 				message : "Error: Input rules can only have outgoing arrows.",

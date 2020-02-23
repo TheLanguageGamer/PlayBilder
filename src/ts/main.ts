@@ -19,6 +19,73 @@ function download(data : string, filename : string, type : string) {
 
 let kTopbarBottomPadding = 20 + 30;
 
+
+interface EndStateOverlayController {
+	onNext : () => void,
+}
+
+class EndStateOverlay {
+
+	background : Rectangle;
+	title : TextBox;
+	button : Button;
+
+	constructor(controller : EndStateOverlayController) {
+		let _this = this;
+		let backgroundLayout = new Layout(
+			0, 0, 0, 0,
+			1, 1, 0, 0
+		);
+		let background = new Rectangle(backgroundLayout);
+		background.fillColor = Constants.Colors.White;
+
+		let titleLayout = new Layout(
+			0.5, 0.5, 0, 0,
+			0.75, 0.5, 0, 0
+		);
+		titleLayout.anchor.x = 0.5;
+		titleLayout.anchor.y = 0.5;
+		let title = new TextBox(titleLayout, "Hey that's nice, good job!");
+		title.setFontSize(20);
+		title.fillStyle = Constants.Colors.Black;
+
+		let buttonLayout = new Layout(
+			0.5, 0.5, 0, 0,
+			0, 0, 50, 50
+		);
+		buttonLayout.anchor.x = 0.5;
+		buttonLayout.anchor.y = 0.0;
+		let button = new Button(
+			buttonLayout,
+			{
+				onClick(e : MouseEvent) {
+					console.log("button clicked!");
+					controller.onNext();
+					_this.hide();
+					return true;
+				}
+			},
+		);
+		button.togglePaths = [PlaybilderPaths.InputState["Right"]];
+
+		background.children = [];
+		background.children.push(title);
+		background.children.push(button);
+
+		this.background = background;
+		this.title = title;
+		this.button = button;
+	}
+
+	show() {
+		this.background.layout.visible = true;
+	}
+
+	hide() {
+		this.background.layout.visible = false;
+	}
+}
+
 class Playbilder {
 	game : Game;
 	board : Board;
@@ -31,8 +98,9 @@ class Playbilder {
 	downloadButton : Component;
 	uploadButton : Component;
 	trashButton : Component;
-	playButton : Component;
+	playButton : Button;
 	levelSelect : Select;
+	endStateOverlay : EndStateOverlay;
 
 	load(archive : any) {
 
@@ -268,11 +336,28 @@ class Playbilder {
 			{
 				onUserFeedback(feedback : UserFeedback) {
 					setUserFeedback(feedback);
-				}
+				},
+				onWinning() {
+					_this.endStateOverlay.show();
+				},
 			}
 		);
 		let tileSize = board.grid.computeTileSize();
 		console.log("PlayBilder constructor tileSize", tileSize);
+
+		let endStateOverlay = new EndStateOverlay({
+			onNext() {
+				if (board.levelIndex + 1 < board.levels.length) {
+					board.jumpToLevel(board.levelIndex + 1);
+					_this.levelSelect.selectedIndex = board.levelIndex;
+				} else {
+					board.toggleState();
+					_this.levelSelect.selectedIndex = board.levelIndex;
+					_this.playButton.toggleIndex = 0;
+				}
+			}
+		});
+		endStateOverlay.hide();
 
 		let paletteLayout = new Layout(
 			0, 0, -20, tileSize,
@@ -384,7 +469,7 @@ class Playbilder {
 		], {
 			onSelectionChanged(index : number, option : Option) {
 				console.log("Selected!", index, option.label);
-				board.setLevel(index);
+				board.setLevelWhileEditing(index);
 			},
 		});
 
@@ -406,7 +491,7 @@ class Playbilder {
 					});
 					levelSelect.selectedIndex = levelSelect.options.length - 1;
 					board.createLevel(board.grid.gridSize);
-					board.setLevel(levelSelect.selectedIndex);
+					board.setLevelWhileEditing(levelSelect.selectedIndex);
 					return true;
 				}
 			},
@@ -509,6 +594,8 @@ class Playbilder {
 				onClick(e : MouseEvent) {
 					clearFeedback();
 					board.toggleState();
+					_this.levelSelect.selectedIndex = board.levelIndex;
+					endStateOverlay.hide();
 					return true;
 				}
 			},
@@ -567,6 +654,7 @@ class Playbilder {
 			board.grid.children.push(infobar);
 			board.grid.children.push(board.editBoard.ruleOptions.rootComponent);
 			board.grid.children.push(gridOverlay);
+			board.grid.children.push(endStateOverlay.background);
 			board.grid.children.push(levelSelect);
 			board.grid.children.push(addLevel);
 		}
@@ -584,6 +672,7 @@ class Playbilder {
 		this.playButton = playButton;
 		this.board = board;
 		this.levelSelect = levelSelect;
+		this.endStateOverlay = endStateOverlay;
 		
 		this.load(archive);
     }

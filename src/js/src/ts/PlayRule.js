@@ -69,6 +69,10 @@ class PlayRule {
         return didMatch;
     }
     process(boardData, boardBuffer, gridSize) {
+        if (this.index == InputState.Win) {
+            return true;
+        }
+        let winning = false;
         let didMatch = this.processContent(boardData, boardBuffer, gridSize);
         for (let rotation of this.rotations) {
             if (didMatch) {
@@ -89,9 +93,10 @@ class PlayRule {
                 || (child.edgeType == EdgeType.IfNotMatched && !didMatch)
                 || (child.edgeType == EdgeType.Always)
                 || (child.edgeType == EdgeType.Parallel)) {
-                child.rule.process(boardData, boardBuffer, gridSize);
+                winning = winning || child.rule.process(boardData, boardBuffer, gridSize);
             }
         }
+        return winning;
     }
     static getEditRuleBoundingBox(index, data, gridSize) {
         let minPosition = { x: gridSize.width, y: gridSize.height };

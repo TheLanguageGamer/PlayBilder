@@ -19,13 +19,13 @@ var Example_Tetris = {
 				-1,
 				0,
 				0,
-				5
+				52
 			],
 			[
 				-1,
 				7,
 				7,
-				5
+				52
 			],
 			[
 				-1,
@@ -5527,7 +5527,11 @@ var Example_Tetris = {
 		{
 			"index": 51,
 			"includeRotations": false
-		}
+		},
+		{
+			"index": 52,
+			"includeRotations": false
+		},
 	],
 	"edges": [
 		{
@@ -5616,7 +5620,7 @@ var Example_Tetris = {
 			"type": 1
 		},
 		{
-			"tailRuleIndex": 5,
+			"tailRuleIndex": 52,
 			"headRuleIndex": 18,
 			"type": 2
 		},
@@ -5647,7 +5651,7 @@ var Example_Tetris = {
 		},
 		{
 			"tailRuleIndex": 28,
-			"headRuleIndex": 5,
+			"headRuleIndex": 52,
 			"type": 3
 		},
 		{
@@ -5706,7 +5710,7 @@ var Example_Tetris = {
 			"type": 4
 		},
 		{
-			"tailRuleIndex": 5,
+			"tailRuleIndex": 52,
 			"headRuleIndex": 41,
 			"type": 3
 		},

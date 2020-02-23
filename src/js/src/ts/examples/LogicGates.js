@@ -560,7 +560,7 @@ var Example_LogicGates = {
                 -1,
                 1,
                 8,
-                5
+                32
             ],
             [
                 -1,
@@ -742,7 +742,7 @@ var Example_LogicGates = {
                 -1,
                 0,
                 1,
-                5
+                32
             ],
             [
                 -1,
@@ -924,7 +924,7 @@ var Example_LogicGates = {
                 -1,
                 8,
                 0,
-                5
+                32
             ],
             [
                 -1,
@@ -7307,7 +7307,7 @@ var Example_LogicGates = {
         },
         {
             "index": 5,
-            "includeRotations": true
+            "includeRotations": false
         },
         {
             "index": 6,
@@ -7408,16 +7408,20 @@ var Example_LogicGates = {
         {
             "index": 30,
             "includeRotations": true
+        },
+        {
+            "index": 32,
+            "includeRotations": true
         }
     ],
     "edges": [
         {
             "tailRuleIndex": 0,
-            "headRuleIndex": 5,
+            "headRuleIndex": 32,
             "type": 1
         },
         {
-            "tailRuleIndex": 5,
+            "tailRuleIndex": 32,
             "headRuleIndex": 6,
             "type": 1
         },

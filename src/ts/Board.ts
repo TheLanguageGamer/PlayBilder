@@ -7,10 +7,12 @@ enum BoardState {
 
 interface BoardController {
 	onUserFeedback : (feedback : UserFeedback) => void;
+	onWinning : () => void;
 }
 
 class Board {
 
+	controller : BoardController;
 	grid : Grid;
 	saved : number[][][];
 	data : number[][][];
@@ -23,6 +25,7 @@ class Board {
 
 	levels : number[][][];
 	levelIndex : number = 0;
+	startedLevelIndex : number = 0;
 
 	state : BoardState = BoardState.Edit;
 
@@ -158,10 +161,12 @@ class Board {
 
 	toggleState() {
 		if (this.state == BoardState.Play) {
+			this.levelIndex = this.startedLevelIndex;
 			this.copyData(this.saved, this.data);
 			this.applyRealDataToGrid();
 			this.state = BoardState.Edit;
 		} else {
+			this.startedLevelIndex = this.levelIndex;
 			this.copyData(this.data, this.saved);
 			this.editBoard.unselectSelectedObject();
 			this.playBoard = new PlayBoard(
@@ -198,13 +203,17 @@ class Board {
 	onUpdate(timeMS : DOMHighResTimeStamp) {
 		if (this.state == BoardState.Play && this.playBoard) {
 			this.copyData(this.data, this.buffer);
-			if (this.playBoard.onUpdate(
+			let processState = this.playBoard.onUpdate(
 				timeMS,
 				this.data,
 				this.buffer,
-				this.grid.gridSize)) {
+				this.grid.gridSize);
+			if (processState.didProcess) {
 				this.copyData(this.buffer, this.data);
 				this.applyRealDataToGrid();
+				if (processState.isWinning) {
+					this.controller.onWinning();
+				}
 			}
 		}
 	}
@@ -212,13 +221,18 @@ class Board {
 	onKeyDown(e : KeyboardEvent) {
 		if (this.state == BoardState.Play && this.playBoard) {
 			this.copyData(this.data, this.buffer);
-			if (this.playBoard.onKeyDown(
+			let processState = this.playBoard.onKeyDown(
 					e,
 					this.data,
 					this.buffer,
-					this.grid.gridSize)) {
+					this.grid.gridSize);
+			if (processState.didProcess) {
 				this.copyData(this.buffer, this.data);
 				this.applyRealDataToGrid();
+				if (processState.isWinning) {
+					this.controller.onWinning();
+				}
+				return true;
 			}
 		} else if (this.state == BoardState.Edit) {
 			return this.editBoard.onKeyDown(e);
@@ -260,7 +274,7 @@ class Board {
 		this.levels.push(level);
 	}
 
-	setLevel(index : number) {
+	setLevelWhileEditing(index : number) {
 		console.assert(index >= 0 && index < this.levels.length);
 		let currentLevel = this.levels[this.levelIndex];
 		let newLevel = this.levels[index];
@@ -274,8 +288,21 @@ class Board {
 		this.levelIndex = index;
 	}
 
+	jumpToLevel(index : number) {
+		console.assert(index >= 0 && index < this.levels.length);
+		let newLevel = this.levels[index];
+		for (let i = 0; i < this.grid.gridSize.width; ++i) {
+			for (let j = 0; j < this.grid.gridSize.height; ++j) {
+				this.data[i][j][0] = newLevel[i][j];
+			}
+		}
+		this.applyRealDataToGrid();
+		this.levelIndex = index;
+	}
+
 	constructor (gridSize : Size, screenSize : Size, controller : BoardController) {
 
+		this.controller = controller;
 		let _this = this;
 		this.gameSettingsGui = new GameSettingsGUI(gridSize, {
 			onIntervalChanged(interval : number) {
@@ -414,6 +441,9 @@ class Board {
 		this.editBoard.rulePad(1, 9, this.data, this.grid);
 		this.grid.grid[1][9][0] = PlaybilderPaths.InputState["Down"];
 		this.editBoard.edits.pop();
+		this.editBoard.rulePad(this.grid.gridSize.width-2, 1, this.data, this.grid);
+		this.grid.grid[this.grid.gridSize.width-2][1][0] = PlaybilderPaths.InputState["Win"];
+		this.editBoard.edits.pop();
 		this.editBoard.calculateReachability();
 		this.editBoard.unselectSelectedObject();
 		this.debugRules();
@@ -512,7 +542,7 @@ class Board {
 		}
 		if (archive.levels && archive.levelIndex != undefined) {
 			this.levels = archive.levels;
-			this.setLevel(archive.levelIndex);
+			this.setLevelWhileEditing(archive.levelIndex);
 		}
 		if (archive.edges && archive.rules) {
 			for (let edgeArchive of archive.edges) {
@@ -585,7 +615,7 @@ class Board {
 		for (let edge of this.editBoard.edges) {
 			edges.push(edge.save());
 		}
-		this.setLevel(this.levelIndex);
+		this.setLevelWhileEditing(this.levelIndex);
 		return {
 			width : this.grid.gridSize.width,
 			height : this.grid.gridSize.height,
@@ -601,5 +631,6 @@ class Board {
 	setComponents(components : Component[]) {
 		this.editBoard.setComponents(components);
 		this.editBoard.gridLayout = this.grid.layout;
+		console.assert(this.grid.children != undefined);
 	}
 }

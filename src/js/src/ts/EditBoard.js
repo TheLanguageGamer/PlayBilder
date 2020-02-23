@@ -6,7 +6,8 @@ var InputState;
     InputState[InputState["Right"] = 2] = "Right";
     InputState[InputState["Up"] = 3] = "Up";
     InputState[InputState["Down"] = 4] = "Down";
-    InputState[InputState["__Length"] = 5] = "__Length";
+    InputState[InputState["Win"] = 5] = "Win";
+    InputState[InputState["__Length"] = 6] = "__Length";
 })(InputState || (InputState = {}));
 var Tool;
 (function (Tool) {
@@ -793,7 +794,7 @@ class EditBoard {
         let shouldVisit = [];
         for (let element of this.rules) {
             let rule = element[1];
-            if (rule.index < InputState.__Length && rule.index >= 0) {
+            if (rule.index < InputState.Win && rule.index >= 0) {
                 shouldVisit.push(rule);
             }
         }
@@ -819,7 +820,7 @@ class EditBoard {
         }
     }
     canConnect(edge, rule) {
-        if (rule.index < InputState.__Length) {
+        if (rule.index < InputState.Win) {
             this.controller.onUserFeedback({
                 state: UserFeedbackState.Error,
                 message: "Error: Input rules can only have outgoing arrows.",
