@@ -470,7 +470,7 @@ var Example_LangtonsAnt = {
                 -1,
                 0,
                 11,
-                5
+                21
             ],
             [
                 -1,
@@ -622,7 +622,7 @@ var Example_LangtonsAnt = {
                 -1,
                 -1,
                 10,
-                5
+                21
             ],
             [
                 -1,
@@ -4648,16 +4648,20 @@ var Example_LangtonsAnt = {
         {
             "index": 20,
             "includeRotations": false
+        },
+        {
+            "index": 21,
+            "includeRotations": false
         }
     ],
     "edges": [
         {
             "tailRuleIndex": 0,
-            "headRuleIndex": 5,
+            "headRuleIndex": 21,
             "type": 1
         },
         {
-            "tailRuleIndex": 5,
+            "tailRuleIndex": 21,
             "headRuleIndex": 6,
             "type": 1
         },

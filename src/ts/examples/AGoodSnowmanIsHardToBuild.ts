@@ -481,7 +481,7 @@ var Example_AGoodSnowmanIsHardToBuild = {
 				-1,
 				10,
 				11,
-				5
+				29
 			],
 			[
 				-1,
@@ -633,7 +633,7 @@ var Example_AGoodSnowmanIsHardToBuild = {
 				-1,
 				11,
 				10,
-				5
+				29
 			],
 			[
 				-1,
@@ -4679,12 +4679,16 @@ var Example_AGoodSnowmanIsHardToBuild = {
 		{
 			"index": 21,
 			"includeRotations": false
+		},
+		{
+			"index": 29,
+			"includeRotations": false
 		}
 	],
 	"edges": [
 		{
 			"tailRuleIndex": 1,
-			"headRuleIndex": 5,
+			"headRuleIndex": 29,
 			"type": 1
 		},
 		{
@@ -4803,7 +4807,7 @@ var Example_AGoodSnowmanIsHardToBuild = {
 			"type": 1
 		},
 		{
-			"tailRuleIndex": 5,
+			"tailRuleIndex": 29,
 			"headRuleIndex": 6,
 			"type": 3
 		},

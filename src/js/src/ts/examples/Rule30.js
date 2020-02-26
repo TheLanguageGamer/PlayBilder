@@ -563,7 +563,7 @@ var Example_Rule30 = {
                 -1,
                 5,
                 5,
-                5
+                14
             ],
             [
                 -1,
@@ -745,13 +745,13 @@ var Example_Rule30 = {
                 -1,
                 5,
                 5,
-                5
+                14
             ],
             [
                 -1,
                 -1,
                 -1,
-                5
+                14
             ],
             [
                 -1,
@@ -927,7 +927,7 @@ var Example_Rule30 = {
                 -1,
                 5,
                 5,
-                5
+                14
             ],
             [
                 -1,
@@ -5523,16 +5523,20 @@ var Example_Rule30 = {
         {
             "index": 13,
             "includeRotations": false
-        }
+        },
+        {
+            "index": 14,
+            "includeRotations": false
+        },
     ],
     "edges": [
         {
             "tailRuleIndex": 0,
-            "headRuleIndex": 5,
+            "headRuleIndex": 14,
             "type": 1
         },
         {
-            "tailRuleIndex": 5,
+            "tailRuleIndex": 14,
             "headRuleIndex": 11,
             "type": 1
         },

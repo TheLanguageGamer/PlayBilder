@@ -1101,7 +1101,7 @@ var Example_WangTiles = {
                 -1,
                 2,
                 2,
-                5
+                21
             ],
             [
                 -1,
@@ -1457,19 +1457,19 @@ var Example_WangTiles = {
                 -1,
                 2,
                 2,
-                5
+                21
             ],
             [
                 -1,
                 -1,
                 -1,
-                5
+                21
             ],
             [
                 -1,
                 -1,
                 1,
-                5
+                21
             ],
             [
                 -1,
@@ -1825,13 +1825,13 @@ var Example_WangTiles = {
                 -1,
                 -1,
                 1,
-                5
+                21
             ],
             [
                 -1,
                 -1,
                 11,
-                5
+                21
             ],
             [
                 -1,
@@ -21809,6 +21809,10 @@ var Example_WangTiles = {
         {
             "index": 20,
             "includeRotations": false
+        },
+        {
+            "index": 21,
+            "includeRotations": false
         }
     ],
     "edges": [
@@ -21854,7 +21858,7 @@ var Example_WangTiles = {
         },
         {
             "tailRuleIndex": 0,
-            "headRuleIndex": 5,
+            "headRuleIndex": 21,
             "type": 1
         },
         {
