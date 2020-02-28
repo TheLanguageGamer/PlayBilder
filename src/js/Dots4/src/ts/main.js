@@ -12,6 +12,7 @@ class TestBootstrapper {
         rect1.children.push(textBox1);
         this.game.components.push(rect1);
         let rectLayout2 = new Layout(0, 0, 320, 20, 0, 0, 300, 500);
+        rectLayout2.isDraggable = true;
         let rect2 = new Rectangle(rectLayout2);
         let textLayout2 = new Layout(0, 0, 5, 5, 1, 1, -10, -10);
         let textBox2 = new TextBox(textLayout2, $loremIpsum);

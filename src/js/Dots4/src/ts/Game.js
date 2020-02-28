@@ -92,6 +92,7 @@ class Game {
             if (_this._stopped) {
                 return;
             }
+            _this.mouseDownComponent = undefined;
             for (var component of _this.components) {
                 if (component.onMouseUp) {
                     component.onMouseUp(e);
@@ -101,6 +102,15 @@ class Game {
         window.addEventListener('mousemove', function (e) {
             if (_this._stopped) {
                 return;
+            }
+            if (_this.mouseDownComponent
+                && _this.mouseDownComponent.layout.isDraggable) {
+                _this.mouseDownComponent.layout.offset.position.x += e.movementX;
+                _this.mouseDownComponent.layout.offset.position.y += e.movementY;
+                if (_this.mouseDownComponent.clamp) {
+                    _this.mouseDownComponent.clamp();
+                }
+                _this.mouseDownComponent.layout.doLayoutRecursive(ZeroBox, _this.mouseDownComponent);
             }
             if (_this.mouseDownComponent
                 && _this.mouseDownComponent.onMouseOut
@@ -181,9 +191,9 @@ class Game {
                     return true;
                 }
             }
-            if (component.onMouseDown
-                && component.layout.containsPosition(e.offsetX, e.offsetY)
-                && component.onMouseDown(e)) {
+            if (component.layout.containsPosition(e.offsetX, e.offsetY)
+                && ((component.onMouseDown && component.onMouseDown(e))
+                    || component.layout.isDraggable)) {
                 this.mouseDownComponent = component;
                 this.focusedComponent = component;
                 return true;

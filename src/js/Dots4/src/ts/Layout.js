@@ -1,4 +1,14 @@
 "use strict";
+var ZeroBox = {
+    size: {
+        width: 0,
+        height: 0,
+    },
+    position: {
+        x: 0,
+        y: 0,
+    },
+};
 var RelativeLayout;
 (function (RelativeLayout) {
     RelativeLayout[RelativeLayout["None"] = 0] = "None";
@@ -64,6 +74,7 @@ class Layout {
         this.fixedAspect = false;
         this.visible = true;
         this.computed = { size: { width: 0, height: 0 }, position: { x: 0, y: 0 } };
+        this.isDraggable = false;
         this.relative = {
             size: { width: relWidth, height: relHeight },
             position: { x: relX, y: relY }

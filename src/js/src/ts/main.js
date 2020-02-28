@@ -57,7 +57,7 @@ class EndStateOverlay {
 class Playbilder {
     constructor(container, boardSize, archive) {
         let _this = this;
-        let infobarLayout = new Layout(0, 0, 0, -kTopbarBottomPadding + 40, 1, 0, 0, 25);
+        let infobarLayout = new Layout(-0.15, 0, 0, -kTopbarBottomPadding + 40, 1.15, 0, kGameSettingsWidth, 25);
         infobarLayout.anchor = { x: 0.0, y: 1.0 };
         let infobar = new Rectangle(infobarLayout);
         infobar.strokeColor = Constants.Colors.Yellow.Safety;
@@ -142,6 +142,39 @@ class Playbilder {
             toolRect.layout.doLayout(toolbarLayout.computed);
             toolCoord = { i: i, j: j };
             selectedRect.layout.visible = board.editBoard.editTool == Tool.Pencil;
+            // Pencil = 0,
+            // Eraser = 1,
+            // Move = 2,
+            // Select,
+            // RulePad,
+            // EdgeAlways,
+            // EdgeIfMatched,
+            // EdgeIfNotMatched,
+            // EdgeParallel,
+            if (board.editBoard.editTool == Tool.EdgeAlways) {
+                setUserFeedback({
+                    state: UserFeedbackState.Info,
+                    message: "Black arrows will always be followed.",
+                });
+            }
+            else if (board.editBoard.editTool == Tool.EdgeIfMatched) {
+                setUserFeedback({
+                    state: UserFeedbackState.Info,
+                    message: "Green arrows are only followed if the previous rule was matched.",
+                });
+            }
+            else if (board.editBoard.editTool == Tool.EdgeIfNotMatched) {
+                setUserFeedback({
+                    state: UserFeedbackState.Info,
+                    message: "Red arrows are only followed if the previous rule was NOT matched.",
+                });
+            }
+            else if (board.editBoard.editTool == Tool.EdgeParallel) {
+                setUserFeedback({
+                    state: UserFeedbackState.Info,
+                    message: "For each rule, one blue arrow is randomly followed.",
+                });
+            }
         }
         function setSelectedFromPalette(i, j) {
             setToolFromToolbar(0, 0);
