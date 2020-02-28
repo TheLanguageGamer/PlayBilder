@@ -71,12 +71,14 @@ class Game {
             if (_this._stopped) {
                 return;
             }
+            console.log("click");
             _this.clickRecursive(_this.components, e);
         });
         window.addEventListener('mousedown', function (e) {
             if (_this._stopped) {
                 return;
             }
+            console.log("mousedown");
             if (_this.focusedComponent
                 && _this.focusedComponent.blur
                 && !_this.focusedComponent.layout.containsPosition(e.offsetX, e.offsetY)) {
@@ -168,6 +170,9 @@ class Game {
     }
     clickRecursive(components, e) {
         for (let component of components) {
+            if (!component.layout.visible) {
+                continue;
+            }
             if (component.onClick
                 && component.layout.containsPosition(e.offsetX, e.offsetY)) {
                 let response = component.onClick(e);
@@ -186,6 +191,9 @@ class Game {
     }
     mouseDownRecursive(components, e) {
         for (let component of components) {
+            if (!component.layout.visible) {
+                continue;
+            }
             if (component.children) {
                 if (this.mouseDownRecursive(component.children, e)) {
                     return true;

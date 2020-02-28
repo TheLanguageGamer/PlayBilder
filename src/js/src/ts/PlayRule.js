@@ -7,18 +7,14 @@ function shuffle(a) {
     return a;
 }
 class PlayRule {
-    constructor(index, isStartSymbol /*, incomingEdgeType : EdgeType*/) {
-        //children : PlayRule[] = [];
-        //children : Map<PlayRule, EdgeType> = new Map();
+    constructor(index, isStartSymbol) {
         this.children = [];
         this.rotations = [];
         this.isStartSymbol = false;
-        //incomingEdgeType : EdgeType;
         this.size = { width: 0, height: 0 };
         this.data = new Array();
         this.index = index;
         this.isStartSymbol = isStartSymbol;
-        //this.incomingEdgeType = incomingEdgeType;
     }
     apply(boardData, boardBuffer, gridSize, startI, startJ) {
         for (let i = 0; i < this.size.width; ++i) {
