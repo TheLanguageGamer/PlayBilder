@@ -12,13 +12,10 @@ interface PlayConnection {
 }
 
 class PlayRule {
-	//children : PlayRule[] = [];
-	//children : Map<PlayRule, EdgeType> = new Map();
 	children : PlayConnection[] = [];
 	rotations : PlayRule[] = [];
 	index : number;
 	isStartSymbol : boolean = false;
-	//incomingEdgeType : EdgeType;
 	size : Size = {width : 0, height : 0};
 	data : number[][][] = new Array();
 
@@ -118,22 +115,23 @@ class PlayRule {
 
 		shuffle(this.children);
 
+		let didFollowBlue = false;
 		for (let child of this.children) {
 			if ((child.edgeType == EdgeType.IfMatched && didMatch)
 				|| (child.edgeType == EdgeType.IfNotMatched && !didMatch)
 				|| (child.edgeType == EdgeType.Always)
-				|| (child.edgeType == EdgeType.Parallel)) {
+				|| (child.edgeType == EdgeType.Parallel && !didFollowBlue)) {
 
 				winning = winning || child.rule.process(boardData, boardBuffer, gridSize);
+				didFollowBlue = didFollowBlue || child.edgeType == EdgeType.Parallel;
 			}
 		}
 		return winning;
 	}
 
-	constructor(index : number, isStartSymbol : boolean/*, incomingEdgeType : EdgeType*/) {
+	constructor(index : number, isStartSymbol : boolean) {
 		this.index = index;
 		this.isStartSymbol = isStartSymbol;
-		//this.incomingEdgeType = incomingEdgeType;
 	}
 
 	static getEditRuleBoundingBox(index : number, data : number[][][], gridSize : Size) {

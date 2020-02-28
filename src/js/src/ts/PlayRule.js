@@ -88,12 +88,14 @@ class PlayRule {
             }
         }
         shuffle(this.children);
+        let didFollowBlue = false;
         for (let child of this.children) {
             if ((child.edgeType == EdgeType.IfMatched && didMatch)
                 || (child.edgeType == EdgeType.IfNotMatched && !didMatch)
                 || (child.edgeType == EdgeType.Always)
-                || (child.edgeType == EdgeType.Parallel)) {
+                || (child.edgeType == EdgeType.Parallel && !didFollowBlue)) {
                 winning = winning || child.rule.process(boardData, boardBuffer, gridSize);
+                didFollowBlue = didFollowBlue || child.edgeType == EdgeType.Parallel;
             }
         }
         return winning;
