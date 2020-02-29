@@ -250,12 +250,18 @@ class Board {
 				this.saved.push(new Array());
 				this.data.push(new Array());
 				this.buffer.push(new Array());
+				for (let k = 0; k < this.levels.length; ++k) {
+					this.levels[k].push(new Array());
+				}
 			}
 			for (let j = 0; j < newSize.height; ++j) {
 				if (i >= actualSize.width || j >= actualSize.height) {
 					this.saved[i].push([-1, -1, -1, -1]);
 					this.data[i].push([-1, -1, -1, -1]);
 					this.buffer[i].push([-1, -1, -1, -1]);
+					for (let k = 0; k < this.levels.length; ++k) {
+						this.levels[k][i].push(-1);
+					}
 				}
 			}
 		}
@@ -533,14 +539,20 @@ class Board {
 				this.gameSettingsGui.title.setText(archive.settings.title);
 			}
 		}
+		if (archive.levels) {
+			this.levels = archive.levels;
+		}
 		if (archive.data) {
+			this.resizeGrid({
+				width : archive.data.length,
+				height : archive.data.length > 0 ? archive.data[0].length : 0,
+			});
 			this.data = archive.data;
 			this.applyRealDataToGrid();
 		} else {
 			this.setupInputStates();
 		}
-		if (archive.levels && archive.levelIndex != undefined) {
-			this.levels = archive.levels;
+		if (archive.levelIndex != undefined) {
 			this.setLevelWhileEditing(archive.levelIndex);
 		}
 		if (archive.edges && archive.rules) {
