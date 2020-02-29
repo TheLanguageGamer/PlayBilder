@@ -106,6 +106,9 @@ class Playbilder {
             onWinning() {
                 _this.endStateOverlay.show();
             },
+            onGridResize() {
+                _this.screenDidResize(getGameScreenSize(), _this.game.contentProvider);
+            },
         });
         let tileSize = board.grid.computeTileSize();
         console.log("PlayBilder constructor tileSize", tileSize);
@@ -358,10 +361,10 @@ class Playbilder {
             onUpdate(timeMS) {
                 board.onUpdate(timeMS);
             },
-            willResize(screenSize, cp) {
+            screenWillResize(screenSize, cp) {
             },
-            didResize(screenSize, cp) {
-                _this.didResize(screenSize, cp);
+            screenDidResize(screenSize, cp) {
+                _this.screenDidResize(screenSize, cp);
             },
             needsLayout() {
                 let ret = board.needsLayout;
@@ -395,6 +398,7 @@ class Playbilder {
         this.uploadButton = uploadButton;
         this.trashButton = trashButton;
         this.playButton = playButton;
+        this.addLevelButton = addLevel;
         this.board = board;
         this.levelSelect = levelSelect;
         this.endStateOverlay = endStateOverlay;
@@ -413,6 +417,7 @@ class Playbilder {
             });
         }
         this.levelSelect.selectedIndex = this.board.levelIndex;
+        this.screenDidResize(getGameScreenSize(), this.game.contentProvider);
     }
     loadStateFromGetParams(getParams, board) {
         let b64Data = getParams.get("data");
@@ -463,10 +468,10 @@ class Playbilder {
     createStampForEdgeTool(tool) {
         return "";
     }
-    didResize(screenSize, cp) {
+    screenDidResize(screenSize, cp) {
         cp.clear();
         let tileSize = this.board.grid.computeTileSize();
-        this.board.didResize(screenSize);
+        this.board.screenDidResize(screenSize);
         this.palette.layout.offset = {
             position: {
                 x: -20,
@@ -533,6 +538,26 @@ class Playbilder {
             size: {
                 width: tileSize,
                 height: tileSize,
+            },
+        };
+        this.addLevelButton.layout.offset = {
+            position: {
+                x: tileSize * 7 + 150 + 15,
+                y: -kTopbarBottomPadding,
+            },
+            size: {
+                width: tileSize,
+                height: tileSize,
+            },
+        };
+        this.levelSelect.layout.offset = {
+            position: {
+                x: tileSize * 7,
+                y: -kTopbarBottomPadding,
+            },
+            size: {
+                width: 150,
+                height: 30,
             },
         };
         for (let i = 0; i < this.paletteHorizontalLabels.length; ++i) {

@@ -33,8 +33,8 @@ class Game {
             if (_this.controller.needsLayout
                 && _this.controller.needsLayout()) {
                 _this.doLayout();
-                if (_this.controller.didResize) {
-                    _this.controller.didResize(screenSize, _this.contentProvider);
+                if (_this.controller.screenDidResize) {
+                    _this.controller.screenDidResize(screenSize, _this.contentProvider);
                 }
             }
             if (_this.controller.onUpdate) {
@@ -56,12 +56,12 @@ class Game {
             _this.viewport.width = screenSize.width;
             _this.viewport.height = screenSize.height;
             _this.context = _this.viewport.getContext('2d');
-            if (_this.controller.willResize) {
-                _this.controller.willResize(screenSize, _this.contentProvider);
+            if (_this.controller.screenWillResize) {
+                _this.controller.screenWillResize(screenSize, _this.contentProvider);
             }
             _this.doLayout();
-            if (_this.controller.didResize) {
-                _this.controller.didResize(screenSize, _this.contentProvider);
+            if (_this.controller.screenDidResize) {
+                _this.controller.screenDidResize(screenSize, _this.contentProvider);
             }
             _this.context.clearRect(0, 0, _this.viewport.width, _this.viewport.height);
             _this.renderRecursive(_this.components, performance.now());

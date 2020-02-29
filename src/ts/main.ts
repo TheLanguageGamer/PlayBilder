@@ -99,6 +99,7 @@ class Playbilder {
 	uploadButton : Component;
 	trashButton : Component;
 	playButton : Button;
+	addLevelButton : Component;
 	levelSelect : Select;
 	endStateOverlay : EndStateOverlay;
 
@@ -116,6 +117,7 @@ class Playbilder {
 			});
 		}
 		this.levelSelect.selectedIndex = this.board.levelIndex;
+		this.screenDidResize(getGameScreenSize(), this.game.contentProvider);
 	}
 
 	loadStateFromGetParams(getParams : Map<string, string>, board : Board) {
@@ -171,10 +173,10 @@ class Playbilder {
 		return "";
 	}
 
-	didResize(screenSize : Size, cp : ContentProvider) {
+	screenDidResize(screenSize : Size, cp : ContentProvider) {
 		cp.clear();
 		let tileSize = this.board.grid.computeTileSize();
-		this.board.didResize(screenSize);
+		this.board.screenDidResize(screenSize);
 
 		this.palette.layout.offset = {
 			position : {
@@ -248,6 +250,27 @@ class Playbilder {
 				height : tileSize,
 			},
 		};
+		this.addLevelButton.layout.offset = {
+			position : {
+				x : tileSize*7 + 150 + 15,
+				y : -kTopbarBottomPadding,
+			},
+			size : {
+				width : tileSize,
+				height : tileSize,
+			},
+		};
+		this.levelSelect.layout.offset = {
+			position : {
+				x : tileSize*7,
+				y : -kTopbarBottomPadding,
+			},
+			size : {
+				width : 150,
+				height : 30,
+			},
+		};
+
 		for (let i = 0; i < this.paletteHorizontalLabels.length; ++i) {
 			let label = this.paletteHorizontalLabels[i];
 			label.layout.offset = {
@@ -344,6 +367,9 @@ class Playbilder {
 				},
 				onWinning() {
 					_this.endStateOverlay.show();
+				},
+				onGridResize() {
+					_this.screenDidResize(getGameScreenSize(), _this.game.contentProvider);
 				},
 			}
 		);
@@ -663,11 +689,11 @@ class Playbilder {
 		    	onUpdate(timeMS : DOMHighResTimeStamp) {
 		    		board.onUpdate(timeMS);
 		    	},
-		    	willResize(screenSize : Size, cp : ContentProvider) {
+		    	screenWillResize(screenSize : Size, cp : ContentProvider) {
 
 		    	},
-		    	didResize(screenSize : Size, cp : ContentProvider) {
-		    		_this.didResize(screenSize, cp);
+		    	screenDidResize(screenSize : Size, cp : ContentProvider) {
+		    		_this.screenDidResize(screenSize, cp);
 		    	},
 		    	needsLayout() {
 		    		let ret = board.needsLayout;
@@ -705,6 +731,7 @@ class Playbilder {
 		this.uploadButton = uploadButton;
 		this.trashButton = trashButton;
 		this.playButton = playButton;
+		this.addLevelButton = addLevel;
 		this.board = board;
 		this.levelSelect = levelSelect;
 		this.endStateOverlay = endStateOverlay;

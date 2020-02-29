@@ -26,6 +26,7 @@ class Board {
                         height: _this.grid.gridSize.height,
                     };
                     _this.resizeGrid(newSize);
+                    _this.controller.onGridResize();
                 }
             },
             onHeightChanged(height) {
@@ -35,6 +36,7 @@ class Board {
                         height: height,
                     };
                     _this.resizeGrid(newSize);
+                    _this.controller.onGridResize();
                 }
             },
         });
@@ -498,7 +500,7 @@ class Board {
             this.editBoard.calculateReachability();
         }
     }
-    didResize(screenSize) {
+    screenDidResize(screenSize) {
         for (let element of this.editBoard.rules) {
             let rule = element[1];
             rule.line.layout.doLayout(this.grid.layout.computed);

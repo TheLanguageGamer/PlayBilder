@@ -72,7 +72,7 @@ class ContentProvider {
         otherCtx.putImageData(data, x, y);
     }
     clear() {
-        //this.session += 1;
+        this.session += 1;
         this.context.clearRect(0, 0, 512, 512);
         this.images = {};
         this.blits.clear();
