@@ -410,11 +410,14 @@ class Playbilder {
             info.innerHTML = archive.info;
         }
         this.board.load(archive);
-        while (this.board.levels.length > this.levelSelect.options.length) {
-            this.levelSelect.options.push({
-                label: "Level " + (this.levelSelect.options.length + 1),
-                id: this.levelSelect.options.length,
-            });
+        if (archive.levels) {
+            this.levelSelect.options.length = 0;
+            while (this.board.levels.length > this.levelSelect.options.length) {
+                this.levelSelect.options.push({
+                    label: "Level " + (this.levelSelect.options.length + 1),
+                    id: this.levelSelect.options.length,
+                });
+            }
         }
         this.levelSelect.selectedIndex = this.board.levelIndex;
         this.screenDidResize(getGameScreenSize(), this.game.contentProvider);

@@ -26,7 +26,7 @@ class GameSettingsGUI {
         this.width = this.addField({
             onTextChanged(newText) {
                 let width = parseInt(newText) || 5;
-                width = Math.max(width, 5);
+                width = Math.max(width, 15);
                 controller.onWidthChanged(width);
                 console.log("width:", newText);
             },
@@ -37,7 +37,7 @@ class GameSettingsGUI {
         this.height = this.addField({
             onTextChanged(newText) {
                 let height = parseInt(newText) || 5;
-                height = Math.max(height, 5);
+                height = Math.max(height, 15);
                 controller.onHeightChanged(height);
                 console.log("height:", newText);
             },
