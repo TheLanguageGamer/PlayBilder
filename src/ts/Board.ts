@@ -519,7 +519,6 @@ class Board {
 		this.editBoard.movingStartCoordinate = {x : 0, y : 0};
 
 		this.editBoard.isSelectingReal = false;
-		this.editBoard.realSelectionRectangle = new Rectangle(new Layout(0, 0, 0, 0, 0, 0, 0, 0));
 		this.editBoard.realSelectionBox = undefined;
 		this.editBoard.isMovingRealSelection = false;
 	}
