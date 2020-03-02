@@ -2,7 +2,9 @@
 
 class EditRule {
 	index : number;
-	includeRotations : boolean = false;
+	include90Rotation : boolean = false;
+	include180Rotation : boolean = false;
+	include270Rotation : boolean = false;
 
 	size : number = 0;
 	line : Line = new Line();
@@ -40,12 +42,33 @@ class EditRule {
 	save() {
 		return {
 			index : this.index,
-			includeRotations : this.includeRotations,
+			include90Rotation : this.include90Rotation,
+			include180Rotation : this.include180Rotation,
+			include270Rotation : this.include270Rotation,
 		};
 	}
-	load(obj : {index : number, includeRotations : boolean}) {
+	load(obj : {
+		index : number,
+		includeRotations? : boolean,
+		include90Rotation? : boolean,
+		include180Rotation? : boolean,
+		include270Rotation? : boolean,
+	}) {
 		this.index = obj.index;
-		this.includeRotations = obj.includeRotations;
+		if (obj.includeRotations !== undefined) {
+			this.include90Rotation = obj.includeRotations;
+			this.include180Rotation = obj.includeRotations;
+			this.include270Rotation = obj.includeRotations;
+		}
+		if (obj.include90Rotation !== undefined) {
+			this.include90Rotation = obj.include90Rotation;
+		}
+		if (obj.include180Rotation !== undefined) {
+			this.include180Rotation = obj.include180Rotation;
+		}
+		if (obj.include270Rotation !== undefined) {
+			this.include270Rotation = obj.include270Rotation;
+		}
 	}
 	unselect() {
 		this.line.lineDashSpeed = 0;

@@ -118,9 +118,10 @@ class Board {
 			while (rule.index >= rotations.length) {
 				rotations.push(0);
 			}
-			if (rule.includeRotations) {
-				rotations[rule.index] = 1;
-			}
+			//TODO, below is broken, no more "includeRotations"
+			// if (rule.includeRotations) {
+			// 	rotations[rule.index] = 1;
+			// }
 		}
 		let rotationsStr = rotations.join(",");
 

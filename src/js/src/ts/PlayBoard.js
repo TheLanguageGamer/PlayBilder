@@ -18,24 +18,40 @@ class PlayBoard {
         let downEditRule = editRules.get(InputState.Down);
         //assert downEditRule is not undefined
         this.downPlayTree = new PlayTree(downEditRule, edges, editRules, data, gridSize);
-        if (leftEditRule.includeRotations) {
+        if (leftEditRule.include90Rotation) {
             PlayTree.addRotatedTree90(this.leftPlayTree.root, this.upPlayTree.root);
+        }
+        if (leftEditRule.include180Rotation) {
             PlayTree.addRotatedTree180(this.leftPlayTree.root, this.rightPlayTree.root);
+        }
+        if (leftEditRule.include270Rotation) {
             PlayTree.addRotatedTree270(this.leftPlayTree.root, this.downPlayTree.root);
         }
-        if (rightEditRule.includeRotations) {
+        if (rightEditRule.include90Rotation) {
             PlayTree.addRotatedTree90(this.rightPlayTree.root, this.downPlayTree.root);
+        }
+        if (rightEditRule.include180Rotation) {
             PlayTree.addRotatedTree180(this.rightPlayTree.root, this.leftPlayTree.root);
+        }
+        if (rightEditRule.include270Rotation) {
             PlayTree.addRotatedTree270(this.rightPlayTree.root, this.upPlayTree.root);
         }
-        if (downEditRule.includeRotations) {
+        if (downEditRule.include90Rotation) {
             PlayTree.addRotatedTree90(this.downPlayTree.root, this.leftPlayTree.root);
+        }
+        if (downEditRule.include180Rotation) {
             PlayTree.addRotatedTree180(this.downPlayTree.root, this.upPlayTree.root);
+        }
+        if (downEditRule.include270Rotation) {
             PlayTree.addRotatedTree270(this.downPlayTree.root, this.rightPlayTree.root);
         }
-        if (upEditRule.includeRotations) {
+        if (upEditRule.include90Rotation) {
             PlayTree.addRotatedTree90(this.upPlayTree.root, this.rightPlayTree.root);
+        }
+        if (upEditRule.include180Rotation) {
             PlayTree.addRotatedTree180(this.upPlayTree.root, this.downPlayTree.root);
+        }
+        if (upEditRule.include270Rotation) {
             PlayTree.addRotatedTree270(this.upPlayTree.root, this.leftPlayTree.root);
         }
         console.log("did construct PlayBoard");

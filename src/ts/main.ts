@@ -177,7 +177,8 @@ class Playbilder {
 				if (rotation == 1) {
 					let rule = board.editBoard.rules.get(i);
 					if (rule) {
-						rule.includeRotations = true;
+						//TODO fixme
+						//rule.includeRotations = true;
 					}
 				}
 			}

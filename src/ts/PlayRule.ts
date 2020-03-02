@@ -190,11 +190,17 @@ class PlayRule {
 			}
 		}
 
-		if (editRule.includeRotations) {
-			let playRule90 = this.createRotation270(playRule);
-			let playRule180 = this.createRotation270(playRule90);
-			let playRule270 = this.createRotation270(playRule180);
-			playRule.rotations = [playRule90, playRule180, playRule270];
+		if (editRule.include90Rotation) {
+			let playRule90 = this.createRotation90(playRule);
+			playRule.rotations.push(playRule90);
+		}
+		if (editRule.include180Rotation) {
+			let playRule180 = this.createRotation180(playRule);
+			playRule.rotations.push(playRule180);
+		}
+		if (editRule.include270Rotation) {
+			let playRule270 = this.createRotation270(playRule);
+			playRule.rotations.push(playRule270);
 		}
 
 		return playRule;
