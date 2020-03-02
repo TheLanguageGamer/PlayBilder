@@ -15,7 +15,7 @@ function download(data, filename, type) {
         }, 0);
     }
 }
-let kTopbarBottomPadding = 20 + 30;
+let kTopbarBottomPadding = 20 + 25;
 class EndStateOverlay {
     constructor(controller) {
         let _this = this;
@@ -106,8 +106,13 @@ class Playbilder {
             onWinning() {
                 _this.endStateOverlay.show();
             },
-            onGridResize() {
-                _this.screenDidResize(getGameScreenSize(), _this.game.contentProvider);
+            onObjectSelected(editRule) {
+                if (editRule) {
+                    _this.gameSettingsGui.setEditRule(editRule);
+                }
+            },
+            onObjectUnselected() {
+                _this.gameSettingsGui.hideRuleOptions();
             },
         });
         let tileSize = board.grid.computeTileSize();
@@ -237,17 +242,53 @@ class Playbilder {
             ["Select"], ["RulePad"], ["EdgeAlways"],
             ["EdgeIfMatched"], ["EdgeIfNotMatched"], ["EdgeParallel"],
         ];
-        let levelSelectLayout = new Layout(0, 0, tileSize * 7, -kTopbarBottomPadding, 0, 0, 150, 30);
-        levelSelectLayout.anchor = { x: 0.0, y: 1.0 };
-        let levelSelect = new Select(levelSelectLayout, [
+        let levelOptions = [
             {
                 label: "Level 1",
                 id: 0,
             },
-        ], {
+        ];
+        let gameSettingsGui = new GameSettingsGUI(boardSize, {
+            onIntervalChanged(interval) {
+                console.log("New interval:", interval);
+                board.gameStepInterval = interval;
+            },
+            onWidthChanged(width) {
+                if (board.grid && board.grid.gridSize.width != width) {
+                    let newSize = {
+                        width: width,
+                        height: board.grid.gridSize.height,
+                    };
+                    board.resizeGrid(newSize);
+                    _this.screenDidResize(getGameScreenSize(), _this.game.contentProvider);
+                }
+            },
+            onHeightChanged(height) {
+                if (board.grid && board.grid.gridSize.height != height) {
+                    let newSize = {
+                        width: board.grid.gridSize.width,
+                        height: height,
+                    };
+                    board.resizeGrid(newSize);
+                    _this.screenDidResize(getGameScreenSize(), _this.game.contentProvider);
+                }
+            },
+            onLevelTitleChanged(title) {
+                levelOptions[board.levelIndex].label = title;
+            },
+            onRuleTitleChanged(title) {
+                if (board.editBoard.selectedRule) {
+                    board.editBoard.selectedRule.title = title;
+                }
+            },
+        });
+        let levelSelectLayout = new Layout(0, 0, tileSize * 7, -kTopbarBottomPadding, 0, 0, 150, 30);
+        levelSelectLayout.anchor = { x: 0.0, y: 1.0 };
+        let levelSelect = new Select(levelSelectLayout, levelOptions, {
             onSelectionChanged(index, option) {
                 console.log("Selected!", index, option.label);
                 board.setLevelWhileEditing(index);
+                gameSettingsGui.setLevel(option);
             },
         });
         let addLevelLayout = new Layout(0, 0, tileSize * 7 + 150 + 15, -kTopbarBottomPadding, 0, 0, tileSize, tileSize);
@@ -292,9 +333,9 @@ class Playbilder {
             onClick(e) {
                 console.log("download ...");
                 clearFeedback();
-                let archive = JSON.stringify(board.save(), null, '\t');
+                let archive = JSON.stringify(board.save(_this.gameSettingsGui.save()), null, '\t');
                 console.log(archive);
-                download(archive, board.getTitle() + ".json", "application/json");
+                download(archive, _this.getTitle() + ".json", "application/json");
                 return true;
             }
         });
@@ -382,9 +423,9 @@ class Playbilder {
             board.grid.children.push(uploadButton);
             board.grid.children.push(trashButton);
             board.grid.children.push(infobar);
-            board.grid.children.push(board.editBoard.ruleOptions.rootComponent);
             board.grid.children.push(gridOverlay);
             board.grid.children.push(endStateOverlay.background);
+            board.grid.children.push(gameSettingsGui.rootComponent);
             board.grid.children.push(levelSelect);
             board.grid.children.push(addLevel);
         }
@@ -402,12 +443,24 @@ class Playbilder {
         this.board = board;
         this.levelSelect = levelSelect;
         this.endStateOverlay = endStateOverlay;
+        this.gameSettingsGui = gameSettingsGui;
         this.load(archive);
+    }
+    getTitle() {
+        return this.gameSettingsGui.title.getText();
     }
     load(archive) {
         let info = document.getElementById('info');
         if (archive.info && info) {
             info.innerHTML = archive.info;
+        }
+        if (archive.gameStepInterval) {
+            this.gameSettingsGui.interval.setText(archive.gameStepInterval.toString());
+        }
+        if (archive.settings) {
+            if (archive.settings.title) {
+                this.gameSettingsGui.title.setText(archive.settings.title);
+            }
         }
         this.board.load(archive);
         if (archive.levels) {
@@ -664,7 +717,7 @@ function handleFiles(e) {
 }
 window.addEventListener('beforeunload', function (e) {
     console.log("beforeunload");
-    let archive = JSON.stringify($playBilder.board.save(), null, '\t');
+    let archive = JSON.stringify($playBilder.board.save($playBilder.gameSettingsGui.save()), null, '\t');
     localStorage.setItem("archive", archive);
 });
 //# sourceMappingURL=main.js.map

@@ -17,7 +17,7 @@ function download(data : string, filename : string, type : string) {
     }
 }
 
-let kTopbarBottomPadding = 20 + 30;
+let kTopbarBottomPadding = 20 + 25;
 
 
 interface EndStateOverlayController {
@@ -102,12 +102,25 @@ class Playbilder {
 	addLevelButton : Component;
 	levelSelect : Select;
 	endStateOverlay : EndStateOverlay;
+	gameSettingsGui : GameSettingsGUI;
+
+	getTitle() {
+		return this.gameSettingsGui.title.getText();
+	}
 
 	load(archive : any) {
 
 		let info = document.getElementById('info')
 		if (archive.info && info) {
 			info.innerHTML = archive.info;
+		}
+		if (archive.gameStepInterval) {
+			this.gameSettingsGui.interval.setText(archive.gameStepInterval.toString());
+		}
+		if (archive.settings) {
+			if (archive.settings.title) {
+				this.gameSettingsGui.title.setText(archive.settings.title);
+			}
 		}
 		this.board.load(archive);
 		if (archive.levels) {
@@ -371,8 +384,13 @@ class Playbilder {
 				onWinning() {
 					_this.endStateOverlay.show();
 				},
-				onGridResize() {
-					_this.screenDidResize(getGameScreenSize(), _this.game.contentProvider);
+				onObjectSelected(editRule? : EditRule) {
+					if (editRule) {
+						_this.gameSettingsGui.setEditRule(editRule);
+					}
+				},
+				onObjectUnselected() {
+					_this.gameSettingsGui.hideRuleOptions();
 				},
 			}
 		);
@@ -517,6 +535,48 @@ class Playbilder {
 			["EdgeIfMatched"], ["EdgeIfNotMatched"], ["EdgeParallel"],
 		];
 
+		let levelOptions = [
+			{
+				label : "Level 1",
+				id : 0,
+			},
+		];
+
+		let gameSettingsGui = new GameSettingsGUI(boardSize, {
+			onIntervalChanged(interval : number) {
+				console.log("New interval:", interval);
+				board.gameStepInterval = interval;
+			},
+			onWidthChanged(width : number) {
+				if (board.grid && board.grid.gridSize.width != width) {
+					let newSize = {
+						width : width,
+						height : board.grid.gridSize.height,
+					};
+					board.resizeGrid(newSize);
+					_this.screenDidResize(getGameScreenSize(), _this.game.contentProvider);
+				}
+			},
+			onHeightChanged(height : number) {
+				if (board.grid && board.grid.gridSize.height != height) {
+					let newSize = {
+						width : board.grid.gridSize.width,
+						height : height,
+					};
+					board.resizeGrid(newSize);
+					_this.screenDidResize(getGameScreenSize(), _this.game.contentProvider);
+				}
+			},
+			onLevelTitleChanged(title : string) {
+				levelOptions[board.levelIndex].label = title;
+			},
+			onRuleTitleChanged(title : string) {
+				if (board.editBoard.selectedRule) {
+					board.editBoard.selectedRule.title = title;
+				}
+			},
+		});
+
 		let levelSelectLayout = new Layout(
 			0, 0,
 			tileSize*7, -kTopbarBottomPadding,
@@ -525,15 +585,13 @@ class Playbilder {
 		);
 		levelSelectLayout.anchor = {x: 0.0, y: 1.0};
 
-		let levelSelect = new Select(levelSelectLayout, [
-			{
-				label : "Level 1",
-				id : 0,
-			},
-		], {
+		let levelSelect = new Select(
+			levelSelectLayout,
+			levelOptions, {
 			onSelectionChanged(index : number, option : Option) {
 				console.log("Selected!", index, option.label);
 				board.setLevelWhileEditing(index);
+				gameSettingsGui.setLevel(option);
 			},
 		});
 
@@ -602,9 +660,13 @@ class Playbilder {
 				onClick(e : MouseEvent) {
 					console.log("download ...");
 					clearFeedback();
-					let archive = JSON.stringify(board.save(), null, '\t');
+					let archive = JSON.stringify(
+						board.save(_this.gameSettingsGui.save()),
+						null,
+						'\t'
+					);
 					console.log(archive);
-					download(archive, board.getTitle() + ".json", "application/json");
+					download(archive, _this.getTitle() + ".json", "application/json");
 					return true;
 				}
 			},
@@ -716,9 +778,9 @@ class Playbilder {
 			board.grid.children.push(uploadButton);
 			board.grid.children.push(trashButton);
 			board.grid.children.push(infobar);
-			board.grid.children.push(board.editBoard.ruleOptions.rootComponent);
 			board.grid.children.push(gridOverlay);
 			board.grid.children.push(endStateOverlay.background);
+			board.grid.children.push(gameSettingsGui.rootComponent);
 			board.grid.children.push(levelSelect);
 			board.grid.children.push(addLevel);
 		}
@@ -738,6 +800,7 @@ class Playbilder {
 		this.board = board;
 		this.levelSelect = levelSelect;
 		this.endStateOverlay = endStateOverlay;
+		this.gameSettingsGui = gameSettingsGui;
 		
 		this.load(archive);
     }
@@ -821,6 +884,10 @@ function handleFiles(e: Event) {
 
 window.addEventListener('beforeunload', function (e) {
     console.log("beforeunload");
-    let archive = JSON.stringify($playBilder.board.save(), null, '\t');
+    let archive = JSON.stringify(
+    	$playBilder.board.save($playBilder.gameSettingsGui.save()),
+    	null,
+    	'\t'
+    );
     localStorage.setItem("archive", archive);
 });

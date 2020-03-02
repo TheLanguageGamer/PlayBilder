@@ -51,7 +51,6 @@ class EditBoard {
     constructor(controller) {
         this.components = [];
         this.gridLayout = new Layout(0, 0, 0, 0, 0, 0, 0, 0);
-        this.ruleOptions = new RuleOptionsGUI();
         this.editTool = Tool.Pencil;
         this.editModality = Modality.Real;
         this.editBlockType = 0;
@@ -396,7 +395,7 @@ class EditBoard {
         if (ruleIndex >= 0 && ruleIndex < InputState.__Length) {
             this.controller.onUserFeedback({
                 state: UserFeedbackState.Warning,
-                message: "Warning: Built-in rules can't be changed.",
+                message: "Warning: Blocks can't be added to built-in rules.",
             });
             return;
         }
@@ -568,17 +567,16 @@ class EditBoard {
     selectRuleIndex(ruleIndex) {
         this.unselectSelectedObject();
         let rule = this.rules.get(ruleIndex);
+        console.assert(rule !== undefined);
         if (rule) {
-            this.ruleOptions.show(rule);
             rule.line.lineDashSpeed = -0.333;
             this.selectedRule = rule;
         }
         //else, panic!
-        this.controller.onObjectSelected();
+        this.controller.onObjectSelected(rule);
     }
     unselectSelectedObject() {
         if (this.selectedRule) {
-            this.ruleOptions.hide();
             this.selectedRule.unselect();
             this.selectedRule = undefined;
         }

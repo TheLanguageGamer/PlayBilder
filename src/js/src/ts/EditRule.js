@@ -12,6 +12,7 @@ class EditRule {
         this.line.color = Constants.Colors.Grey;
         this.line.lineDash = [7, 3];
         this.line.layout.doLayout(parentLayout.computed);
+        this.title = "Rule " + String(index);
     }
     disable() {
         this.line.points.length = 0;

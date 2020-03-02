@@ -9,12 +9,14 @@ class EditRule {
 	boundaryEdges : Set<string> = new Set();
 	boundaryPoints : Set<string> = new Set();
 	dirtyBoundaries : boolean = true;
+	title : string;
 	private _reachable : boolean = false;
 	constructor(index : number, parentLayout : Layout) {
 		this.index = index;
 		this.line.color = Constants.Colors.Grey;
 		this.line.lineDash = [7, 3];
 		this.line.layout.doLayout(parentLayout.computed);
+		this.title = "Rule " + String(index);
 	}
 	disable() {
 		this.line.points.length = 0;

@@ -5576,7 +5576,7 @@ var Example_Rule30 = {
             "type": 1
         }
     ],
-    "gameStepInterval": 400,
+    "gameStepInterval": 60,
     "settings": {
         "title": "Rule 30"
     }

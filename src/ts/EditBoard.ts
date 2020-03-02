@@ -53,7 +53,7 @@ interface UserFeedback {
 }
 
 interface EditBoardController {
-	onObjectSelected : () => void;
+	onObjectSelected : (editRule? : EditRule) => void;
 	onObjectUnselected : () => void;
 	onUserFeedback : (feedback : UserFeedback) => void;
 }
@@ -63,7 +63,6 @@ class EditBoard {
 	components : Component[] = [];
 	controller : EditBoardController;
 	gridLayout : Layout = new Layout(0, 0, 0, 0, 0, 0, 0, 0);
-	ruleOptions : RuleOptionsGUI = new RuleOptionsGUI();
 
 	editTool : Tool = Tool.Pencil;
 	editModality : Modality = Modality.Real;
@@ -534,7 +533,7 @@ class EditBoard {
 		if (ruleIndex >= 0 && ruleIndex < InputState.__Length) {
 			this.controller.onUserFeedback({
 				state : UserFeedbackState.Warning,
-				message : "Warning: Built-in rules can't be changed.",
+				message : "Warning: Blocks can't be added to built-in rules.",
 			});
 			return;
 		} else if (editModality != Modality.Real
@@ -744,18 +743,17 @@ class EditBoard {
 	selectRuleIndex(ruleIndex : number) {
 		this.unselectSelectedObject();
 		let rule = this.rules.get(ruleIndex);
+		console.assert(rule !== undefined);
 		if (rule) {
-			this.ruleOptions.show(rule);
 			rule.line.lineDashSpeed = -0.333;
 			this.selectedRule = rule;
 		}
 		//else, panic!
-		this.controller.onObjectSelected();
+		this.controller.onObjectSelected(rule);
 	}
 
 	unselectSelectedObject() {
 		if (this.selectedRule) {
-			this.ruleOptions.hide();
 			this.selectedRule.unselect();
 			this.selectedRule = undefined;
 		}

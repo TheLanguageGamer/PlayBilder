@@ -14,38 +14,12 @@ class Board {
         this.state = BoardState.Edit;
         this.controller = controller;
         let _this = this;
-        this.gameSettingsGui = new GameSettingsGUI(gridSize, {
-            onIntervalChanged(interval) {
-                console.log("New interval:", interval);
-                _this.gameStepInterval = interval;
-            },
-            onWidthChanged(width) {
-                if (_this.grid && _this.grid.gridSize.width != width) {
-                    let newSize = {
-                        width: width,
-                        height: _this.grid.gridSize.height,
-                    };
-                    _this.resizeGrid(newSize);
-                    _this.controller.onGridResize();
-                }
-            },
-            onHeightChanged(height) {
-                if (_this.grid && _this.grid.gridSize.height != height) {
-                    let newSize = {
-                        width: _this.grid.gridSize.width,
-                        height: height,
-                    };
-                    _this.resizeGrid(newSize);
-                    _this.controller.onGridResize();
-                }
-            },
-        });
         this.editBoard = new EditBoard({
-            onObjectSelected() {
-                _this.gameSettingsGui.hide();
+            onObjectSelected(editRule) {
+                _this.controller.onObjectSelected(editRule);
             },
             onObjectUnselected() {
-                _this.gameSettingsGui.show();
+                _this.controller.onObjectUnselected();
             },
             onUserFeedback(feedback) {
                 controller.onUserFeedback(feedback);
@@ -110,7 +84,6 @@ class Board {
             size: { width: screenSize.width, height: screenSize.height },
         });
         this.grid.children = [];
-        this.grid.children.push(this.gameSettingsGui.rootComponent);
     }
     dataToB64(data, gridSize) {
         let stuffSize = gridSize.width * gridSize.height * 4;
@@ -214,9 +187,6 @@ class Board {
         ret += "&";
         ret += "interval=" + this.gameStepInterval;
         return ret;
-    }
-    getTitle() {
-        return this.gameSettingsGui.title.getText();
     }
     copyData(from, to) {
         for (let i = 0; i < this.grid.gridSize.width; ++i) {
@@ -450,12 +420,6 @@ class Board {
         this.clear(true);
         if (archive.gameStepInterval) {
             this.gameStepInterval = archive.gameStepInterval;
-            this.gameSettingsGui.interval.setText(this.gameStepInterval.toString());
-        }
-        if (archive.settings) {
-            if (archive.settings.title) {
-                this.gameSettingsGui.title.setText(archive.settings.title);
-            }
         }
         if (archive.levels) {
             this.levels = archive.levels;
@@ -532,7 +496,7 @@ class Board {
             }
         }
     }
-    save() {
+    save(settings) {
         let rules = [];
         for (let element of this.editBoard.rules) {
             let rule = element[1];
@@ -552,7 +516,7 @@ class Board {
             rules: rules,
             edges: edges,
             gameStepInterval: this.gameStepInterval,
-            settings: this.gameSettingsGui.save(),
+            settings: settings,
         };
     }
     setComponents(components) {
