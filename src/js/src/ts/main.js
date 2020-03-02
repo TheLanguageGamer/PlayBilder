@@ -281,14 +281,25 @@ class Playbilder {
                     board.editBoard.selectedRule.title = title;
                 }
             },
+            deleteLevel() {
+                console.log("delte level!");
+                console.assert(levelOptions.length > 0);
+                levelOptions.splice(board.levelIndex, 1);
+                board.levels.splice(board.levelIndex, 1);
+                let newLevelIndex = board.levelIndex > 0 ? board.levelIndex - 1 : 0;
+                board.jumpToLevel(newLevelIndex);
+                gameSettingsGui.setLevel(levelOptions[newLevelIndex], levelOptions.length > 1);
+                _this.levelSelect.selectedIndex = newLevelIndex;
+            },
         });
+        gameSettingsGui.setLevel(levelOptions[0], levelOptions.length > 1);
         let levelSelectLayout = new Layout(0, 0, tileSize * 7, -kTopbarBottomPadding, 0, 0, 150, 30);
         levelSelectLayout.anchor = { x: 0.0, y: 1.0 };
         let levelSelect = new Select(levelSelectLayout, levelOptions, {
             onSelectionChanged(index, option) {
                 console.log("Selected!", index, option.label);
                 board.setLevelWhileEditing(index);
-                gameSettingsGui.setLevel(option);
+                gameSettingsGui.setLevel(option, levelOptions.length > 1);
             },
         });
         let addLevelLayout = new Layout(0, 0, tileSize * 7 + 150 + 15, -kTopbarBottomPadding, 0, 0, tileSize, tileSize);
@@ -303,6 +314,7 @@ class Playbilder {
                 levelSelect.selectedIndex = levelSelect.options.length - 1;
                 board.createLevel(board.grid.gridSize);
                 board.setLevelWhileEditing(levelSelect.selectedIndex);
+                gameSettingsGui.setLevel(levelOptions[levelSelect.selectedIndex], levelOptions.length > 1);
                 return true;
             }
         });

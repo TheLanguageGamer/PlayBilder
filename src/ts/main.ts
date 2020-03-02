@@ -19,7 +19,6 @@ function download(data : string, filename : string, type : string) {
 
 let kTopbarBottomPadding = 20 + 25;
 
-
 interface EndStateOverlayController {
 	onNext : () => void,
 }
@@ -575,7 +574,21 @@ class Playbilder {
 					board.editBoard.selectedRule.title = title;
 				}
 			},
+			deleteLevel() {
+				console.log("delte level!");
+				console.assert(levelOptions.length > 0);
+				levelOptions.splice(board.levelIndex, 1);
+				board.levels.splice(board.levelIndex, 1);
+				let newLevelIndex = board.levelIndex > 0 ? board.levelIndex - 1 : 0;
+				board.jumpToLevel(newLevelIndex);
+				gameSettingsGui.setLevel(
+					levelOptions[newLevelIndex],
+					levelOptions.length > 1
+				);
+				_this.levelSelect.selectedIndex = newLevelIndex;
+			},
 		});
+		gameSettingsGui.setLevel(levelOptions[0], levelOptions.length > 1);
 
 		let levelSelectLayout = new Layout(
 			0, 0,
@@ -591,7 +604,7 @@ class Playbilder {
 			onSelectionChanged(index : number, option : Option) {
 				console.log("Selected!", index, option.label);
 				board.setLevelWhileEditing(index);
-				gameSettingsGui.setLevel(option);
+				gameSettingsGui.setLevel(option, levelOptions.length > 1);
 			},
 		});
 
@@ -614,6 +627,10 @@ class Playbilder {
 					levelSelect.selectedIndex = levelSelect.options.length - 1;
 					board.createLevel(board.grid.gridSize);
 					board.setLevelWhileEditing(levelSelect.selectedIndex);
+					gameSettingsGui.setLevel(
+						levelOptions[levelSelect.selectedIndex],
+						levelOptions.length > 1
+					);
 					return true;
 				}
 			},

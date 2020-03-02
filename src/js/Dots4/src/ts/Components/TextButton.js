@@ -2,7 +2,7 @@
 class TextButton {
     constructor(layout, controller, text) {
         this.text = "";
-        this.font = "20px monospace";
+        this.font = "12px monospace";
         this.fontSize = 12;
         this.fillStyle = Constants.Colors.Blue.NCS;
         this.disabledFillStyle = Constants.Colors.Grey;
@@ -21,8 +21,11 @@ class TextButton {
         this.disabled = false;
     }
     onClick(e) {
-        this.controller.onClick(e);
-        return InputResponse.Sunk;
+        if (!this.disabled) {
+            this.controller.onClick(e);
+            return InputResponse.Sunk;
+        }
+        return InputResponse.Ignored;
     }
     setFontSize(fontSize) {
         this.fontSize = fontSize;

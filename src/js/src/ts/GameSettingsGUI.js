@@ -68,8 +68,16 @@ class GameSettingsGUI {
         levelTitle.placeholderText = "Untitled";
         levelTitle.setFontSize(fontSize);
         levelTitle.setMaxTextLength((kGameSettingsWidth - 10) / (fontSize * 0.6));
+        let deleteButtonLayout = new Layout(0, 0, 5, 5, 1, 0, 0, 20);
+        let deleteButton = new TextButton(deleteButtonLayout, {
+            onClick(e) {
+                controller.deleteLevel();
+                return true;
+            },
+        }, "delete");
         levelRootComponent.children = [];
         levelRootComponent.children.push(levelTitle);
+        levelRootComponent.children.push(deleteButton);
         container.children.push(levelRootComponent);
         //Rule settings
         let ruleOptionsLayout = new Layout(0, 0, 0, 10, 0, 0, kGameSettingsWidth, 100);
@@ -106,6 +114,7 @@ class GameSettingsGUI {
         container.children.push(ruleOptions);
         this.rootComponent = container;
         this.levelTitle = levelTitle;
+        this.deleteLevelButton = deleteButton;
         this.ruleOptions = ruleOptions;
         this.ruleTitle = ruleTitle;
         this.hideRuleOptions();
@@ -126,8 +135,9 @@ class GameSettingsGUI {
         obj.children.push(label);
         return textInput;
     }
-    setLevel(option) {
+    setLevel(option, canDelete) {
         this.levelTitle.setText(option.label);
+        this.deleteLevelButton.disabled = !canDelete;
     }
     setEditRule(rule) {
         this.rule = rule;
