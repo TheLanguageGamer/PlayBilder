@@ -1,7 +1,6 @@
 "use strict";
 class Grid {
     constructor(gridSize, layout, controller = {}) {
-        //tileSize : number = 0;
         this.downAt = { x: -1, y: -1 };
         this.color = Constants.Colors.VeryLightGrey;
         this.layout = layout;
@@ -96,11 +95,28 @@ class Grid {
         layout.setUpperLeft(ul.x, ul.y);
         layout.setLowerRight(lr.x, lr.y);
     }
-    clipRectangleToCoordinates(layout) {
+    clipRectangleToCoordinates(layout, fudgeFactor) {
+        let tileSize = this.computeTileSize();
         let ulX = layout.getUpperLeftX();
         let ulY = layout.getUpperLeftY();
         let lrX = layout.getLowerRightX();
         let lrY = layout.getLowerRightY();
+        if (lrX > ulX) {
+            ulX -= tileSize * fudgeFactor;
+            lrX += tileSize * fudgeFactor;
+        }
+        else {
+            ulX += tileSize * fudgeFactor;
+            lrX -= tileSize * fudgeFactor;
+        }
+        if (lrY > ulY) {
+            ulY -= tileSize * fudgeFactor;
+            lrY += tileSize * fudgeFactor;
+        }
+        else {
+            ulY += tileSize * fudgeFactor;
+            lrY -= tileSize * fudgeFactor;
+        }
         let ulI = this.getCoordinateForXPosition(ulX);
         let ulJ = this.getCoordinateForYPosition(ulY);
         let lrI = this.getCoordinateForXPosition(lrX);
@@ -179,14 +195,14 @@ class Grid {
         }
         const x = this.getCoordinateForXPosition(e.offsetX);
         const y = this.getCoordinateForYPosition(e.offsetY);
+        if (this.controller.onMouseMove) {
+            this.controller.onMouseMove(x, y, e);
+        }
         if (x < 0
             || y < 0
             || x >= this.gridSize.width
             || y >= this.gridSize.height) {
             return false;
-        }
-        if (this.controller.onMouseMove) {
-            this.controller.onMouseMove(x, y, e);
         }
         if (this.controller.onSelect
             && (this.downAt.x != x || this.downAt.y != y)) {
@@ -204,12 +220,6 @@ class Grid {
         }
         const x = this.getCoordinateForXPosition(e.offsetX);
         const y = this.getCoordinateForYPosition(e.offsetY);
-        if (x < 0
-            || y < 0
-            || x >= this.gridSize.width
-            || y >= this.gridSize.height) {
-            return false;
-        }
         this.controller.onMouseUp(x, y, e);
         return true;
     }

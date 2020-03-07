@@ -376,7 +376,7 @@ class Board {
 				},
 				onMouseMove(i : number, j : number, e : MouseEvent) {
 					if (_this.isEditing()) {
-						_this.editBoard.onMouseMove(e, _this.data, _this.grid);
+						_this.editBoard.onMouseMove(i, j, e, _this.data, _this.grid);
 					}
 				},
 				onMouseUp(i : number, j : number, e : MouseEvent) {

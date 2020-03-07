@@ -866,7 +866,16 @@ class EditBoard {
 		}
 	}
 
-	onMouseMove(e : MouseEvent, data : number[][][], grid : Grid) {
+	onMouseMove(i : number, j : number, e : MouseEvent, data : number[][][], grid : Grid) {
+
+		if ((i < 0
+			|| j < 0
+			|| i >= grid.gridSize.width
+			|| j >= grid.gridSize.height)
+			&& !this.isSelectingReal) {
+			return;
+		}
+
 		if (this.isMovingRule) {
 			let currentI = grid.getCoordinateForXPosition(e.offsetX);
 			let currentJ = grid.getCoordinateForYPosition(e.offsetY);
@@ -904,9 +913,15 @@ class EditBoard {
 				//error, can't move rule here
 			}
 		} else if (this.isSelectingReal) {
+			let x = e.offsetX - this.gridLayout.computed.position.x;
+			let y = e.offsetY - this.gridLayout.computed.position.y;
+			x = Math.max(x, 0);
+			x = Math.min(x, this.gridLayout.computed.size.width);
+			y = Math.max(y, 0);
+			y = Math.min(y, this.gridLayout.computed.size.height);
 			this.realSelectionRectangle.layout.setLowerRight(
-				e.offsetX - this.gridLayout.computed.position.x,
-				e.offsetY - this.gridLayout.computed.position.y
+				x,
+				y
 			);
 			this.realSelectionRectangle.layout.doLayout(this.gridLayout.computed);
 		} else if (this.isAddingEdge) {
@@ -1036,6 +1051,14 @@ class EditBoard {
 
 	onMouseUp(i : number, j : number, data : number[][][], grid : Grid) {
 
+		if ((i < 0
+			|| j < 0
+			|| i >= grid.gridSize.width
+			|| j >= grid.gridSize.height)
+			&& !this.isSelectingReal) {
+			return;
+		}
+
 		if (this.isMovingRule) {
 			let deltaI = this.movingLastCoordinate.x - this.movingStartCoordinate.x;
 			let deltaJ = this.movingLastCoordinate.y - this.movingStartCoordinate.y;
@@ -1064,11 +1087,12 @@ class EditBoard {
 			this.isSelectingReal = false;
 			let layout = this.realSelectionRectangle.layout;
 			let tileSize = grid.computeTileSize();
-			if (tileSize >= Math.abs(layout.computed.size.width)
-				|| tileSize >= Math.abs(layout.computed.size.height)) {
+			let fudgeFactor = 0.3;
+			if (tileSize >= Math.abs(layout.computed.size.width + tileSize*fudgeFactor*2)
+				|| tileSize >= Math.abs(layout.computed.size.height + tileSize*fudgeFactor*2)) {
 				this.unselectSelectedObject();
 			} else {
-				this.realSelectionBox = grid.clipRectangleToCoordinates(layout);
+				this.realSelectionBox = grid.clipRectangleToCoordinates(layout, fudgeFactor);
 				if (this.realSelectionBox.size.width != 0
 					&& this.realSelectionBox.size.height != 0) {
 					this.realSelectionRectangle.lineDashSpeed = -0.333;

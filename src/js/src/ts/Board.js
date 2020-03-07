@@ -70,7 +70,7 @@ class Board {
             },
             onMouseMove(i, j, e) {
                 if (_this.isEditing()) {
-                    _this.editBoard.onMouseMove(e, _this.data, _this.grid);
+                    _this.editBoard.onMouseMove(i, j, e, _this.data, _this.grid);
                 }
             },
             onMouseUp(i, j, e) {
