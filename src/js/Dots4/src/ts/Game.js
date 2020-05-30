@@ -122,7 +122,12 @@ class Game {
             }
             for (var component of _this.components) {
                 if (component.onMouseMove) {
-                    component.onMouseMove(e);
+                    if (component.layout.containsPosition(e.offsetX, e.offsetY)) {
+                        component.onMouseMove(e);
+                    }
+                    else if (component.onMouseOut) {
+                        component.onMouseOut(e);
+                    }
                 }
             }
         });

@@ -15,6 +15,9 @@ class TextLabel {
         this.fontSize = fontSize;
         this.font = fontSize.toString() + "px monospace";
     }
+    getFontSize() {
+        return this.fontSize;
+    }
     render(ctx, cp) {
         if (!this.layout.visible) {
             return;

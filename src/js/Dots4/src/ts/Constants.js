@@ -7,6 +7,7 @@ var Constants = {
         Grey: "#888888",
         LightGrey: "#BBBBBB",
         VeryLightGrey: "#DDDDDD",
+        VeryVeryLightGrey: "#F3F3F3",
         White: "#FFFFFF",
         Blue: {
             NCS: "#0087BD",
