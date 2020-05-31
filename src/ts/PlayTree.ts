@@ -42,36 +42,72 @@ class PlayTree {
 		}
 	}
 
-	static addRotatedTree90(from : PlayRule, to : PlayRule) {
+	static addRotatedTree90(
+		playRulesByIndex : Map<number, PlayRule>,
+		from : PlayRule,
+		to : PlayRule) {
+		
 		for (let child of from.children) {
-			let rotated = PlayRule.createRotation90(child.rule);
+			let rotated = playRulesByIndex.get(child.rule.index);
+			let shouldAddChildren = false;
+			if (!rotated) {
+				rotated = PlayRule.createRotation90(child.rule);
+				playRulesByIndex.set(child.rule.index, rotated);
+				shouldAddChildren = true;
+			}
 			to.children.push({
 				rule : rotated,
 				edgeType : child.edgeType
 			});
-			this.addRotatedTree90(child.rule, rotated);
+			if (shouldAddChildren) {
+				PlayTree.addRotatedTree90(playRulesByIndex, child.rule, rotated);
+			}
 		}
 	}
 
-	static addRotatedTree180(from : PlayRule, to : PlayRule) {
+	static addRotatedTree180(
+		playRulesByIndex : Map<number, PlayRule>,
+		from : PlayRule,
+		to : PlayRule) {
+		
 		for (let child of from.children) {
-			let rotated = PlayRule.createRotation180(child.rule);
+			let rotated = playRulesByIndex.get(child.rule.index);
+			let shouldAddChildren = false;
+			if (!rotated) {
+				rotated = PlayRule.createRotation180(child.rule);
+				playRulesByIndex.set(child.rule.index, rotated);
+				shouldAddChildren = true;
+			}
 			to.children.push({
 				rule : rotated,
 				edgeType : child.edgeType
 			});
-			this.addRotatedTree180(child.rule, rotated);
+			if (shouldAddChildren) {
+				PlayTree.addRotatedTree180(playRulesByIndex, child.rule, rotated);
+			}
 		}
 	}
 
-	static addRotatedTree270(from : PlayRule, to : PlayRule) {
+	static addRotatedTree270(
+		playRulesByIndex : Map<number, PlayRule>,
+		from : PlayRule,
+		to : PlayRule) {
+		
 		for (let child of from.children) {
-			let rotated = PlayRule.createRotation270(child.rule);
+			let rotated = playRulesByIndex.get(child.rule.index);
+			let shouldAddChildren = false;
+			if (!rotated) {
+				rotated = PlayRule.createRotation270(child.rule);
+				playRulesByIndex.set(child.rule.index, rotated);
+				shouldAddChildren = true;
+			}
 			to.children.push({
 				rule : rotated,
 				edgeType : child.edgeType
 			});
-			this.addRotatedTree270(child.rule, rotated);
+			if (shouldAddChildren) {
+				PlayTree.addRotatedTree270(playRulesByIndex, child.rule, rotated);
+			}
 		}
 	}
 

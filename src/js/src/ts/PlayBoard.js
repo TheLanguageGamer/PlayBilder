@@ -4,7 +4,7 @@ class PlayBoard {
         this.lastTimeStep = 0;
         this.gameStepInterval = interval;
         let computerEditRule = editRules.get(InputState.Computer);
-        //asser computerEditRule is not undefined
+        //assert computerEditRule is not undefined
         this.gameStepPlayTree = new PlayTree(computerEditRule, edges, editRules, data, gridSize);
         let leftEditRule = editRules.get(InputState.Left);
         //assert leftEditRule is not undefined
@@ -19,40 +19,40 @@ class PlayBoard {
         //assert downEditRule is not undefined
         this.downPlayTree = new PlayTree(downEditRule, edges, editRules, data, gridSize);
         if (leftEditRule.include90Rotation) {
-            PlayTree.addRotatedTree90(this.leftPlayTree.root, this.upPlayTree.root);
+            PlayTree.addRotatedTree90(this.upPlayTree.playRulesByIndex, this.leftPlayTree.root, this.upPlayTree.root);
         }
         if (leftEditRule.include180Rotation) {
-            PlayTree.addRotatedTree180(this.leftPlayTree.root, this.rightPlayTree.root);
+            PlayTree.addRotatedTree180(this.rightPlayTree.playRulesByIndex, this.leftPlayTree.root, this.rightPlayTree.root);
         }
         if (leftEditRule.include270Rotation) {
-            PlayTree.addRotatedTree270(this.leftPlayTree.root, this.downPlayTree.root);
+            PlayTree.addRotatedTree270(this.downPlayTree.playRulesByIndex, this.leftPlayTree.root, this.downPlayTree.root);
         }
         if (rightEditRule.include90Rotation) {
-            PlayTree.addRotatedTree90(this.rightPlayTree.root, this.downPlayTree.root);
+            PlayTree.addRotatedTree90(this.downPlayTree.playRulesByIndex, this.rightPlayTree.root, this.downPlayTree.root);
         }
         if (rightEditRule.include180Rotation) {
-            PlayTree.addRotatedTree180(this.rightPlayTree.root, this.leftPlayTree.root);
+            PlayTree.addRotatedTree180(this.leftPlayTree.playRulesByIndex, this.rightPlayTree.root, this.leftPlayTree.root);
         }
         if (rightEditRule.include270Rotation) {
-            PlayTree.addRotatedTree270(this.rightPlayTree.root, this.upPlayTree.root);
+            PlayTree.addRotatedTree270(this.upPlayTree.playRulesByIndex, this.rightPlayTree.root, this.upPlayTree.root);
         }
         if (downEditRule.include90Rotation) {
-            PlayTree.addRotatedTree90(this.downPlayTree.root, this.leftPlayTree.root);
+            PlayTree.addRotatedTree90(this.leftPlayTree.playRulesByIndex, this.downPlayTree.root, this.leftPlayTree.root);
         }
         if (downEditRule.include180Rotation) {
-            PlayTree.addRotatedTree180(this.downPlayTree.root, this.upPlayTree.root);
+            PlayTree.addRotatedTree180(this.upPlayTree.playRulesByIndex, this.downPlayTree.root, this.upPlayTree.root);
         }
         if (downEditRule.include270Rotation) {
-            PlayTree.addRotatedTree270(this.downPlayTree.root, this.rightPlayTree.root);
+            PlayTree.addRotatedTree270(this.rightPlayTree.playRulesByIndex, this.downPlayTree.root, this.rightPlayTree.root);
         }
         if (upEditRule.include90Rotation) {
-            PlayTree.addRotatedTree90(this.upPlayTree.root, this.rightPlayTree.root);
+            PlayTree.addRotatedTree90(this.rightPlayTree.playRulesByIndex, this.upPlayTree.root, this.rightPlayTree.root);
         }
         if (upEditRule.include180Rotation) {
-            PlayTree.addRotatedTree180(this.upPlayTree.root, this.downPlayTree.root);
+            PlayTree.addRotatedTree180(this.downPlayTree.playRulesByIndex, this.upPlayTree.root, this.downPlayTree.root);
         }
         if (upEditRule.include270Rotation) {
-            PlayTree.addRotatedTree270(this.upPlayTree.root, this.leftPlayTree.root);
+            PlayTree.addRotatedTree270(this.leftPlayTree.playRulesByIndex, this.upPlayTree.root, this.leftPlayTree.root);
         }
         console.log("did construct PlayBoard");
     }
