@@ -70,7 +70,6 @@ class Playbilder {
         infobar.children = [];
         infobar.children.push(infobarLabel);
         function setUserFeedback(feedback) {
-            console.log("Feedback!", feedback.state, feedback.message);
             if (feedback.state == UserFeedbackState.None) {
                 infobarLayout.visible = false;
             }
@@ -282,7 +281,7 @@ class Playbilder {
                 }
             },
             deleteLevel() {
-                console.log("delte level!");
+                console.log("delete level!");
                 console.assert(levelOptions.length > 0);
                 levelOptions.splice(board.levelIndex, 1);
                 board.levels.splice(board.levelIndex, 1);

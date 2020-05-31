@@ -6,6 +6,16 @@ function shuffle(a) {
     }
     return a;
 }
+function shufflePlayConnections(a) {
+    for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        if (a[i].edgeType == EdgeType.Parallel
+            && a[j].edgeType == EdgeType.Parallel) {
+            [a[i], a[j]] = [a[j], a[i]];
+        }
+    }
+    return a;
+}
 class PlayRule {
     constructor(index, isStartSymbol) {
         this.children = [];
@@ -83,7 +93,7 @@ class PlayRule {
                 }
             }
         }
-        shuffle(this.children);
+        shufflePlayConnections(this.children);
         let didFollowBlue = false;
         for (let child of this.children) {
             if ((child.edgeType == EdgeType.IfMatched && didMatch)
