@@ -304,7 +304,11 @@ class Board {
 		this.levelIndex = index;
 	}
 
-	constructor (gridSize : Size, screenSize : Size, controller : BoardController) {
+	constructor (
+		gridSize : Size,
+		window : Box,
+		screenSize : Size,
+		controller : BoardController) {
 
 		this.controller = controller;
 		let _this = this;
@@ -348,13 +352,13 @@ class Board {
 		this.levels = new Array();
 		this.createLevel(gridSize);
 
-		let widthRelative = gridSize.width/(gridSize.width + 6);
-		let heightRelative = gridSize.height/(gridSize.height + 2);
-		let gridLayout = new Layout(widthRelative/2, 2/gridSize.height, 0, 10 + 20,
-			widthRelative,
-			heightRelative, -kGameSettingsWidth, -40 - 10);
+		let widthRelative = window.size.width/(window.size.width + 6);
+		let heightRelative = window.size.height/(window.size.height + 2);
+		let gridLayout = new Layout(
+			widthRelative/2, 2/window.size.height, 0, 10 + 20,
+			widthRelative, heightRelative, -kGameSettingsWidth, -40 - 10);
 		gridLayout.anchor = {x: widthRelative/2, y: 0.0};
-		gridLayout.aspect = (gridSize.width)/(gridSize.height);
+		gridLayout.aspect = (window.size.width)/(window.size.height);
 		gridLayout.fixedAspect = true;
 
 		this.grid = new Grid(

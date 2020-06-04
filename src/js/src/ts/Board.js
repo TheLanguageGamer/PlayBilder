@@ -6,7 +6,7 @@ var BoardState;
 })(BoardState || (BoardState = {}));
 ;
 class Board {
-    constructor(gridSize, screenSize, controller) {
+    constructor(gridSize, window, screenSize, controller) {
         this.gameStepInterval = 500;
         this.needsLayout = false;
         this.levelIndex = 0;
@@ -48,11 +48,11 @@ class Board {
         }
         this.levels = new Array();
         this.createLevel(gridSize);
-        let widthRelative = gridSize.width / (gridSize.width + 6);
-        let heightRelative = gridSize.height / (gridSize.height + 2);
-        let gridLayout = new Layout(widthRelative / 2, 2 / gridSize.height, 0, 10 + 20, widthRelative, heightRelative, -kGameSettingsWidth, -40 - 10);
+        let widthRelative = window.size.width / (window.size.width + 6);
+        let heightRelative = window.size.height / (window.size.height + 2);
+        let gridLayout = new Layout(widthRelative / 2, 2 / window.size.height, 0, 10 + 20, widthRelative, heightRelative, -kGameSettingsWidth, -40 - 10);
         gridLayout.anchor = { x: widthRelative / 2, y: 0.0 };
-        gridLayout.aspect = (gridSize.width) / (gridSize.height);
+        gridLayout.aspect = (window.size.width) / (window.size.height);
         gridLayout.fixedAspect = true;
         this.grid = new Grid({ width: gridSize.width, height: gridSize.height }, gridLayout, {
             populate(i, j) {

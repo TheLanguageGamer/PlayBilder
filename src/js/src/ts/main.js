@@ -54,86 +54,13 @@ class EndStateOverlay {
         this.background.layout.visible = false;
     }
 }
-class Playbilder {
-    constructor(container, boardSize, archive) {
+class EditorTools {
+    constructor(tileSize, clearFeedback, setUserFeedback, board, boardSize, playbilder) {
+        this.selectedCoord = { i: 0, j: 0 };
         let _this = this;
-        let infobarLayout = new Layout(-0.15, 0, 0, -kTopbarBottomPadding + 40, 1.15, 0, kGameSettingsWidth, 25);
-        infobarLayout.anchor = { x: 0.0, y: 1.0 };
-        let infobar = new Rectangle(infobarLayout);
-        infobar.strokeColor = Constants.Colors.Yellow.Safety;
-        infobar.fillColor = Constants.Colors.Yellow.Light;
-        let infobarLabelLayout = new Layout(0, 0.5, 10, 7, 1.0, 1.0, -10, 0);
-        infobarLabelLayout.anchor = { x: 0.0, y: 0.5 };
-        let infobarLabel = new TextLabel(infobarLabelLayout, "Warning: Be careful about doing that!");
-        infobarLabel.setFontSize(14);
-        infobarLabel.fillStyle = Constants.Colors.Black;
-        infobar.children = [];
-        infobar.children.push(infobarLabel);
-        function setUserFeedback(feedback) {
-            if (feedback.state == UserFeedbackState.None) {
-                infobarLayout.visible = false;
-            }
-            else {
-                infobarLayout.visible = true;
-                infobarLabel.text = feedback.message;
-                if (feedback.state == UserFeedbackState.Warning) {
-                    infobar.strokeColor = Constants.Colors.Yellow.Safety;
-                    infobar.fillColor = Constants.Colors.Yellow.Light;
-                }
-                else if (feedback.state == UserFeedbackState.Error) {
-                    infobar.strokeColor = Constants.Colors.Red.Imperial;
-                    infobar.fillColor = Constants.Colors.Red.Light;
-                }
-                else {
-                    infobar.strokeColor = Constants.Colors.DarkGrey;
-                    infobar.fillColor = Constants.Colors.VeryLightGrey;
-                }
-            }
-        }
-        function clearFeedback() {
-            setUserFeedback({
-                state: UserFeedbackState.None,
-                message: "",
-            });
-        }
-        clearFeedback();
-        let screenSize = getGameScreenSize();
-        let board = new Board(boardSize, screenSize, {
-            onUserFeedback(feedback) {
-                setUserFeedback(feedback);
-            },
-            onWinning() {
-                _this.endStateOverlay.show();
-            },
-            onObjectSelected(editRule) {
-                if (editRule) {
-                    _this.gameSettingsGui.setEditRule(editRule);
-                }
-            },
-            onObjectUnselected() {
-                _this.gameSettingsGui.hideRuleOptions();
-            },
-        });
-        let tileSize = board.grid.computeTileSize();
-        console.log("PlayBilder constructor tileSize", tileSize);
-        let endStateOverlay = new EndStateOverlay({
-            onNext() {
-                if (board.levelIndex + 1 < board.levels.length) {
-                    board.jumpToLevel(board.levelIndex + 1);
-                    _this.levelSelect.selectedIndex = board.levelIndex;
-                }
-                else {
-                    board.toggleState();
-                    _this.levelSelect.selectedIndex = board.levelIndex;
-                    _this.playButton.toggleIndex = 0;
-                }
-            }
-        });
-        endStateOverlay.hide();
         let paletteLayout = new Layout(0, 0, -20, tileSize, 0, 0, tileSize * 3, tileSize * 12);
         let selectedRectLayout = new Layout(0, 0, 0, 0, 0, 0, tileSize, tileSize);
         let selectedRect = new Rectangle(selectedRectLayout);
-        let selectedCoord = { i: 0, j: 0 };
         let toolRectLayout = new Layout(0, 0, 0, 0, 0, 0, tileSize, tileSize);
         let toolRect = new Rectangle(toolRectLayout);
         let toolCoord = { i: 0, j: 0 };
@@ -183,7 +110,7 @@ class Playbilder {
                 });
             }
         }
-        function setSelectedFromPalette(i, j) {
+        this.setSelectedFromPalette = function (i, j) {
             setToolFromToolbar(0, 0);
             let tileSize = board.grid.computeTileSize();
             board.editBoard.editModality = i;
@@ -191,8 +118,8 @@ class Playbilder {
             selectedRect.layout.offset.position.x = i * tileSize;
             selectedRect.layout.offset.position.y = j * tileSize;
             selectedRect.layout.doLayout(paletteLayout.computed);
-            selectedCoord = { i: i, j: j };
-        }
+            _this.selectedCoord = { i: i, j: j };
+        };
         paletteLayout.anchor = { x: 1.0, y: 0.0 };
         let palette = new Grid({ width: 3, height: 12 }, paletteLayout, {
             populate(i, j) {
@@ -207,7 +134,7 @@ class Playbilder {
                 }
             },
             onClick(i, j) {
-                setSelectedFromPalette(i, j);
+                _this.setSelectedFromPalette(i, j);
             },
         });
         palette.children = [];
@@ -259,7 +186,7 @@ class Playbilder {
                         height: board.grid.gridSize.height,
                     };
                     board.resizeGrid(newSize);
-                    _this.screenDidResize(getGameScreenSize(), _this.game.contentProvider);
+                    playbilder.screenDidResize(getGameScreenSize(), playbilder.game.contentProvider);
                 }
             },
             onHeightChanged(height) {
@@ -269,7 +196,7 @@ class Playbilder {
                         height: height,
                     };
                     board.resizeGrid(newSize);
-                    _this.screenDidResize(getGameScreenSize(), _this.game.contentProvider);
+                    playbilder.screenDidResize(getGameScreenSize(), playbilder.game.contentProvider);
                 }
             },
             onLevelTitleChanged(title) {
@@ -346,7 +273,7 @@ class Playbilder {
                 clearFeedback();
                 let archive = JSON.stringify(board.save(_this.gameSettingsGui.save()), null, '\t');
                 console.log(archive);
-                download(archive, _this.getTitle() + ".json", "application/json");
+                download(archive, playbilder.getTitle() + ".json", "application/json");
                 return true;
             }
         });
@@ -379,69 +306,12 @@ class Playbilder {
             onClick(e) {
                 clearFeedback();
                 board.toggleState();
-                _this.levelSelect.selectedIndex = board.levelIndex;
-                endStateOverlay.hide();
+                levelSelect.selectedIndex = board.levelIndex;
+                playbilder.endStateOverlay.hide();
                 return true;
             }
         });
         playButton.togglePaths = [ImagePaths.Icons["Play"], ImagePaths.Icons["Pause"]];
-        this.game = new Game(container, {
-            onKeyDown(e) {
-                console.log("onKeyDown", e.key, e.ctrlKey, e.metaKey);
-                if (board.state == BoardState.Edit) {
-                    let asNumber = parseInt(e.key);
-                    if (!isNaN(asNumber)) {
-                        setSelectedFromPalette(selectedCoord.i, asNumber);
-                    }
-                    else if (e.key == "b") {
-                        setSelectedFromPalette(0, selectedCoord.j);
-                    }
-                    else if (e.key == "i") {
-                        setSelectedFromPalette(1, selectedCoord.j);
-                    }
-                    else if (e.key == "f") {
-                        setSelectedFromPalette(2, selectedCoord.j);
-                    }
-                    else if ((e.ctrlKey || e.metaKey) && e.key == "z") {
-                        if (board.state == BoardState.Edit) {
-                            board.editBoard.undo(board.data, board.grid);
-                        }
-                    }
-                }
-                return board.onKeyDown(e);
-            },
-            onUpdate(timeMS) {
-                board.onUpdate(timeMS);
-            },
-            screenWillResize(screenSize, cp) {
-            },
-            screenDidResize(screenSize, cp) {
-                _this.screenDidResize(screenSize, cp);
-            },
-            needsLayout() {
-                let ret = board.needsLayout;
-                board.needsLayout = false;
-                return ret;
-            },
-        });
-        let gridOverlay = new Container();
-        this.game.components.push(board.grid);
-        if (board.grid.children) {
-            board.grid.children.push(palette);
-            board.grid.children.push(toolbar);
-            board.grid.children.push(playButton);
-            board.grid.children.push(downloadButton);
-            board.grid.children.push(uploadButton);
-            board.grid.children.push(trashButton);
-            board.grid.children.push(infobar);
-            board.grid.children.push(gridOverlay);
-            board.grid.children.push(endStateOverlay.background);
-            board.grid.children.push(gameSettingsGui.rootComponent);
-            board.grid.children.push(levelSelect);
-            board.grid.children.push(addLevel);
-        }
-        board.setComponents(gridOverlay.children);
-        this.game.doLayout();
         this.palette = palette;
         this.selectedRect = selectedRect;
         this.toolRect = toolRect;
@@ -451,20 +321,10 @@ class Playbilder {
         this.trashButton = trashButton;
         this.playButton = playButton;
         this.addLevelButton = addLevel;
-        this.board = board;
         this.levelSelect = levelSelect;
-        this.endStateOverlay = endStateOverlay;
         this.gameSettingsGui = gameSettingsGui;
-        this.load(archive);
     }
-    getTitle() {
-        return this.gameSettingsGui.title.getText();
-    }
-    load(archive) {
-        let info = document.getElementById('info');
-        if (archive.info && info) {
-            info.innerHTML = archive.info;
-        }
+    load(archive, board) {
         if (archive.gameStepInterval) {
             this.gameSettingsGui.interval.setText(archive.gameStepInterval.toString());
         }
@@ -473,73 +333,18 @@ class Playbilder {
                 this.gameSettingsGui.title.setText(archive.settings.title);
             }
         }
-        this.board.load(archive);
         if (archive.levels) {
             this.levelSelect.options.length = 0;
-            while (this.board.levels.length > this.levelSelect.options.length) {
+            while (board.levels.length > this.levelSelect.options.length) {
                 this.levelSelect.options.push({
                     label: "Level " + (this.levelSelect.options.length + 1),
                     id: this.levelSelect.options.length,
                 });
             }
         }
-        this.levelSelect.selectedIndex = this.board.levelIndex;
-        this.screenDidResize(getGameScreenSize(), this.game.contentProvider);
+        this.levelSelect.selectedIndex = board.levelIndex;
     }
-    loadStateFromGetParams(getParams, board) {
-        let b64Data = getParams.get("data");
-        let alwaysString = getParams.get("always");
-        let matchesString = getParams.get("matches");
-        let notMatchesString = getParams.get("notMatches");
-        let parallelString = getParams.get("parallel");
-        let rotationsStr = getParams.get("rotations");
-        if (b64Data) {
-            board.loadB64Data(b64Data, this.game.components);
-            if (alwaysString) {
-                board.loadEdgesString(alwaysString, Tool.EdgeAlways, this.game.components);
-            }
-            if (matchesString) {
-                board.loadEdgesString(matchesString, Tool.EdgeIfMatched, this.game.components);
-            }
-            if (notMatchesString) {
-                board.loadEdgesString(notMatchesString, Tool.EdgeIfNotMatched, this.game.components);
-            }
-            if (parallelString) {
-                board.loadEdgesString(parallelString, Tool.EdgeParallel, this.game.components);
-            }
-            board.editBoard.calculateReachability();
-            for (let element of board.editBoard.rules) {
-                let rule = element[1];
-                if (rule.isEnabled()) {
-                    board.editBoard.respositionEdgesForRule(rule, board.data, board.grid);
-                }
-            }
-        }
-        else {
-            board.setupInputStates();
-        }
-        if (rotationsStr) {
-            let rotationsParts = rotationsStr.split(",");
-            for (let i = 0; i < rotationsParts.length; ++i) {
-                let rotationPart = rotationsParts[i];
-                let rotation = parseInt(rotationPart);
-                if (rotation == 1) {
-                    let rule = board.editBoard.rules.get(i);
-                    if (rule) {
-                        //TODO fixme
-                        //rule.includeRotations = true;
-                    }
-                }
-            }
-        }
-    }
-    createStampForEdgeTool(tool) {
-        return "";
-    }
-    screenDidResize(screenSize, cp) {
-        cp.clear();
-        let tileSize = this.board.grid.computeTileSize();
-        this.board.screenDidResize(screenSize);
+    screenDidResize(screenSize, cp, tileSize) {
         this.palette.layout.offset = {
             position: {
                 x: -20,
@@ -656,6 +461,264 @@ class Playbilder {
         }
     }
 }
+class Playbilder {
+    constructor(container, boardSize, isPresenting, archive) {
+        this.title = "";
+        let _this = this;
+        let infobarLayout = new Layout(-0.15, 0, 0, -kTopbarBottomPadding + 40, 1.15, 0, kGameSettingsWidth, 25);
+        infobarLayout.anchor = { x: 0.0, y: 1.0 };
+        let infobar = new Rectangle(infobarLayout);
+        infobar.strokeColor = Constants.Colors.Yellow.Safety;
+        infobar.fillColor = Constants.Colors.Yellow.Light;
+        let infobarLabelLayout = new Layout(0, 0.5, 10, 7, 1.0, 1.0, -10, 0);
+        infobarLabelLayout.anchor = { x: 0.0, y: 0.5 };
+        let infobarLabel = new TextLabel(infobarLabelLayout, "Warning: Be careful about doing that!");
+        infobarLabel.setFontSize(14);
+        infobarLabel.fillStyle = Constants.Colors.Black;
+        infobar.children = [];
+        infobar.children.push(infobarLabel);
+        function setUserFeedback(feedback) {
+            if (feedback.state == UserFeedbackState.None) {
+                infobarLayout.visible = false;
+            }
+            else {
+                infobarLayout.visible = true;
+                infobarLabel.text = feedback.message;
+                if (feedback.state == UserFeedbackState.Warning) {
+                    infobar.strokeColor = Constants.Colors.Yellow.Safety;
+                    infobar.fillColor = Constants.Colors.Yellow.Light;
+                }
+                else if (feedback.state == UserFeedbackState.Error) {
+                    infobar.strokeColor = Constants.Colors.Red.Imperial;
+                    infobar.fillColor = Constants.Colors.Red.Light;
+                }
+                else {
+                    infobar.strokeColor = Constants.Colors.DarkGrey;
+                    infobar.fillColor = Constants.Colors.VeryLightGrey;
+                }
+            }
+        }
+        function clearFeedback() {
+            setUserFeedback({
+                state: UserFeedbackState.None,
+                message: "",
+            });
+        }
+        clearFeedback();
+        let window = {
+            position: {
+                x: 0,
+                y: 0,
+            },
+            size: {
+                width: boardSize.width,
+                height: boardSize.height,
+            }
+        };
+        if (isPresenting && archive && archive.window) {
+            window.position.x = archive.window.x;
+            window.position.y = archive.window.y;
+            window.size.width = archive.window.width;
+            window.size.height = archive.window.height;
+        }
+        let screenSize = getGameScreenSize();
+        let board = new Board(boardSize, window, screenSize, {
+            onUserFeedback(feedback) {
+                setUserFeedback(feedback);
+            },
+            onWinning() {
+                _this.endStateOverlay.show();
+            },
+            onObjectSelected(editRule) {
+                if (editRule && _this.editorTools) {
+                    _this.editorTools.gameSettingsGui.setEditRule(editRule);
+                }
+            },
+            onObjectUnselected() {
+                if (_this.editorTools) {
+                    _this.editorTools.gameSettingsGui.hideRuleOptions();
+                }
+            },
+        });
+        if (isPresenting) {
+            board.grid.color = Constants.Colors.White;
+            board.grid.window = window;
+        }
+        let tileSize = board.grid.computeTileSize();
+        console.log("PlayBilder constructor tileSize", tileSize);
+        let endStateOverlay = new EndStateOverlay({
+            onNext() {
+                if (board.levelIndex + 1 < board.levels.length
+                    || isPresenting) {
+                    let newLevel = (board.levelIndex + 1) % board.levels.length;
+                    board.jumpToLevel(newLevel);
+                    if (_this.editorTools) {
+                        _this.editorTools.levelSelect.selectedIndex = board.levelIndex;
+                    }
+                }
+                else {
+                    board.toggleState();
+                    if (_this.editorTools) {
+                        _this.editorTools.levelSelect.selectedIndex = board.levelIndex;
+                        _this.editorTools.playButton.toggleIndex = 0;
+                    }
+                }
+            }
+        });
+        endStateOverlay.hide();
+        if (isPresenting) {
+        }
+        else {
+            this.editorTools = new EditorTools(tileSize, clearFeedback, setUserFeedback, board, boardSize, this);
+        }
+        this.game = new Game(container, {
+            onKeyDown(e) {
+                console.log("onKeyDown", e.key, e.ctrlKey, e.metaKey);
+                if (board.state == BoardState.Edit && _this.editorTools) {
+                    let asNumber = parseInt(e.key);
+                    if (!isNaN(asNumber)) {
+                        _this.editorTools.setSelectedFromPalette(_this.editorTools.selectedCoord.i, asNumber);
+                    }
+                    else if (e.key == "b") {
+                        _this.editorTools.setSelectedFromPalette(0, _this.editorTools.selectedCoord.j);
+                    }
+                    else if (e.key == "i") {
+                        _this.editorTools.setSelectedFromPalette(1, _this.editorTools.selectedCoord.j);
+                    }
+                    else if (e.key == "f") {
+                        _this.editorTools.setSelectedFromPalette(2, _this.editorTools.selectedCoord.j);
+                    }
+                    else if ((e.ctrlKey || e.metaKey) && e.key == "z") {
+                        if (board.state == BoardState.Edit) {
+                            board.editBoard.undo(board.data, board.grid);
+                        }
+                    }
+                }
+                return board.onKeyDown(e);
+            },
+            onUpdate(timeMS) {
+                board.onUpdate(timeMS);
+            },
+            screenWillResize(screenSize, cp) {
+            },
+            screenDidResize(screenSize, cp) {
+                _this.screenDidResize(screenSize, cp);
+            },
+            needsLayout() {
+                let ret = board.needsLayout;
+                board.needsLayout = false;
+                return ret;
+            },
+        });
+        let gridOverlay = new Container();
+        this.game.components.push(board.grid);
+        if (board.grid.children) {
+            if (this.editorTools) {
+                board.grid.children.push(this.editorTools.palette);
+                board.grid.children.push(this.editorTools.toolbar);
+                board.grid.children.push(this.editorTools.playButton);
+                board.grid.children.push(this.editorTools.downloadButton);
+                board.grid.children.push(this.editorTools.uploadButton);
+                board.grid.children.push(this.editorTools.trashButton);
+            }
+            board.grid.children.push(infobar);
+            if (!isPresenting) {
+                board.grid.children.push(gridOverlay);
+            }
+            board.grid.children.push(endStateOverlay.background);
+            if (this.editorTools) {
+                board.grid.children.push(this.editorTools.gameSettingsGui.rootComponent);
+                board.grid.children.push(this.editorTools.levelSelect);
+                board.grid.children.push(this.editorTools.addLevelButton);
+            }
+        }
+        board.setComponents(gridOverlay.children);
+        this.game.doLayout();
+        this.board = board;
+        this.endStateOverlay = endStateOverlay;
+        this.load(archive);
+        if (isPresenting) {
+            board.toggleState();
+        }
+    }
+    getTitle() {
+        if (this.editorTools) {
+            return this.editorTools.gameSettingsGui.title.getText();
+        }
+        else {
+            return this.title;
+        }
+    }
+    load(archive) {
+        let info = document.getElementById('info');
+        if (archive.info && info) {
+            info.innerHTML = archive.info;
+        }
+        this.board.load(archive);
+        if (this.editorTools) {
+            this.editorTools.load(archive, this.board);
+        }
+        this.screenDidResize(getGameScreenSize(), this.game.contentProvider);
+    }
+    loadStateFromGetParams(getParams, board) {
+        let b64Data = getParams.get("data");
+        let alwaysString = getParams.get("always");
+        let matchesString = getParams.get("matches");
+        let notMatchesString = getParams.get("notMatches");
+        let parallelString = getParams.get("parallel");
+        let rotationsStr = getParams.get("rotations");
+        if (b64Data) {
+            board.loadB64Data(b64Data, this.game.components);
+            if (alwaysString) {
+                board.loadEdgesString(alwaysString, Tool.EdgeAlways, this.game.components);
+            }
+            if (matchesString) {
+                board.loadEdgesString(matchesString, Tool.EdgeIfMatched, this.game.components);
+            }
+            if (notMatchesString) {
+                board.loadEdgesString(notMatchesString, Tool.EdgeIfNotMatched, this.game.components);
+            }
+            if (parallelString) {
+                board.loadEdgesString(parallelString, Tool.EdgeParallel, this.game.components);
+            }
+            board.editBoard.calculateReachability();
+            for (let element of board.editBoard.rules) {
+                let rule = element[1];
+                if (rule.isEnabled()) {
+                    board.editBoard.respositionEdgesForRule(rule, board.data, board.grid);
+                }
+            }
+        }
+        else {
+            board.setupInputStates();
+        }
+        if (rotationsStr) {
+            let rotationsParts = rotationsStr.split(",");
+            for (let i = 0; i < rotationsParts.length; ++i) {
+                let rotationPart = rotationsParts[i];
+                let rotation = parseInt(rotationPart);
+                if (rotation == 1) {
+                    let rule = board.editBoard.rules.get(i);
+                    if (rule) {
+                        //TODO fixme
+                        //rule.includeRotations = true;
+                    }
+                }
+            }
+        }
+    }
+    createStampForEdgeTool(tool) {
+        return "";
+    }
+    screenDidResize(screenSize, cp) {
+        cp.clear();
+        let tileSize = this.board.grid.computeTileSize();
+        this.board.screenDidResize(screenSize);
+        if (this.editorTools) {
+            this.editorTools.screenDidResize(screenSize, cp, tileSize);
+        }
+    }
+}
 function getUrlVars() {
     let vars = new Map();
     let parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function (m, key, value) {
@@ -688,6 +751,9 @@ else if (example == "LangtonsAnt") {
 else if (example == "WangTiles") {
     archive = Example_WangTiles;
 }
+else if (example == "BigSquare") {
+    archive = Example_BigSquare;
+}
 else {
     // let archiveString = localStorage.getItem("archive");
     // if (archiveString) {
@@ -704,9 +770,10 @@ if (archive && archive.width) {
 if (archive && archive.height) {
     height = archive.height;
 }
+let isPresenting = getParams.get("mode") == "presenting";
 console.log("width:", width, "height:", height);
 let $container = document.getElementById('container');
-let $playBilder = new Playbilder($container, { width: width, height: height }, archive);
+let $playBilder = new Playbilder($container, { width: width, height: height }, isPresenting, archive);
 $playBilder.game.start();
 let inputElement = document.getElementById("upload");
 inputElement.addEventListener("change", handleFiles, false);
@@ -729,7 +796,9 @@ function handleFiles(e) {
 }
 window.addEventListener('beforeunload', function (e) {
     console.log("beforeunload");
-    let archive = JSON.stringify($playBilder.board.save($playBilder.gameSettingsGui.save()), null, '\t');
-    localStorage.setItem("archive", archive);
+    if ($playBilder.editorTools) {
+        let archive = JSON.stringify($playBilder.board.save($playBilder.editorTools.gameSettingsGui.save()), null, '\t');
+        localStorage.setItem("archive", archive);
+    }
 });
 //# sourceMappingURL=main.js.map
