@@ -354,6 +354,10 @@ class Board {
 		}
 		this.applyRealDataToGrid();
 		this.levelIndex = index;
+		if (this.history) {
+			this.history.reset();
+			this.copyData(this.data, this.history.current());
+		}
 	}
 
 	constructor (
@@ -576,7 +580,7 @@ class Board {
 			this.setupInputStates();
 		}
 		if (archive.levelIndex != undefined) {
-			this.setLevelWhileEditing(archive.levelIndex);
+			this.jumpToLevel(archive.levelIndex);
 		}
 		if (archive.edges && archive.rules) {
 			for (let edgeArchive of archive.edges) {
