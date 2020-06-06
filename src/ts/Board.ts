@@ -12,6 +12,42 @@ interface BoardController {
 	onObjectUnselected : () => void;
 }
 
+function positiveModulo(m : number, n : number) {
+	return ((m % n) + n) % n;
+}
+
+class CircularBuffer<T> {
+	rootIndex : number = 0;
+	currentIndex : number = 0;
+	content : T[] = new Array();
+
+	canPop() {
+		return this.currentIndex != this.rootIndex;
+	}
+
+	pop() {
+		console.assert(this.canPop());
+		this.currentIndex = positiveModulo(this.currentIndex - 1, this.content.length);
+		return this.content[this.currentIndex]; 
+	}
+
+	push() {
+		this.currentIndex = positiveModulo(this.currentIndex + 1, this.content.length);
+		if (this.currentIndex == this.rootIndex) {
+			this.rootIndex = positiveModulo(this.rootIndex + 1, this.content.length);
+		}
+	}
+
+	current() {
+		return this.content[this.currentIndex];
+	}
+
+	reset() {
+		this.rootIndex = 0;
+		this.currentIndex = 0;
+	}
+}
+
 class Board {
 
 	controller : BoardController;
@@ -19,6 +55,7 @@ class Board {
 	saved : number[][][];
 	data : number[][][];
 	buffer : number[][][];
+	history? : CircularBuffer<number[][][]>;
 	editBoard : EditBoard;
 	playBoard? : PlayBoard;
 	gameStepInterval : DOMHighResTimeStamp = 500;
@@ -166,6 +203,9 @@ class Board {
 		} else {
 			this.startedLevelIndex = this.levelIndex;
 			this.copyData(this.data, this.saved);
+			if (this.history) {
+				this.copyData(this.data, this.history.current());
+			}
 			this.editBoard.unselectSelectedObject();
 			this.playBoard = new PlayBoard(
 				this.editBoard.edges,
@@ -230,8 +270,20 @@ class Board {
 				if (processState.isWinning) {
 					this.controller.onWinning();
 				}
+				if (this.history) {
+					this.history.push();
+					this.copyData(this.data, this.history.current());
+				}
 				return true;
-			}
+			} else if (e.key == 'r') {
+    			this.jumpToLevel(this.levelIndex);
+    			return true;
+    		} else if (e.key == 'z' && this.history && this.history.canPop()) {
+    			let newData = this.history.pop();
+    			this.copyData(newData, this.data);
+    			this.applyRealDataToGrid();
+    			return true;
+    		}
 		} else if (this.state == BoardState.Edit) {
 			return this.editBoard.onKeyDown(e);
 		}

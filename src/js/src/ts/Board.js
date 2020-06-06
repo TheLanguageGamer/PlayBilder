@@ -5,6 +5,37 @@ var BoardState;
     BoardState[BoardState["Edit"] = 1] = "Edit";
 })(BoardState || (BoardState = {}));
 ;
+function positiveModulo(m, n) {
+    return ((m % n) + n) % n;
+}
+class CircularBuffer {
+    constructor() {
+        this.rootIndex = 0;
+        this.currentIndex = 0;
+        this.content = new Array();
+    }
+    canPop() {
+        return this.currentIndex != this.rootIndex;
+    }
+    pop() {
+        console.assert(this.canPop());
+        this.currentIndex = positiveModulo(this.currentIndex - 1, this.content.length);
+        return this.content[this.currentIndex];
+    }
+    push() {
+        this.currentIndex = positiveModulo(this.currentIndex + 1, this.content.length);
+        if (this.currentIndex == this.rootIndex) {
+            this.rootIndex = positiveModulo(this.rootIndex + 1, this.content.length);
+        }
+    }
+    current() {
+        return this.content[this.currentIndex];
+    }
+    reset() {
+        this.rootIndex = 0;
+        this.currentIndex = 0;
+    }
+}
 class Board {
     constructor(gridSize, window, screenSize, controller) {
         this.gameStepInterval = 500;
@@ -209,6 +240,9 @@ class Board {
         else {
             this.startedLevelIndex = this.levelIndex;
             this.copyData(this.data, this.saved);
+            if (this.history) {
+                this.copyData(this.data, this.history.current());
+            }
             this.editBoard.unselectSelectedObject();
             this.playBoard = new PlayBoard(this.editBoard.edges, this.editBoard.rules, this.data, this.grid.gridSize, this.gameStepInterval);
             this.state = BoardState.Play;
@@ -247,6 +281,20 @@ class Board {
                 if (processState.isWinning) {
                     this.controller.onWinning();
                 }
+                if (this.history) {
+                    this.history.push();
+                    this.copyData(this.data, this.history.current());
+                }
+                return true;
+            }
+            else if (e.key == 'r') {
+                this.jumpToLevel(this.levelIndex);
+                return true;
+            }
+            else if (e.key == 'z' && this.history && this.history.canPop()) {
+                let newData = this.history.pop();
+                this.copyData(newData, this.data);
+                this.applyRealDataToGrid();
                 return true;
             }
         }

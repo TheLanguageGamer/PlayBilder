@@ -25,7 +25,7 @@ class EndStateOverlay {
         let titleLayout = new Layout(0.5, 0.5, 0, 0, 0.75, 0.5, 0, 0);
         titleLayout.anchor.x = 0.5;
         titleLayout.anchor.y = 0.5;
-        let title = new TextBox(titleLayout, "Hey that's nice, good job!");
+        let title = new TextBox(titleLayout, "");
         title.setFontSize(20);
         title.fillStyle = Constants.Colors.Black;
         let buttonLayout = new Layout(0.5, 0.5, 0, 0, 0, 0, 50, 50);
@@ -47,7 +47,8 @@ class EndStateOverlay {
         this.title = title;
         this.button = button;
     }
-    show() {
+    show(titleText) {
+        this.title.setText(titleText);
         this.background.layout.visible = true;
     }
     hide() {
@@ -527,7 +528,7 @@ class Playbilder {
                 setUserFeedback(feedback);
             },
             onWinning() {
-                _this.endStateOverlay.show();
+                _this.endStateOverlay.show("Hey that's nice, good job!");
             },
             onObjectSelected(editRule) {
                 if (editRule && _this.editorTools) {
@@ -548,7 +549,10 @@ class Playbilder {
         console.log("PlayBilder constructor tileSize", tileSize);
         let endStateOverlay = new EndStateOverlay({
             onNext() {
-                if (board.levelIndex + 1 < board.levels.length
+                if (isPresenting && board.state != BoardState.Play) {
+                    board.toggleState();
+                }
+                else if (board.levelIndex + 1 < board.levels.length
                     || isPresenting) {
                     let newLevel = (board.levelIndex + 1) % board.levels.length;
                     board.jumpToLevel(newLevel);
@@ -638,7 +642,23 @@ class Playbilder {
         this.endStateOverlay = endStateOverlay;
         this.load(archive);
         if (isPresenting) {
-            board.toggleState();
+            let text = "Hey get ready to play this game!";
+            if (archive && archive.instructions) {
+                text = archive.instructions;
+            }
+            endStateOverlay.show(text);
+            //add history
+            board.history = new CircularBuffer();
+            for (let k = 0; k < 10; ++k) {
+                let historyItem = new Array();
+                for (let i = 0; i < boardSize.width; ++i) {
+                    historyItem.push(new Array());
+                    for (let j = 0; j < boardSize.height; ++j) {
+                        historyItem[i].push([-1, -1, -1, -1]);
+                    }
+                }
+                board.history.content.push(historyItem);
+            }
         }
     }
     getTitle() {

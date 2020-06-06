@@ -21,6 +21,7 @@ class TextBox {
     setText(text) {
         if (text != this.text) {
             this.text = text;
+            this.lines = [];
             this.dirty = true;
         }
     }

@@ -6964,4 +6964,5 @@ var Example_BigSquare = {
 		"width" : 16,
 		"height" : 11,
 	},
+	"instructions" : "The Big Square Game. Arrange the blocks into a 3x3 square. Arrrows to move, r ro reset, z to undo.",
 }
