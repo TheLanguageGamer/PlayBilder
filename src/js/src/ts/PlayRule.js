@@ -208,6 +208,10 @@ class PlayRule {
                 playRule.data[other.size.height - j - 1][i] = other.data[i][j].slice(0);
             }
         }
+        for (let otherRotation of other.rotations) {
+            let rotation = PlayRule.createRotation90(otherRotation);
+            playRule.rotations.push(rotation);
+        }
         return playRule;
     }
     static createRotation180(other) {
@@ -227,6 +231,10 @@ class PlayRule {
                 playRule.data[other.size.width - i - 1][other.size.height - j - 1] = other.data[i][j].slice(0);
             }
         }
+        for (let otherRotation of other.rotations) {
+            let rotation = PlayRule.createRotation180(otherRotation);
+            playRule.rotations.push(rotation);
+        }
         return playRule;
     }
     static createRotation270(other) {
@@ -245,6 +253,10 @@ class PlayRule {
             for (let i = 0; i < other.size.width; ++i) {
                 playRule.data[j][other.size.width - i - 1] = other.data[i][j].slice(0);
             }
+        }
+        for (let otherRotation of other.rotations) {
+            let rotation = PlayRule.createRotation270(otherRotation);
+            playRule.rotations.push(rotation);
         }
         return playRule;
     }

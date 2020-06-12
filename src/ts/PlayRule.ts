@@ -260,6 +260,10 @@ Horizontal reflection:
 				playRule.data[other.size.height-j-1][i] = other.data[i][j].slice(0);
 			}
 		}
+		for (let otherRotation of other.rotations) {
+			let rotation = PlayRule.createRotation90(otherRotation);
+			playRule.rotations.push(rotation);
+		}
 		return playRule;
 	}
 
@@ -280,6 +284,10 @@ Horizontal reflection:
 				playRule.data[other.size.width-i-1][other.size.height-j-1] = other.data[i][j].slice(0);
 			}
 		}
+		for (let otherRotation of other.rotations) {
+			let rotation = PlayRule.createRotation180(otherRotation);
+			playRule.rotations.push(rotation);
+		}
 		return playRule;
 	}
 
@@ -299,6 +307,10 @@ Horizontal reflection:
 			for (let i = 0; i < other.size.width; ++i) {
 				playRule.data[j][other.size.width-i-1] = other.data[i][j].slice(0);
 			}
+		}
+		for (let otherRotation of other.rotations) {
+			let rotation = PlayRule.createRotation270(otherRotation);
+			playRule.rotations.push(rotation);
 		}
 		return playRule;
 	}
